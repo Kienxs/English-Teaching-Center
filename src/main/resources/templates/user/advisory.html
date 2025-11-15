@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng ký nhận tư vấn miễn phí - ECE English</title>
+    
+    <link rel="stylesheet" href="/css/user/advisory.css">
+    <link rel="stylesheet" href="/css/layout.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <script src="/js/main.js"></script>
+</head>
+<body>
+
+    <nav class="navbar m-r m-l">
+        <div class="row">
+            <a th:href="@{/user/home}"><img src="/images/landing/logo.png" alt="logo" class="logo-img"></a>
+
+            <button class="menu-toggle" id="menu-toggle-button">
+                <i class="fas fa-bars"></i> </button>
+
+            <ul id="nav-links">
+                <li><a th:href="@{/user/home}">Giới thiệu</a></li>
+                <li><a th:href="@{/user/courseList}">Khóa học</a></li>
+                <li><a th:href="@{/user/teacher}">Giảng viên</a></li>
+                <li><a th:href="@{/user/my-course}">Học tập</a></li>
+                <li><a th:href="@{/user/news}">Tin tức sự kiện</a></li>
+                <li><a th:href="@{/user/blog}">Blog</a></li>
+                <li><a th:href="@{/user/advisory}" style="color:#00c8ff; text-decoration: underline;">Tư vấn</a></li>
+                <li class="user-info">
+                    <img src="/images/home/avatar_clone.png" alt="avatar" class="navbar-avatar">
+                    <ul class="user-category">
+                        <li><a href="#">Thông tin tài khoản</a></li>
+                        <li><a th:href="@{/logout}">Đăng Xuất</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="consultation-page">
+        <div class="logo-column">
+            
+            <div class="logo-image">
+                <img src="/images/home/iLogo.png" alt="ECE English Center Logo" class="center-logo">
+                <div class="circular-text" id="circularText">
+            </div>
+    </div>
+        </div>
+
+        <div class="form-column">
+            <h1>Đăng ký nhận tư vấn miễn phí</h1>
+            <p>Quý Phụ huynh Học sinh vui lòng để lại thông tin bên dưới để nhận tư vấn về các khóa học.</p>
+
+            <form action="/submit-consultation" method="POST" class="consult-form">
+                <div class="form-group">
+                    <label for="full-name">Họ và tên <span class="required">*</span></label>
+                    <input type="text" id="full-name" name="fullName" placeholder="Họ và Tên học viên" required>
+                </div>
+                <div class="form-group">
+                    <label for="birth-year">Năm sinh</label>
+                    <input type="text" id="birth-year" name="birthYear" placeholder="Năm sinh của học viên">
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone">Số điện thoại</label>
+                    <input type="tel" id="phone" name="phone" placeholder="Số điện thoại phụ huynh">
+                </div>
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" placeholder="Nhập email phụ huynh">
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="course">Khóa học quan tâm</label>
+                    <select id="course" name="course">
+                        <option value="">---</option>
+                        <option value="ielts">IELTS 6.0</option>
+                        <option value="aef">Tiếng Anh cấp 2 (AEF)</option>
+                        <option value="kids">Tiếng Anh trẻ em</option>
+                        <option value="other">Khóa học khác</option>
+                    </select>
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="message">Nội dung cần hỗ trợ</label>
+                    <textarea id="message" name="message" placeholder="Vui lòng để lại lời nhắn nếu có" rows="5"></textarea>
+                </div>
+
+                <div class="button-container full-width">
+                    <button type="submit" class="btn-submit-consult">
+                        Gửi thông tin <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <footer id="footer">
+        <div class="container footer-container">
+            <div class="footer-col">
+                <img src="/images/landing/logo.png" alt="Logo ECE" class="footer-logo">
+                <p>Trung tâm ngoại ngữ ECE do cô Đoàn Nương sáng lập là địa chỉ học tiếng Anh uy tín tại Hà Nội. Với phương châm English Center for Everyone, ECE hướng tới việc tổ chức các lớp học Tiếng Anh phù hợp với tất cả mọi người.</p>
+
+                <div class="footer-socials">
+                    <a href="https://www.facebook.com/profile.php?id=100055880165513"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-tiktok"></i></a>
+                    <a href="#"><i class="fab fa-youtube"></i></a>
+                </div>
+
+                <p class="footer-note">
+                    Công ty TNHH tư vấn và dịch vụ ECE. <br>
+                    Mã số doanh nghiệp: 0109483355 <br>
+                    GPKD số 0109483355 cấp bởi Sở KH & ĐT Hà Nội. <br>
+                    Đại diện pháp luật: Đoàn Thị Nương.
+                </p>
+                </div>
+
+                <div class="footer-col">
+                <h3>Thông tin liên hệ</h3>
+                <ul class="contact-list">
+                    <li><i class="fas fa-home"></i> Tầng 1, tòa nhà VIP, Cầu giấy, Hà Nội</li>
+                    <li><i class="fas fa-phone"></i> 0967739047</li>
+                    <li><i class="fas fa-envelope"></i> kienxs292005@gmail.com</li>
+                    <li><i class="fas fa-map-marker-alt"></i> Cơ sở 1: số 36, Cầu Diễn, Nam Từ Niêm, Hà Nội</li>
+                </ul>
+                </div>
+
+                <div class="footer-col">
+                <h3>Khóa Học Tại ECE</h3>
+                <ul class="course-list">
+                    <li><a href="#">Khóa học tiếng Anh IELTS</a></li>
+                    <li><a href="#">Khóa học SAT</a></li>
+                    <li><a href="#">Lớp Tiếng Anh học thuật</a></li>
+                    <li><a href="#">Khóa ngữ pháp tiếng Anh</a></li>
+                    <li><a href="#">Khóa phát âm tiếng Anh</a></li>
+                    <li><a href="#">Khóa IELTS cấp tốc</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 ECE - English Center for Everyone. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const text = "English Center For Everyone • ECE • "; // Chuỗi văn bản muốn xoay
+    const circularTextElement = document.getElementById('circularText');
+    const radius = circularTextElement.offsetWidth / 2; // Bán kính của vòng tròn
+    const deg = 360 / text.length; // Góc cho mỗi chữ cái
+
+    // Tạo span cho mỗi ký tự và định vị chúng
+    for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        const span = document.createElement('span');
+        span.textContent = char;
+
+        // Nếu là dấu chấm, thêm class 'dot' để định dạng khác (tùy chọn)
+        if (char === '•') {
+            span.classList.add('dot');
+        }
+
+        // Áp dụng phép xoay và dịch chuyển cho mỗi chữ cái
+        span.style.transform = `rotate(${deg * i}deg) translateY(-${radius}px)`;
+        
+        circularTextElement.appendChild(span);
+    }
+});
+</script>
+</html>

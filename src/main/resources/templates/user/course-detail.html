@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title th:text="${course.name}">Chi tiết khóa học</title>
+    
+    <link rel="stylesheet" href="/css/layout.css">
+    <link rel="stylesheet" href="/css/user/course-detail.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <script src="/js/main.js"></script>
+    <script src="/js/loadComments.js"></script>
+</head>
+<body>
+    <nav class="navbar m-r m-l">
+        <div class="row">
+            <a th:href="@{/user/home}"><img src="/images/landing/logo.png" alt="logo" class="logo-img"></a>
+
+            <button class="menu-toggle" id="menu-toggle-button">
+                <i class="fas fa-bars"></i> </button>
+
+            <ul id="nav-links">
+                <li><a th:href="@{/user/home}">Giới thiệu</a></li>
+                <li><a th:href="@{/user/courseList}" style="color:#00c8ff; text-decoration: underline;">Khóa học</a></li>
+                <li><a th:href="@{/user/teacher}">Giảng viên</a></li>
+                <li><a th:href="@{/user/my-course}">Học tập</a></li>
+                <li><a th:href="@{/user/news}">Tin tức sự kiện</a></li>
+                <li><a th:href="@{/user/blog}">Blog</a></li>
+                <li><a th:href="@{/user/advisory}">Tư vấn</a></li>
+                <li class="user-info">
+                    <img src="/images/home/avatar_clone.png" alt="avatar" class="navbar-avatar">
+                    <ul class="user-category">
+                        <li><a href="#">Thông tin tài khoản</a></li>
+                        <li><a th:href="@{/logout}">Đăng Xuất</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <main>
+        <div class="course-details-container">
+            <div class="course-main-content">
+                <div class="course-header-banner">
+                    <div class="header-text">
+                        <h1 th:text="${course.name}">Làm Game 2D Với Godot</h1>
+                        <p class="course-description" th:text="${course.description}">
+                            Khóa học "Godot Cơ Bản" hướng dẫn tạo game 2D từ cơ bản đến xuất bản. Học viên sẽ làm quen Godot, thiết kế nhân vật, lập trình logic, thêm hiệu ứng, âm thanh và xuất game lên nhiều nền tảng.
+                        </p>
+                        <div class="course-tags">
+                            <span class="tag">godot</span>
+                            <span class="tag">game2d</span>
+                            <span class="tag">basic</span>
+                        </div>
+                        <div class="author-info">
+                            <span>Tác giả: <strong>codelearn</strong></span>
+                            <span><i class="fas fa-user-friends"></i> 787 Học viên</span>
+                            <span>
+                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i> 0.0
+                            </span>
+                        </div>
+                    </div>
+                    <div class="header-image">
+                        <img th:if="${course.imageUrl}" th:src="${course.imageUrl}" alt="Godot Game 2D" class="course-illustration">
+                        <img th:unless="${course.imageUrl}" src="/images/godot_illustration.png" alt="Godot Game 2D" class="course-illustration"> </div>
+                    </div>
+
+                    <nav class="course-nav-tabs">
+                        <a href="#" class="tab-item active" data-tab="tab-gioithieu">Giới thiệu</a>
+                        <a href="#" class="tab-item" data-tab="tab-binhluan">Bình luận</a>
+                    </nav>
+
+                    <div class="tab-content-container">
+                        <div id="tab-gioithieu" class="tab-pane active">
+                            <div class="course-body-content">
+                                <h2>Quyền lợi của học viên</h2>
+                                <div class="benefits-grid">
+                                    <div class="benefit-item">
+                                        <i class="fas fa-certificate"></i>
+                                        <span>Nhận chứng chỉ khi hoàn thành 80% khóa học</span>
+                                    </div>
+                                    <div class="benefit-item">
+                                        <i class="fas fa-trophy"></i>
+                                        <span>Tham gia cuộc thi lập trình định kỳ</span>
+                                    </div>
+                                    <div class="benefit-item">
+                                        <i class="fas fa-code"></i>
+                                        <span>Truy cập linh hoạt, mọi lúc mọi nơi</span>
+                                    </div>
+                                    <div class="benefit-item">
+                                        <i class="fas fa-gift"></i>
+                                        <span>Nhận nhiều phần quà hấp dẫn</span>
+                                    </div>
+                                </div>
+
+                                <h2 class="content-heading">Tự tay tạo nên trò chơi 2D đầu tiên...</h2>
+                                <p>Bạn từng mơ tạo ra một trò chơi...</p>
+                                <p>Khóa học <a href="#">Godot cơ bản</a>...</p>
+
+                                <h2 class="content-heading">Bạn sẽ học được gì?</h2>
+                                <ul class="learning-list">
+                                    <li><i class="fas fa-check"></i> Tự tin cài đặt và thiết lập dự án...</li>
+                                    <li><i class="fas fa-check"></i> Làm chủ giao diện <strong>Godot Editor</strong>...</li>
+                                    <li><i class="fas fa-check"></i> Xây dựng tư duy tổ chức dự án game...</li>
+                                    <li><i class="fas fa-check"></i> Viết được những dòng mã đầu tiên...</li>
+                                    <li><i class="fas fa-check"></i> Quản lý luồng game và điều khiển...</li>
+                                    <li><i class="fas fa-check"></i> Sáng tạo trò chơi 2D đơn giản...</li>
+                                </ul>
+
+                                <h2 class="content-heading">Khóa học phù hợp với ai?</h2>
+                                <p>Khóa học này được thiết kế dành riêng cho...</p>
+
+                                <h2 class="content-heading">Phương pháp đào tạo:</h2>
+                                <ul class="learning-list">
+                                    <li><i class="fas fa-check"></i> Học <strong>100% online</strong>...</li>
+                                    <li><i class="fas fa-check"></i> Kết hợp thực hành trực tiếp...</li>
+                                    <li><i class="fas fa-check"></i> Có mentor hỗ trợ giải đáp...</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div id="tab-binhluan" class="tab-pane">
+                            <div class="course-body-content comment-section">
+                                
+                                <div class="comment-input-area">
+                                    <img src="/images/home/avatar_clone.png" alt="Avatar" class="comment-avatar user-avatar">
+                                    
+                                    <div class="comment-input-box">
+                                        <textarea id="comment-textarea" placeholder="Viết bình luận của bạn..."></textarea>
+                                        <button id="btn-submit-comment" class="btn-submit-comment" disabled>Gửi bình luận</button>
+                                    </div>
+                                </div>
+
+                                <div class="comment-list">
+                                    <div class="comment-item">
+                                        <img src="/images/home/avatar_clone.png" alt="Avatar" class="comment-avatar">
+                                        <div class="comment-content">
+                                            <span class="comment-author">Nguyễn Văn A</span>
+                                            <p class="comment-text">Khóa học rất hay!</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="comment-item">
+                                        <img src="/images/home/avatar_clone.png" alt="Avatar" class="comment-avatar">
+                                        <div class="comment-content">
+                                            <span class="comment-author">Trần Thị B</span>
+                                            <p class="comment-text">Nội dung dễ hiểu, giảng viên nhiệt tình.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div>
+
+            <div class="course-sidebar">
+                <div class="sidebar-box">
+                    <div class="price-section">
+                        <span class="discount-price" th:text="${#numbers.formatDecimal(course.fee, 0, 'COMMA', 0, 'POINT')} + 'đ'">499.000đ</span>
+                        <span class="original-price">720.000đ</span>
+                        <span class="discount-badge">-31%</span>
+                    </div>
+
+                    <h2>Thông tin khóa học</h2>
+                    <ul class="course-info-list">
+                        <li><i class="fas fa-clock"></i> <span th:text="${course.duration}">10 giờ</span> học</li>
+                        <li><i class="fas fa-book-open"></i> 21 bài đọc</li>
+                        <li><i class="fas fa-video"></i> 9 video</li>
+                        <li><i class="fas fa-file-alt"></i> 9 bài tập</li>
+                        <li><i class="fas fa-check-circle"></i> 5 bài kiểm tra</li>
+                        <li><i class="fas fa-infinity"></i> Truy cập trọn đời</li>
+                        <li><i class="fas fa-certificate"></i> Chứng chỉ khi hoàn thành 80%</li>
+                    </ul>
+
+                    <div class="button-group">
+                        <button class="btn btn-buy">Mua ngay</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer id="footer">
+        <div class="container footer-container">
+            <div class="footer-col">
+                <img src="/images/landing/logo.png" alt="Logo ECE" class="footer-logo">
+                <p>Trung tâm ngoại ngữ ECE do cô Đoàn Nương sáng lập là địa chỉ học tiếng Anh uy tín tại Hà Nội. Với phương châm English Center for Everyone, ECE hướng tới việc tổ chức các lớp học Tiếng Anh phù hợp với tất cả mọi người.</p>
+
+                <div class="footer-socials">
+                    <a href="https://www.facebook.com/profile.php?id=100055880165513"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-tiktok"></i></a>
+                    <a href="#"><i class="fab fa-youtube"></i></a>
+                </div>
+
+                <p class="footer-note">
+                    Công ty TNHH tư vấn và dịch vụ ECE. <br>
+                    Mã số doanh nghiệp: 0109483355 <br>
+                    GPKD số 0109483355 cấp bởi Sở KH & ĐT Hà Nội. <br>
+                    Đại diện pháp luật: Đoàn Thị Nương.
+                </p>
+                </div>
+
+                <div class="footer-col">
+                <h3>Thông tin liên hệ</h3>
+                <ul class="contact-list">
+                    <li><i class="fas fa-home"></i> Tầng 1, tòa nhà VIP, Cầu giấy, Hà Nội</li>
+                    <li><i class="fas fa-phone"></i> 0967739047</li>
+                    <li><i class="fas fa-envelope"></i> kienxs292005@gmail.com</li>
+                    <li><i class="fas fa-map-marker-alt"></i> Cơ sở 1: số 36, Cầu Diễn, Nam Từ Niêm, Hà Nội</li>
+                </ul>
+                </div>
+
+                <div class="footer-col">
+                <h3>Khóa Học Tại ECE</h3>
+                <ul class="course-list">
+                    <li><a href="#">Khóa học tiếng Anh IELTS</a></li>
+                    <li><a href="#">Khóa học SAT</a></li>
+                    <li><a href="#">Lớp Tiếng Anh học thuật</a></li>
+                    <li><a href="#">Khóa ngữ pháp tiếng Anh</a></li>
+                    <li><a href="#">Khóa phát âm tiếng Anh</a></li>
+                    <li><a href="#">Khóa IELTS cấp tốc</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 ECE - English Center for Everyone. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

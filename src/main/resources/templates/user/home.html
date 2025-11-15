@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ECE Home</title>
+    <link rel="stylesheet" href="/css/user/home.css">
+    <link rel="stylesheet" href="/css/layout.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <script src="/js/main.js"></script>
+</head>
+<body>
+    <nav class="navbar m-r m-l">
+        <div class="row">
+            <a th:href="@{/user/home}"><img src="/images/landing/logo.png" alt="logo" class="logo-img"></a>
+
+            <button class="menu-toggle" id="menu-toggle-button">
+                <i class="fas fa-bars"></i> </button>
+
+            <ul id="nav-links">
+                <li><a th:href="@{/user/home}" style="color:#00c8ff; text-decoration: underline;">Giới thiệu</a></li>
+                <li><a th:href="@{/user/courseList}">Khóa học</a></li>
+                <li><a th:href="@{/user/teacher}">Giảng viên</a></li>
+                <li><a th:href="@{/user/my-course}">Học tập</a></li>
+                <li><a th:href="@{/user/news}">Tin tức sự kiện</a></li>
+                <li><a th:href="@{/user/blog}">Blog</a></li>
+                <li><a th:href="@{/user/advisory}">Tư vấn</a></li>
+                <li class="user-info">
+                    <img src="/images/home/avatar_clone.png" alt="avatar" class="navbar-avatar">
+                    <ul class="user-category">
+                        <li><a th:href="@{/user/userInfor}">Thông tin tài khoản</a></li>
+                        <li><a th:href="@{/logout}">Đăng Xuất</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="hero-section">
+        <div class="background-elements"></div>
+        <div class="container hero-container">
+            <div class="left-content">
+                <div class="logo">
+                    <img src="/images/landing/logo.png" alt="ECE Logo">
+                </div>
+                <h1>TRUNG TÂM <br> NGOẠI NGỮ <br> DÀNH CHO MỌI NGƯỜI</h1>
+                <p>Với phương châm "English Center for Everyone", trung tâm ngoại ngữ ECE hướng tới việc tổ chức các lớp học Tiếng Anh phù hợp với tất cả mọi người. Đặc biệt, khóa học IELTS - sản phẩm chủ lực của trung tâm - được thiết kế để đáp ứng đa dạng mục tiêu và trình độ của học viên. Dù bạn là người mới bắt đầu hay đã có nền tảng, ECE sẽ xây dựng lộ trình học IELTS cá nhân hóa, giúp bạn chinh phục điểm số mong muốn.</p>
+                <a href="#" class="btn-primary">Xem ngay khóa học <span>&rarr;</span></a>
+            </div>
+
+            <div class="right-content">
+                <img src="/images/home/teacher_1.jpg" alt="Giáo viên ECE" class="main-image">
+                <div class="stat-card stat-card-top">
+                    <img src="/images/home/trust.png" alt="Users icon" class="stat-icon">
+                    <p><strong>100M+</strong>Khách hàng tin tưởng</p>
+                </div>
+                <div class="stat-card stat-card-middle">
+                    <img src="/images/home/trust.png" alt="Experience icon" class="stat-icon">
+                    <p><strong>21</strong>Năm kinh nghiệm</p>
+                </div>
+                <div class="stat-card stat-card-bottom">
+                    <img src="/images/home/trust.png" alt="Location icon" class="stat-icon">
+                    <p><strong>36</strong>Cơ sở</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="social-buttons">
+            <a href="#" class="social-icon"><img src="/images/home/icon_facebook.png" alt="Facebook"></a>
+            <a href="#" class="social-icon"><img src="/images/home/icon_zalo.png" alt="Zalo"></a>
+            <a href="#" class="social-icon"><img src="/images/home/icon_phone.png" alt="Phone"></a>
+        </div>
+    </div>
+
+    <main>
+        <section id="thu-ngo">
+            <div class="container grid-2">
+                <div class="image-column">
+                    <img src="/images/home/teacher_2.png" alt="Cô Đoàn Hường - Giám đốc Trung tâm"> </div>
+                <div class="text-column">
+                    <h2>Thư ngỏ</h2>
+                    <p>Kính gửi quý phụ huynh và các bạn học viên,</p>
+                    <p>Trung tâm Tiếng Anh của chúng tôi xin gửi lời chào trân trọng nhất tới quý vị. Chúng tôi rất vui mừng được chia sẻ với các bạn sứ mệnh của mình trong việc mang đến cho mọi người một môi trường học tập tiếng Anh chuyên nghiệp và hiệu quả.</p>
+                    <p>Tại trung tâm chúng tôi, chúng tôi cam kết cung cấp cho các bạn các khoá học chất lượng cao, được thiết kế để phát triển kỹ năng ngôn ngữ một cách toàn diện...</p>
+                    <p>Hãy liên hệ với chúng tôi ngay hôm nay để biết thêm thông tin chi tiết về các khoá học và các chương trình khuyến mãi. Chúng tôi rất mong được đón tiếp các bạn tại trung tâm.</p>
+                    <p>Trân trọng,<br>
+                    <strong>Cô Đoàn Hường,</strong><br>
+                    Giám đốc Trung tâm Tiếng Anh ECE</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="tai-sao">
+            <div class="container">
+                <h2>Tại sao nên học tiếng Anh tại ECE</h2>
+                
+                <div class="features-tabs">
+                    <div class="feature-box active" data-tab="1">
+                        <i class="fas fa-user-group icon"></i>
+                        Đội ngũ giảng viên trình độ cao
+                    </div>
+                    <div class="feature-box" data-tab="2">
+                        <i class="fas fa-book icon"></i>
+                        Giáo trình thiết kế độc quyền
+                    </div>
+                    <div class="feature-box" data-tab="3">
+                        <i class="fas fa-award icon"></i>
+                        Quản lý chất lượng
+                    </div>
+                </div>
+
+                <div class="feature-detail-pane active" data-tab="1">
+                    <h3>Đội ngũ giảng viên trình độ cao</h3>
+                    <p>Đội ngũ Giáo viên được đào tạo bài bản từ các trường Đại học dạy ngoại ngữ hàng đầu trong và ngoài nước và Có kinh nghiệm ôn luyện IELTS, AEF... có thể cung cấp cho học viên những kiến thức và kỹ năng cần thiết để đạt được mục tiêu học tập của mình.</p>
+                </div>
+                <div class="feature-detail-pane" data-tab="2">
+                    <h3>Giáo trình thiết kế độc quyền</h3>
+                    <p>Nội dung về giáo trình độc quyền sẽ xuất hiện ở đây. Chúng tôi tự hào mang đến chương trình học được cá nhân hóa...</p>
+                </div>
+                <div class="feature-detail-pane" data-tab="3">
+                    <h3>Quản lý chất lượng</h3>
+                    <p>Nội dung về quản lý chất lượng. Quy trình kiểm tra và đánh giá nghiêm ngặt đảm bảo đầu ra cho từng học viên...</p>
+                </div>
+
+                <div class="stats-bar">
+                    <div class="stat-item">
+                        <strong>8.500+</strong>
+                        <span>học viên đạt kết quả như ý</span>
+                    </div>
+                    <div class="stat-item">
+                        <strong>20+</strong>
+                        <span>Chương trình thiết kế riêng</span>
+                    </div>
+                    <div class="stat-item">
+                        <strong>50+</strong>
+                        <span>Giảng viên trình độ cao</span>
+                    </div>
+                    <div class="stat-item">
+                        <strong>3+</strong>
+                        <span>Cơ sở khang trang tại Hà Nội</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="gia-tri">
+            <div class="container">
+                <h2>Giá trị ECE mang lại</h2>
+                <div class="values-grid">
+                    <div class="value-card">
+                        <div class="value-title">TIN CẬY</div>
+                        <p>Nền tảng phát triển giáo dục kinh nghiệm và uy tín đối với học viên, phụ huynh, nhà trường và các tổ chức, đối tác</p>
+                    </div>
+                    <div class="value-card">
+                        <div class="value-title">ĐỘT PHÁ</div>
+                        <p>Luôn không ngừng nỗ lực nghiên cứu, sáng tạo, cải tiến về chất lượng giảng dạy và dịch vụ khách hàng</p>
+                    </div>
+                    <div class="value-card">
+                        <div class="value-title">HIỆU QUẢ</div>
+                        <p>Phương pháp giảng dạy nhằm tối kết quả, giúp học viên giao tiếp tự tin, thành thạo và thành công tại bất cứ môi trường nào</p>
+                    </div>
+                    <div class="value-card">
+                        <div class="value-title">TOÀN DIỆN</div>
+                        <p>Giáo trình, học liệu và học cụ phong phú, đa dạng, hỗ trợ học viên phát triển năng lực Anh ngữ một cách toàn diện</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="su-menh" class="bg-yellow">
+            <div class="container grid-2">
+                <div class="text-column">
+                    <h2>Sứ mệnh</h2>
+                    <p>Trở thành Hệ thống Giáo dục tiếng Anh học thuật chất lượng và đáng tin cậy hàng đầu Việt Nam trong việc phát triển năng lực sử dụng tiếng Anh học thuật một cách tự chủ, ứng dụng cao trong thực tiễn, đồng thời phát triển tư duy học tập ngôn ngữ nhanh nhạy cho các đối tượng học viên từ mọi trình độ và mọi cấp bậc.</p>
+                </div>
+                <div class="image-column">
+                    <img src="/images/home/sumenh.jpg" alt="Nhóm học viên ECE"> </div>
+            </div>
+        </section>
+
+        <section id="tam-nhin" class="bg-yellow">
+            <div class="container grid-2">
+                <div class="image-column">
+                    <img src="/images/home/tamnhin.jpg" alt="Lớp học tại ECE"> </div>
+                <div class="text-column">
+                    <h2>Tầm nhìn</h2>
+                    <ul>
+                        <li>Xây dựng chương trình và phương pháp giảng dạy khoa học, đa dạng, liên tục cập nhật để đạt hiệu quả giáo dục tốt nhất.</li>
+                        <li>Truyền cảm hứng và chia sẻ những giá trị tích cực đến cộng đồng những người có niềm yêu thích với tiếng Anh học thuật.</li>
+                        <li>Phát triển năng lực và phẩm chất của đội ngũ Giáo viên/CBNV, để cao giá trị đạo đức và quyền lợi của mỗi học viên.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="ve-chung-toi">
+            <div class="container">
+                <h2>Về chúng tôi</h2>
+                <div class="about-content grid-2">
+                    <div class="text-column">
+                         <p>Trung tâm ngoại ngữ ECE là thương hiệu thuộc công ty TNHH tư vấn và dịch vụ ECE. Chúng tôi là một trung tâm Anh ngữ uy tín...</p>
+                         <p>Các khoá học chính:</p>
+                         <ul>
+                             <li><strong>Khóa học AEF (Academic English Foundations):</strong> Dành riêng cho các bạn học sinh cấp 2 (độ tuổi khoảng 11-15)...</li>
+                             <li><strong>Khóa học Tiếng Anh IELTS:</strong> Được thiết kế cho học sinh cuối cấp 2, cấp 3, sinh viên đại học và những người đi làm...</li>
+                             <li><strong>Khóa học SAT:</strong> Hướng đến đối tượng tương tự IELTS (học sinh cuối cấp 2, cấp 3, sinh viên)...</li>
+                         </ul>
+                    </div>
+                    <div class="image-column">
+                        <img src="/images/home/vechungtoi.jpg" alt="Giới thiệu ECE"> </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="doi-ngu" class="bg-yellow">
+            <div class="container grid-2">
+                <div class="text-column">
+                    <h2>Đội ngũ chuyên nghiệp</h2>
+                    <p>ECE tự hào sở hữu một đội ngũ nhân sự hùng hậu, chuyên nghiệp được tổ chức bài bản với quy mô gần 100 thành viên. Lực lượng nòng cốt là đội ngũ giáo viên tiếng Anh toàn thời gian (full-time) và 20 giáo viên bán thời gian (part-time), tất cả đều có trình độ chuyên môn cao, sở hữu các chứng chỉ giảng dạy quốc tế (như TESOL, CELTA...) và bằng cấp Sư phạm Anh.</p>
+                </div>
+                <div class="image-column">
+                    <img src="/images/home/doingu.png" alt="Đội ngũ nhân viên ECE"> </div>
+            </div>
+        </section>
+
+        <section id="dia-diem" class="bg-yellow">
+            <div class="container grid-2">
+                <div class="image-column">
+                    <img src="/images/home/diadiem.jpg" alt="Nhóm học viên ECE"> </div>
+                <div class="text-column">
+                    <h2>Địa điểm & hình thức học</h2>
+                    <p>ECE tập trung vào giảng dạy tiếng Anh học thuật với các khoá học offline. Tuy nhiên chúng tôi cũng mang đến cơ hội học tập chất lượng cho học viên trên toàn quốc thông qua hình thức học trực tuyến (online) linh hoạt qua Zoom.</p>
+                    <p>Hiện tại, trung tâm ECE có 3 cơ sở khang trang tại Hà Nội:</p>
+                    <ul>
+                        <li><strong>Cơ sở 1:</strong> Số 43, Ngõ 91 Trần Duy Hưng, phường Yên Hoà, Hà Nội</li>
+                        <li><strong>Cơ sở 2:</strong> Số 10M8, ngõ 7 Hoàng Minh Giám, phường Văn Hoá, Hà Nội</li>
+                        <li><strong>Cơ sở 3:</strong> Nhà CL11-A2, Ngõ 118 phố 13, Nguyễn Khánh Toàn (Sau Honda LĐ), Nguyễn Khánh Toàn, phường Nghĩa Đô, Hà Nội.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <footer id="footer">
+        <div class="container footer-container">
+            <div class="footer-col">
+                <img src="/images/landing/logo.png" alt="Logo ECE" class="footer-logo">
+                <p>Trung tâm ngoại ngữ ECE do cô Đoàn Nương sáng lập là địa chỉ học tiếng Anh uy tín tại Hà Nội. Với phương châm English Center for Everyone, ECE hướng tới việc tổ chức các lớp học Tiếng Anh phù hợp với tất cả mọi người.</p>
+
+                <div class="footer-socials">
+                    <a href="https://www.facebook.com/profile.php?id=100055880165513"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-tiktok"></i></a>
+                    <a href="#"><i class="fab fa-youtube"></i></a>
+                </div>
+
+                <p class="footer-note">
+                    Công ty TNHH tư vấn và dịch vụ ECE. <br>
+                    Mã số doanh nghiệp: 0109483355 <br>
+                    GPKD số 0109483355 cấp bởi Sở KH & ĐT Hà Nội. <br>
+                    Đại diện pháp luật: Đoàn Thị Nương.
+                </p>
+                </div>
+
+                <div class="footer-col">
+                <h3>Thông tin liên hệ</h3>
+                <ul class="contact-list">
+                    <li><i class="fas fa-home"></i> Tầng 1, tòa nhà VIP, Cầu giấy, Hà Nội</li>
+                    <li><i class="fas fa-phone"></i> 0967739047</li>
+                    <li><i class="fas fa-envelope"></i> kienxs292005@gmail.com</li>
+                    <li><i class="fas fa-map-marker-alt"></i> Cơ sở 1: số 36, Cầu Diễn, Nam Từ Niêm, Hà Nội</li>
+                </ul>
+                </div>
+
+                <div class="footer-col">
+                <h3>Khóa Học Tại ECE</h3>
+                <ul class="course-list">
+                    <li><a href="#">Khóa học tiếng Anh IELTS</a></li>
+                    <li><a href="#">Khóa học SAT</a></li>
+                    <li><a href="#">Lớp Tiếng Anh học thuật</a></li>
+                    <li><a href="#">Khóa ngữ pháp tiếng Anh</a></li>
+                    <li><a href="#">Khóa phát âm tiếng Anh</a></li>
+                    <li><a href="#">Khóa IELTS cấp tốc</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 ECE - English Center for Everyone. All rights reserved.</p>
+        </div>
+    </footer>
+
+</body>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+    // --- Xử lý Menu Toggle cho Mobile ---
+    const menuButton = document.getElementById('menu-toggle-button');
+    const navLinks = document.getElementById('nav-links');
+
+    if (menuButton && navLinks) {
+        menuButton.addEventListener('click', function() {
+            // Thêm hoặc xóa class 'show' để hiện/ẩn menu
+            navLinks.classList.toggle('show');
+        });
+    }
+
+    // --- Xử lý phần Tab "Tại sao chọn ECE" ---
+    const featureTabs = document.querySelectorAll('.feature-box');
+    const featurePanes = document.querySelectorAll('.feature-detail-pane');
+
+    featureTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            // Lấy giá trị 'data-tab' của tab vừa nhấp
+            const tabNumber = this.getAttribute('data-tab');
+
+            // 1. Xoá trạng thái 'active' khỏi tất cả các tab và nội dung
+            featureTabs.forEach(item => item.classList.remove('active'));
+            featurePanes.forEach(pane => pane.classList.remove('active'));
+
+            // 2. Thêm 'active' cho tab vừa nhấp
+            this.classList.add('active');
+
+            // 3. Tìm và hiển thị nội dung tương ứng
+            const activePane = document.querySelector(`.feature-detail-pane[data-tab="${tabNumber}"]`);
+            if (activePane) {
+                activePane.classList.add('active');
+            }
+        });
+    });
+
+});
+</script>
+
+</html>

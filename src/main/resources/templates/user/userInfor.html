@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thông tin cá nhân</title>
+
+    <link rel="stylesheet" href="/css/layout.css">
+    <link rel="stylesheet" href="/css/user/userInfor.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <script src="main.js"></script>
+</head>
+<body>
+    <nav class="navbar m-r m-l">
+        <div class="row">
+            <a th:href="@{/user/home}"><img src="/images/landing/logo.png" alt="logo" class="logo-img"></a>
+
+            <button class="menu-toggle" id="menu-toggle-button">
+                <i class="fas fa-bars"></i> </button>
+
+            <ul id="nav-links">
+                <li><a th:href="@{/user/home}">Giới thiệu</a></li>
+                <li><a th:href="@{/user/courseList}">Khóa học</a></li>
+                <li><a th:href="@{/user/teacher}">Giảng viên</a></li>
+                <li><a th:href="@{/user/my-course}">Học tập</a></li>
+                <li><a th:href="@{/user/news}">Tin tức sự kiện</a></li>
+                <li><a th:href="@{/user/blog}">Blog</a></li>
+                <li><a th:href="@{/user/advisory}">Tư vấn</a></li>
+                <li class="user-info">
+                    <img src="/images/home/avatar_clone.png" alt="avatar" class="navbar-avatar">
+                    <ul class="user-category">
+                        <li><a th:href="@{/user/userInfor}">Thông tin tài khoản</a></li>
+                        <li><a th:href="@{/logout}">Đăng Xuất</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="profile-container">
+
+        <aside class="sidebar-menu">
+            <ul>
+                <li>
+                    <a href="#" class="sidebar-link active" data-target="tab-profile">Thông tin & liên hệ</a>
+                </li>
+                <li>
+                    <a href="#" class="sidebar-link" data-target="tab-wallet">Ví cá nhân</a>
+                </li>
+                <li>
+                    <a href="#" class="sidebar-link" data-target="tab-username">Đổi tên tài khoản</a>
+                </li>
+                <li>
+                    <a href="#" class="sidebar-link" data-target="tab-password">Thay đổi mật khẩu</a>
+                </li>
+                <li>
+                    <a href="#" class="sidebar-link" data-target="tab-team">Quản lý đội</a>
+                </li>
+            </ul>
+        </aside>
+
+        <main class="content-wrapper">
+
+            <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+            <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+            <div id="tab-profile" class="content-tab" 
+                 th:classappend="${param.tab == null && errorMessage == null} ? 'active' : (${param.tab == 'profile' || (errorMessage != null && param.tab == null)} ? 'active' : '')">
+                
+                <form th:action="@{/user/userInfor/update}" th:object="${userProfileDTO}" method="post">
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>THÔNG TIN</h2>
+                            <div class="button-group">
+                                <button type="submit" class="btn btn-secondary">Cập nhật</button>
+                            </div>
+                        </div>
+    
+                        <div class="profile-details">
+                            <div class="avatar-upload">
+                                <img th:src="${user.avatarUrl != null ? user.avatarUrl : 'https://via.placeholder.com/120'}" alt="Avatar" id="avatar-preview">
+                                
+                                <input type="file" id="avatar-input" name="avatarFile" accept="image/*" style="display: none;">
+                                
+                                <label for="avatar-input" class="avatar-overlay">
+                                    <i class="fas fa-camera"></i>
+                                    <span>Đổi avatar</span>
+                                </label>
+                            </div>
+    
+                            <div class="form-fields">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="full-name">Họ tên<span class="required">*</span></label>
+                                        <input type="text" id="full-name" th:field="*{fullName}">
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="email">Địa chỉ Email<span class="required">*</span></label>
+                                    <input type="email" id="email" th:value="${user.email}" readonly>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="dob">Ngày sinh<span class="required">*</span></label>
+                                        <input type="text" id="dob" value="06/10/2023">
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="form-group">
+                                            <label for="phone">Số điện thoại<span class="required">*</span></label>
+                                            <input type="tel" id="phone" th:field="*{phone}">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                 </form>
+             </div> 
+
+            <div id="tab-password" class="content-tab" th:classappend="${param.tab == 'password' || (errorMessage != null && param.tab != null)} ? 'active' : ''">
+                <div class="card">
+                    <h2>Thay đổi mật khẩu</h2>
+                    <br>
+                    <form th:action="@{/user/userInfor/changePassword}" th:object="${passwordChangeDTO}" method="post">
+                        <div class="form-group">
+                            <label for="current-password">Mật khẩu<span class="required">*</span></label>
+                            <div class="input-icon-wrapper">
+                                <input type="password" id="current-password" th:field="*{currentPassword}">
+                                <i class="far fa-eye-slash"></i>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="new-password">Mật khẩu mới<span class="required">*</span></label>
+                            <div class="input-icon-wrapper">
+                                <input type="password" id="new-password" th:field="*{newPassword}">
+                                <i class="far fa-eye-slash"></i>
+                            </div>
+                        </div>
+                        <div class="forgot-password">
+                            <a href="#">Quên mật khẩu?</a>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="confirm-password">Mật khẩu xác nhận<span class="required">*</span></label>
+                            <div class="input-icon-wrapper">
+                                <input type="password" id="confirm-password" th:field="*{confirmPassword}">
+                                <i class="far fa-eye-slash"></i>
+                            </div>
+                        </div>
+                        
+                        <br>
+                        
+                        <div style="text-align: right;">
+                             <button type="submit" class="btn btn-primary">Lưu</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div id="tab-wallet" class="content-tab">
+                <div class="card"><h2>Ví cá nhân</h2><p>Coming Soon</p></div>
+            </div>
+            <div id="tab-username" class="content-tab">
+                <div class="card"><h2>Đổi tên tài khoản</h2><p>Coming Soon</p></div>
+            </div>
+            <div id="tab-team" class="content-tab">
+                <div class="card"><h2>Quản lý đội</h2><p>Coming Soon</p></div>
+            </div>
+
+        </main>
+    </div>
+
+
+    <footer id="footer">
+        <div class="container footer-container">
+            <div class="footer-col">
+                <img src="/images/landing/logo.png" alt="Logo ECE" class="footer-logo">
+                <p>Trung tâm ngoại ngữ ECE do cô Đoàn Nương sáng lập là địa chỉ học tiếng Anh uy tín tại Hà Nội. Với phương châm English Center for Everyone, ECE hướng tới việc tổ chức các lớp học Tiếng Anh phù hợp với tất cả mọi người.</p>
+
+                <div class="footer-socials">
+                    <a href="https://www.facebook.com/profile.php?id=100055880165513"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-tiktok"></i></a>
+                    <a href="#"><i class="fab fa-youtube"></i></a>
+                </div>
+
+                <p class="footer-note">
+                    Công ty TNHH tư vấn và dịch vụ ECE. <br>
+                    Mã số doanh nghiệp: 0109483355 <br>
+                    GPKD số 0109483355 cấp bởi Sở KH & ĐT Hà Nội. <br>
+                    Đại diện pháp luật: Đoàn Thị Nương.
+                </p>
+                </div>
+
+                <div class="footer-col">
+                <h3>Thông tin liên hệ</h3>
+                <ul class="contact-list">
+                    <li><i class="fas fa-home"></i> Tầng 1, tòa nhà VIP, Cầu giấy, Hà Nội</li>
+                    <li><i class="fas fa-phone"></i> 0967739047</li>
+                    <li><i class="fas fa-envelope"></i> kienxs292005@gmail.com</li>
+                    <li><i class="fas fa-map-marker-alt"></i> Cơ sở 1: số 36, Cầu Diễn, Nam Từ Niêm, Hà Nội</li>
+                </ul>
+                </div>
+
+                <div class="footer-col">
+                <h3>Khóa Học Tại ECE</h3>
+                <ul class="course-list">
+                    <li><a href="#">Khóa học tiếng Anh IELTS</a></li>
+                    <li><a href="#">Khóa học SAT</a></li>
+                    <li><a href="#">Lớp Tiếng Anh học thuật</a></li>
+                    <li><a href="#">Khóa ngữ pháp tiếng Anh</a></li>
+                    <li><a href="#">Khóa phát âm tiếng Anh</a></li>
+                    <li><a href="#">Khóa IELTS cấp tốc</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 ECE - English Center for Everyone. All rights reserved.</p>
+        </div>
+    </footer>
+    
+</body>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const links = document.querySelectorAll('.sidebar-link');
+        const tabs = document.querySelectorAll('.content-tab');
+        
+        // Dòng này vẫn trả về null, nhưng không sao
+        const breadcrumbCurrent = document.getElementById('breadcrumb-current'); 
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const activeTabId = urlParams.get('tab') ? 'tab-' + urlParams.get('tab') : 'tab-profile';
+        
+        tabs.forEach(tab => tab.classList.remove('active'));
+        links.forEach(l => l.classList.remove('active'));
+        
+        const tabToActivate = document.getElementById(activeTabId) || document.getElementById('tab-profile');
+        const linkToActivate = document.querySelector(`a[data-target="${tabToActivate.id}"]`) || document.querySelector('a[data-target="tab-profile"]');
+        
+        tabToActivate.classList.add('active');
+        linkToActivate.classList.add('active');
+        
+        // THÊM KIỂM TRA "if" Ở ĐÂY
+        if (breadcrumbCurrent) {
+            updateBreadcrumb(linkToActivate.textContent.trim());
+        }
+
+        links.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                window.history.pushState({}, '', window.location.pathname); 
+                const targetId = this.getAttribute('data-target');
+                const targetTab = document.getElementById(targetId);
+                links.forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+                tabs.forEach(tab => tab.classList.remove('active'));
+                if (targetTab) {
+                    targetTab.classList.add('active');
+                }
+                
+                // THÊM KIỂM TRA "if" Ở ĐÂY
+                if (breadcrumbCurrent) {
+                    updateBreadcrumb(this.textContent.trim());
+                }
+            });
+        });
+
+        function updateBreadcrumb(linkText) {
+            // THÊM KIỂM TRA "if" Ở ĐÂY NỮA
+            if (!breadcrumbCurrent) {
+                return; // Thoát nếu không tìm thấy element
+            }
+            if (linkText === "Thông tin & liên hệ") {
+                breadcrumbCurrent.textContent = "Thông tin tài khoản";
+            } else {
+                breadcrumbCurrent.textContent = linkText;
+            }
+        }
+
+        const avatarInput = document.getElementById('avatar-input');
+        const avatarPreview = document.getElementById('avatar-preview');
+
+        if (avatarInput && avatarPreview) {
+            // Lắng nghe sự kiện "change" trên input file
+            avatarInput.addEventListener('change', function() {
+                const file = this.files[0]; // Lấy file đầu tiên người dùng chọn
+                
+                if (file) {
+                    // Tạo một đối tượng FileReader
+                    const reader = new FileReader();
+                    
+                    // Khi file đã được đọc xong
+                    reader.onload = function(e) {
+                        // Cập nhật thuộc tính 'src' của thẻ <img>
+                        avatarPreview.src = e.target.result;
+                    }
+                    
+                    // Đọc file dưới dạng Data URL (để hiển thị ảnh)
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        document.querySelectorAll('.input-icon-wrapper i').forEach(icon => {
+            icon.addEventListener('click', function() {
+                const input = this.previousElementSibling;
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    this.classList.remove('fa-eye-slash');
+                    this.classList.add('fa-eye');
+                } else {
+                    input.type = 'password';
+                    this.classList.remove('fa-eye');
+                    this.classList.add('fa-eye-slash');
+                }
+            });
+        });
+    });
+</script>
+</html>

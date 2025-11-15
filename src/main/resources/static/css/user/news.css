@@ -1,0 +1,165 @@
+/* Thiết lập chung cho body */
+body {
+    background-color: #f8f9fa; /* Màu nền xám rất nhạt */
+    font-family: Arial, sans-serif;
+}
+
+/* Container chung - Giả sử bạn đã có nó trong layout.css 
+   Nếu chưa, hãy thêm vào:
+*/
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem; /* 1rem = 16px */
+}
+
+/* --- 1. Phần Hero Banner (Màu xanh) --- */
+.event-hero {
+    background-color: #143060; /* Màu xanh đậm ECE */
+    color: white;
+    padding: 4rem 0; /* 64px trên dưới */
+    text-align: center;
+    position: relative;
+    overflow: hidden; /* Để chứa các chấm trang trí */
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+.event-hero h1 {
+    font-size: 2.8rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+}
+
+.event-hero p {
+    font-size: 1.1rem;
+    color: #c0c8d4; /* Màu xám nhạt */
+    max-width: 700px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+/* Phần chấm trang trí (CSS-only) */
+.dots-decorator {
+    position: absolute;
+    right: 5%;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 80px;
+    height: 120px;
+    z-index: 1;
+    /* Tạo lưới chấm bằng radial-gradient */
+    background-image: 
+        radial-gradient(circle, rgba(255, 255, 255, 0.1) 4px, transparent 4px);
+    background-size: 20px 20px;
+    opacity: 0.5;
+}
+
+/* --- 2. Khu vực danh sách sự kiện --- */
+.event-list-section {
+    padding: 3rem 0; /* 48px trên dưới */
+}
+
+.event-grid {
+    display: grid;
+    /* 3 cột trên desktop */
+    grid-template-columns: repeat(3, 1fr); 
+    gap: 2rem; /* 32px khoảng cách */
+}
+
+/* Thẻ bài viết (Event Card) */
+.event-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    overflow: hidden; /* Giúp bo góc hình ảnh bên trong */
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    display: flex;
+    flex-direction: column; /* Quan trọng để nội dung co giãn */
+}
+
+.event-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+}
+
+/* Hình ảnh của thẻ */
+.card-image-link {
+    display: block;
+}
+
+.card-image {
+    width: 100%;
+    height: 250px; /* Cố định chiều cao ảnh */
+    object-fit: cover; /* Đảm bảo ảnh lấp đầy, không bị méo */
+    display: block;
+}
+
+/* Nội dung chữ của thẻ */
+.card-content {
+    padding: 1.5rem; /* 24px */
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1; /* Giúp các thẻ cao bằng nhau */
+}
+
+.card-date {
+    font-size: 0.85rem;
+    color: #718096; /* Màu xám */
+    margin-bottom: 0.5rem;
+}
+
+.card-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0 0 0.75rem 0;
+}
+
+.card-title a {
+    color: #1a202c; /* Màu đen sậm */
+    text-decoration: none;
+}
+
+.card-title a:hover {
+    color: #007bff; /* Thay bằng màu xanh ECE nếu bạn muốn */
+}
+
+.card-snippet {
+    font-size: 0.95rem;
+    color: #4a5568;
+    line-height: 1.6;
+    margin: 0;
+    flex-grow: 1; /* Đẩy nội dung xuống */
+}
+
+/* --- Responsive (Cho điện thoại & máy tính bảng) --- */
+
+@media (max-width: 992px) {
+    /* 2 cột trên máy tính bảng */
+    .event-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    /* 1 cột trên điện thoại */
+    .event-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .event-hero h1 {
+        font-size: 2.2rem;
+    }
+    
+    .event-hero p {
+        font-size: 1rem;
+    }
+
+    /* Ẩn chấm trang trí trên điện thoại cho gọn */
+    .dots-decorator {
+        display: none;
+    }
+}

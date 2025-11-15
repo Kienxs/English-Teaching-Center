@@ -1,0 +1,399 @@
+body {
+    background-color: #f0f2f5;
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+}
+
+/* --- Bố cục chính --- */
+main {
+    padding: 1rem;
+    max-width: 1200px;
+    margin: 2rem auto; /* Căn giữa main */
+}
+
+.course-details-container {
+    display: flex;
+    flex-wrap: wrap; /* Cho phép xuống hàng trên mobile */
+    gap: 4rem; /* Khoảng cách giữa 2 cột */
+}
+
+.course-main-content {
+    flex: 3; 
+    min-width: 60%;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.course-sidebar {
+    flex: 1; 
+    min-width: 300px;
+}
+
+.course-header-banner {
+    background-color: #143060; /* Màu xanh đậm */
+    color: white;
+    padding: 2rem;
+    border-radius: 8px;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+@media(max-width: 576px){
+    .course-header-banner{
+        flex-direction: column;
+    }
+}
+
+.header-text {
+    flex: 1;
+}
+
+.course-header-banner h1 {
+    font-size: 2.2rem;
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+}
+
+.course-description {
+    font-size: 1rem;
+    color: #c0c8d4; /* Màu chữ xám nhạt */
+}
+
+.course-tags {
+    margin: 1rem 0;
+}
+
+.tag {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #e0e0e0;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    margin-right: 0.5rem;
+}
+
+.author-info {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    color: #c0c8d4;
+    flex-wrap: wrap;
+}
+.author-info span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.author-info .fas.fa-star { color: #f5a623; }
+
+.header-image {
+    flex-basis: 300px; /* Kích thước cố định cho ảnh */
+    flex-shrink: 0;
+}
+.course-illustration {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
+
+
+/* --- 2. Thanh Tabs Điều Hướng --- */
+.course-nav-tabs {
+    background-color: #ffffff;
+    border-radius: 8px;
+    padding: 0.5rem 1.5rem;
+    display: flex;
+    gap: 1.5rem;
+    border-bottom: 1px solid #dfe3e8;
+}
+.tab-item {
+    padding: 1rem 0.5rem;
+    text-decoration: none;
+    color: #555;
+    font-weight: 600;
+    border-bottom: 3px solid transparent;
+}
+.tab-item.active, .tab-item:hover {
+    color: #007bff; /* Màu xanh dương khi active */
+    border-bottom-color: #007bff;
+}
+
+/* --- 3. Nội dung thân (Trắng) --- */
+.course-body-content {
+    background-color: #ffffff;
+    padding: 2rem;
+    border-radius: 8px;
+}
+
+.course-body-content h2 {
+    font-size: 1.7rem;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+}
+.course-body-content h2:first-child {
+    margin-top: 0;
+}
+
+/* CSS cho "Quyền lợi học viên" */
+.benefits-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* 2 cột, responsive */
+    gap: 1rem;
+}
+.benefit-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background-color: #f4f5fa; /* Màu nền tím nhạt */
+    padding: 1.25rem;
+    border-radius: 8px;
+}
+.benefit-item i {
+    color: #4a69c0; /* Màu icon */
+    font-size: 1.5rem;
+    width: 30px;
+    text-align: center;
+}
+.benefit-item span {
+    font-weight: 500;
+    color: #333;
+}
+
+/* CSS cho các mục nội dung text */
+.content-heading {
+    border-bottom: 1px solid #eee;
+    padding-bottom: 0.5rem;
+}
+.course-body-content p {
+    font-size: 1rem;
+    color: #333;
+    margin-bottom: 1rem;
+}
+.course-body-content p a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 600;
+}
+.learning-list {
+    list-style: none;
+    padding-left: 0;
+}
+.learning-list li {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
+}
+.learning-list .fas.fa-check {
+    color: #00b29b; /* Màu xanh lá */
+    margin-top: 4px;
+}
+
+/* --- Sidebar (Màu đen) - Không thay đổi --- */
+.sidebar-box {
+    background-color: #1a1a1a; /* Màu nền đen/xám đậm */
+    color: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    position: sticky;
+    top: 2rem;
+}
+
+.price-section {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.discount-price {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #e6215d; /* Màu hồng */
+}
+
+.original-price {
+    font-size: 1.1rem;
+    color: #999;
+    text-decoration: line-through;
+}
+
+.discount-badge {
+    background-color: #e6215d;
+    color: white;
+    font-size: 0.8rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+.sidebar-box h2 {
+    font-size: 1.25rem;
+    margin-top: 1.5rem;
+    border-top: 1px solid #444;
+    padding-top: 1.5rem;
+}
+
+.course-info-list {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0;
+}
+
+.course-info-list li {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #d0d0d0;
+    margin-bottom: 0.75rem;
+}
+
+.course-info-list li i {
+    width: 20px;
+    text-align: center;
+    color: #888;
+}
+
+.btn {
+    padding: 0.8rem 1rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    text-align: center;
+    width: 100%;
+}
+
+.btn-buy {
+    background-color: #00b29b;
+    color: white;
+}
+
+
+/* --- CSS CHO HỆ THỐNG TAB --- */
+
+/* Ẩn các tab-pane đi theo mặc định */
+.tab-pane {
+    display: none;
+}
+
+/* Hiển thị tab-pane nào có class "active" */
+.tab-pane.active {
+    display: block;
+}
+
+/* Ghi đè: Xóa nền trắng và padding của .course-body-content 
+   khi nó nằm bên trong .tab-pane (vì ta đã bọc nó rồi) */
+.tab-pane .course-body-content {
+    background-color: transparent;
+    padding: 0;
+}
+
+/* Thêm lại nền trắng/padding cho khu vực nội dung 
+   bên trong tab-pane, áp dụng cho cả Giới thiệu và Bình luận */
+#tab-gioithieu .course-body-content,
+#tab-binhluan .course-body-content {
+    background-color: #ffffff;
+    padding: 2rem;
+    border-radius: 8px;
+}
+
+/* --- CSS CHO KHU VỰC BÌNH LUẬN --- */
+.comment-section {
+    max-width: 800px; /* Giới hạn chiều rộng cho dễ đọc */
+}
+
+.comment-input-area {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 1.5rem;
+}
+
+.comment-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.comment-input-box {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end; /* Đưa nút button sang phải */
+}
+
+.comment-input-box textarea {
+    width: 100%;
+    min-height: 80px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 0.75rem;
+    font-size: 1rem;
+    font-family: Arial, sans-serif;
+    resize: vertical;
+    margin-bottom: 0.75rem;
+}
+
+.btn-submit-comment {
+    /* Sử dụng màu xanh #00b29b giống nút "Mua ngay" của bạn */
+    background-color: #00b29b; 
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-submit-comment:hover:not(:disabled) {
+    background-color: #008a75; /* Hơi đậm hơn khi hover */
+}
+
+/* CSS cho nút bị vô hiệu hóa (disabled) */
+.btn-submit-comment:disabled {
+    background-color: #e0e0e0; /* Màu xám nhạt */
+    color: #999;
+    cursor: not-allowed;
+}
+
+.comment-list {
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.comment-item {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.comment-content {
+    flex: 1;
+    background-color: #f4f5fa; /* Nền xám nhạt cho bình luận */
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+}
+
+.comment-author {
+    font-weight: bold;
+    font-size: 1rem;
+    color: #333;
+}
+
+.comment-text {
+    font-size: 0.95rem;
+    color: #222;
+    margin: 0.25rem 0 0 0; /* Xóa margin mặc định của <p> */
+}

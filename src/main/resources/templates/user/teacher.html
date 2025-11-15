@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tổng hợp thông tin giáo viên fulltime</title>
+    
+    <link rel="stylesheet" href="/css/layout.css">
+    <link rel="stylesheet" href="/css/user/teacher.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <script src="/js/main.js"></script>
+</head>
+<body>
+    <nav class="navbar m-r m-l">
+        <div class="row">
+            <a th:href="@{/user/home}"><img src="/images/landing/logo.png" alt="logo" class="logo-img"></a>
+
+            <button class="menu-toggle" id="menu-toggle-button">
+                <i class="fas fa-bars"></i> </button>
+
+            <ul id="nav-links">
+                <li><a th:href="@{/user/home}">Giới thiệu</a></li>
+                <li><a th:href="@{/user/courseList}">Khóa học</a></li>
+                <li><a th:href="@{/user/teacher}" style="color:#00c8ff; text-decoration: underline;">Giảng viên</a></li>
+                <li><a th:href="@{/user/my-course}">Học tập</a></li>
+                <li><a th:href="@{/user/news}">Tin tức sự kiện</a></li>
+                <li><a th:href="@{/user/blog}">Blog</a></li>
+                <li><a th:href="@{/user/advisory}">Tư vấn</a></li>
+                <li class="user-info">
+                    <img src="/images/home/avatar_clone.png" alt="avatar" class="navbar-avatar">
+                    <ul class="user-category">
+                        <li><a href="#">Thông tin tài khoản</a></li>
+                        <li><a th:href="@{/logout}">Đăng Xuất</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    
+    <main class="content-area">
+        <article class="blog-post">
+            
+            <h1 style="color: #004a99;">Tổng hợp thông tin giáo viên fulltime tại ECE English</h1>
+            
+            <div class="post-meta">
+                <span><i class="fas fa-user"></i> Đoàn Nương</span>
+                <span><i class="fas fa-calendar-alt"></i> 21/03/2025</span>
+                <span><i class="fas fa-eye"></i> 1972</span>
+            </div>
+            
+            <hr>
+            
+            <p class="intro">
+                Chất lượng giảng dạy là yếu tố then chốt tạo nên sự khác biệt và uy tín của Trung tâm Ngoại ngữ ECE. Chúng tôi tự hào sở hữu đội ngũ giáo viên full-time không chỉ được đào tạo bài bản, sở hữu đầy đủ các chứng chỉ nghiệp vụ sư phạm mà còn có nhiều năm kinh nghiệm giảng dạy.
+            </p>
+            
+            <h2>Thông tin giáo viên fulltime tại ECE English</h2>
+            
+            <h2>1. Cô Đoàn Thị Nương (Chứng chỉ IELTS Overall 8.5)</h2>
+            
+            <figure class="post-image-container">
+                <img src="/images/home/sumenh.jpg" alt="Cô Đoàn Thị Nương cùng các bạn học sinh ECE">
+                <figcaption>Cô Đoàn Thị Nương chụp hình cùng các bạn học sinh ECE</figcaption>
+            </figure>
+            
+            <p>
+                Cô Đoàn Nương - Giám đốc trung tâm ngoại ngữ ECE tốt nghiệp loại giỏi Đại Học Ngoại ngữ, Đại Học Quốc Gia Hà Nội. Thạc sĩ tại Đại học Victoria – Australia.
+            </p>
+            <p>
+                Hiện cô đang là Giảng viên khoa Ngôn ngữ Văn hoá các nước nói tiếng Anh - Đại Học Ngoại ngữ, Đại Học Quốc gia Hà Nội. Khi còn là sinh viên cô đã đạt được học bổng ở tất cả các kỳ, có được học bổng cho sinh viên xuất sắc của Sumimoto và có các bài báo ở các Hội thảo Quốc tế như Camtesol... Cô cũng từng là 1 trong 28 thành viên tiêu biểu của Việt Nam tham dự chương trình tàu thanh niên Đông Nam Á, với sự tham gia của Nhật và 10 nước Đông Nam Á.
+            </p>
+            <p>
+                Cô Nương là người đặt nền móng cho trung tâm ECE, đào tạo các lứa học viên và là người chủ đạo đứng sau thành công của các lứa học viên. Cô có hơn 10 năm kinh nghiệm dạy IELTS, TOEFL, SAT và tiếng Anh học thuật cho các học sinh ở các lứa tuổi khác nhau, đặc biệt là học sinh cấp 2 – 3. Qua nhiều năm giảng dạy, Hàng trăm học sinh của cô đã đạt 6.5 – 8.5 Anh ngữ mỗi năm. Với bề dày kinh nghiệm của mình, cô đã giúp hàng ngàn học sinh cải thiện các điểm yếu, bứt tốc trong thời gian ngắn để đạt được kết quả mong đợi.
+            </p>
+
+            <h2>Một số bài báo nói về cô Đoàn Nương:</h2>
+            
+            <ul class="article-list">
+                <li>Báo VnExpress: <a href="#">Chuyên gia IELTS hướng dẫn làm bài thi Viết</a></li>
+                <li>Báo VnExpress: <a href="#">IELTS lên ngôi</a></li>
+                <li>Báo Tiền Phong (bài viết từ năm 2010): <a href="#">Nữ sinh viên trẻ với chứng chỉ IELTS "8 chấm"</a></li>
+                <li>Báo Lao Động: <a href="#">Cô giáo giúp hàng trăm học sinh đạt từ 8.0 đến 8.5 IELTS</a></li>
+            </ul>
+            
+        </article>
+    </main>
+
+    <footer id="footer">
+        <div class="container footer-container">
+            <div class="footer-col">
+                <img src="/images/landing/logo.png" alt="Logo ECE" class="footer-logo">
+                <p>Trung tâm ngoại ngữ ECE do cô Đoàn Nương sáng lập là địa chỉ học tiếng Anh uy tín tại Hà Nội. Với phương châm English Center for Everyone, ECE hướng tới việc tổ chức các lớp học Tiếng Anh phù hợp với tất cả mọi người.</p>
+
+                <div class="footer-socials">
+                    <a href="https://www.facebook.com/profile.php?id=100055880165513"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-tiktok"></i></a>
+                    <a href="#"><i class="fab fa-youtube"></i></a>
+                </div>
+
+                <p class="footer-note">
+                    Công ty TNHH tư vấn và dịch vụ ECE. <br>
+                    Mã số doanh nghiệp: 0109483355 <br>
+                    GPKD số 0109483355 cấp bởi Sở KH & ĐT Hà Nội. <br>
+                    Đại diện pháp luật: Đoàn Thị Nương.
+                </p>
+                </div>
+
+                <div class="footer-col">
+                <h3>Thông tin liên hệ</h3>
+                <ul class="contact-list">
+                    <li><i class="fas fa-home"></i> Tầng 1, tòa nhà VIP, Cầu giấy, Hà Nội</li>
+                    <li><i class="fas fa-phone"></i> 0967739047</li>
+                    <li><i class="fas fa-envelope"></i> kienxs292005@gmail.com</li>
+                    <li><i class="fas fa-map-marker-alt"></i> Cơ sở 1: số 36, Cầu Diễn, Nam Từ Niêm, Hà Nội</li>
+                </ul>
+                </div>
+
+                <div class="footer-col">
+                <h3>Khóa Học Tại ECE</h3>
+                <ul class="course-list">
+                    <li><a href="#">Khóa học tiếng Anh IELTS</a></li>
+                    <li><a href="#">Khóa học SAT</a></li>
+                    <li><a href="#">Lớp Tiếng Anh học thuật</a></li>
+                    <li><a href="#">Khóa ngữ pháp tiếng Anh</a></li>
+                    <li><a href="#">Khóa phát âm tiếng Anh</a></li>
+                    <li><a href="#">Khóa IELTS cấp tốc</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 ECE - English Center for Everyone. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

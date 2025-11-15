@@ -1,0 +1,254 @@
+/* Thiết lập chung */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    line-height: 1.6;
+}
+
+/* Container chính của trang */
+.consultation-page {
+    display: flex;
+    min-height: 100vh;
+    background-color: #143060; /* Màu xanh đậm ECE */
+    color: white;
+    padding: 3rem 6rem;
+    gap: 3rem;
+    overflow: hidden;
+    position: relative;
+    box-sizing: border-box; /* Đảm bảo padding không làm vỡ layout */
+}
+
+/* Các đường kẻ trang trí chéo ở góc */
+.consultation-page::before,
+.consultation-page::after {
+    content: '';
+    position: absolute;
+    top: -50px;
+    left: 0;
+    width: 200px;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.1);
+    transform: rotate(-45deg);
+    transform-origin: top left;
+}
+
+.consultation-page::after {
+    top: -20px;
+    left: 20px;
+    width: 150px;
+}
+
+/* Cột bên trái (Logo) */
+.logo-column {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.logo-image {
+    /* THÊM 3 DÒNG NÀY: */
+    position: relative; /* Bắt buộc để .circular-text hoạt động */
+    width: 220px;       /* Cố định kích thước */
+    height: 220px;      /* Cố định kích thước (phải khớp với transform-origin) */
+
+    /* Giữ lại 3 dòng này để căn giữa logo bên trong (nếu bạn muốn) */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.center-logo {
+    max-width: 80%; /* Giữ logo nhỏ hơn vùng chứa */
+    max-height: 80%;
+    position: relative;
+    z-index: 2; /* Đảm bảo logo nằm trên chữ */
+}
+
+.circular-text {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    /* Thêm animation xoay */
+    animation: rotate 20s linear infinite; /* 20s = thời gian một vòng, linear = tốc độ đều, infinite = lặp vô hạn */
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.circular-text span {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform-origin: 0 110px; /* Điểm xoay của mỗi chữ cái (một nửa chiều cao của container) */
+    font-family: 'Arial', sans-serif; /* Font chữ */
+    font-size: 2.8rem; /* Kích thước chữ */
+    font-weight: bold;
+    color: white; /* Màu chữ */
+    text-transform: uppercase; /* Chữ hoa */
+}
+
+/* Điều chỉnh transform-origin nếu bạn thay đổi .circular-text-container width/height */
+/* transform-origin: 0 [nửa chiều cao của container]px; */
+/* Ví dụ, nếu container là 300px, thì transform-origin: 0 150px; */
+
+/* Các chấm tròn nhỏ giữa các từ */
+.dot {
+    font-size: 1rem;
+    line-height: 1;
+    vertical-align: middle;
+    margin: 0 2px;
+}
+
+/* Cột bên phải (Form) */
+.form-column {
+    flex: 1;
+    max-width: 600px;
+    padding: 1rem;
+}
+
+.form-column h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+}
+
+.form-column p {
+    font-size: 1rem;
+    color: #c0c8d4;
+    margin-bottom: 2.5rem;
+}
+
+/* Form */
+.consult-form {
+    display: grid;
+    /* 2 cột */
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem 1rem; /* 1.5rem (24px) dọc, 1rem (16px) ngang */
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1; /* Chiếm toàn bộ chiều rộng (cả 2 cột) */
+}
+
+.form-group label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.form-group label .required {
+    color: #ff6b6b; /* Màu đỏ cho dấu * */
+}
+
+/* Chung cho input, select, textarea */
+.form-group input[type="text"],
+.form-group input[type="tel"],
+.form-group input[type="email"],
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 0.9rem 1rem;
+    font-size: 1rem;
+    color: #333;
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-sizing: border-box; /* Rất quan trọng */
+}
+
+.form-group textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.form-group select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    /* Thêm mũi tên dropdown tùy chỉnh */
+    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2220%22%20height%3D%2220%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M7.5%2010l5-5%201.667%201.667L10.833%2010l3.334%203.333L12.5%2015%207.5%2010z%22%20fill%3D%22%23666%22%20transform%3D%22rotate(270%2010%2010)%22/%3E%3C%2Fsvg%3E');
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1em;
+    padding-right: 2.5rem; /* Dành chỗ cho mũi tên */
+}
+
+/* Nút Gửi */
+.button-container {
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.btn-submit-consult {
+    background-color: #fdd835; /* Màu vàng giống trong hình */
+    color: #143060; /* Màu xanh đậm (màu nền) */
+    border: none;
+    border-radius: 30px; /* Bo tròn */
+    padding: 0.8rem 2rem;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.2s;
+}
+
+.btn-submit-consult:hover {
+    background-color: #fbc02d; /* Vàng đậm hơn khi hover */
+    transform: translateY(-2px);
+}
+
+.btn-submit-consult .fas {
+    margin-left: 0.5rem;
+}
+
+
+
+/* --- Responsive cho điện thoại --- */
+@media (max-width: 992px) {
+    .consultation-page {
+        flex-direction: column; /* Xếp 2 cột chồng lên nhau */
+        padding: 2rem 1.5rem;
+    }
+
+    .logo-column {
+        padding: 1rem 0;
+    }
+
+    .logo-image {
+        max-height: 250px; /* Giảm kích thước logo trên mobile */
+    }
+
+    .form-column {
+        max-width: 100%;
+    }
+
+    .form-column h1 {
+        font-size: 2rem;
+        text-align: center;
+    }
+
+    .form-column p {
+        font-size: 0.95rem;
+        text-align: center;
+    }
+}
+
+@media (max-width: 768px) {
+    /* Trên màn hình nhỏ, 2 cột của form gộp thành 1 */
+    .consult-form {
+        grid-template-columns: 1fr;
+    }
+}

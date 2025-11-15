@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang chủ</title>
+    <link rel="stylesheet" href="/css/landing.css">
+    <link rel="stylesheet" href="/css/layout.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="/js/main.js"></script>
+</head>
+<body>
+    <section id="lanterns"></section>
+    
+    <nav class="navbar m-r m-l">
+        <div class="row">
+            <a th:href="@{/landing}"><img src="/images/landing/logo.png" alt="logo"></a>
+
+            <button class="menu-toggle" id="menu-toggle-button">
+                <img src="/images/list.png" alt="list"> 
+            </button>
+
+            <ul id="nav-links">
+                <li><a th:href="@{/login}">Đăng Nhập</a></li>
+                <li><a th:href="@{/register}">Đăng ký</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <section id="slogan">
+        <img src="/images/landing/background_center.png" alt="/" class="logo-top">
+        <img src="/images/landing/background_01.png" alt="/" class="logo-l">
+        <img src="/images/landing/background_02.png" alt="/" class="logo-r">
+    </section>
+
+    <section id="ttcd">
+        <div class="container m-r m-l m-t m-b">
+            <div class="row">
+                <div class="text-center">
+                    <h2><span class="text-success">Tin tức</span> hoạt động</h2>
+                    <p>Các tin tức và hoạt động trong Khoa Ngoại ngữ</p>
+                </div>
+            </div>
+            <div id="news-slide">
+                <div class="items row">
+                    <div class="item">
+                        <div class="news-img">
+                            <img src="/images/landing/tthd_1.jpg" class="img-responsive"/>
+                        </div>
+                        <a target="_blank" href="//slt.haui.edu.vn/vn/chuong-trinh-ngan-han/thong-bao-tuyen-sinh-cac-khoa-hoc-ngoai-ngu-nghiep-vu-du-lich-thang-10-2022/64742">
+                            <b>THÔNG BÁO TUYỂN SINH CÁC KHÓA HỌC NGOẠI NGỮ & NGHIỆP VỤ DU LỊCH THÁNG 10/2022</b>
+                        </a>
+                    </div>
+                    <div class="item">
+                        <div class="news-img">
+                            <img src="/images/landing/tthd_1.jpg" class="img-responsive"/>
+                        </div>
+                        <a target="_blank" href="//slt.haui.edu.vn/vn/tin-tuc/hoang-thi-thu-trang-tan-cu-nhan-dai-dien-hon-5500-sinh-vien-phat-bieu-tri-an-tai-buoi-le-tot-nghiep-nam-2022/64728">
+                            <b>Hoàng Thị Thu Trang, tân cử nhân đại diện hơn 5500 sinh viên phát biểu tri ân tại buổi lễ tốt nghiệp năm 2022</b>
+                        </a>
+                    </div>
+                    <div class="item">
+                        <div class="news-img">
+                            <img src="/images/landing/tthd_2.jpg" class="img-responsive"/>
+                        </div>
+                        <a target="_blank" href="//slt.haui.edu.vn/vn/tin-tuc/hoi-thao-nguon-hoc-lieu-mo-cho-giang-day-tieng-anh/64731">
+                            <b>Hội thảo Nguồn học liệu mở cho giảng dạy tiếng Anh</b>
+                        </a>
+                    </div>
+                    <div class="item">
+                        <div class="news-img">
+                            <img src="/images/landing/tthd_2.jpg" class="img-responsive"/>
+                        </div>
+                        <a target="_blank" href="//slt.haui.edu.vn/vn/tin-tuc/tan-cu-nhan-truong-ngoai-ngu-du-lich-rang-ro-trong-buoi-le-tot-nghiep-dai-hoc-nam-2022/64726">
+                            <b>Tân cử nhân Trường Ngoại ngữ - Du lịch rạng rỡ trong buổi Lễ tốt nghiệp đại học năm 2022</b>
+                        </a>
+                    </div>
+                    <div class="item">
+                        <div class="news-img">
+                            <img src="/images/landing/tthd_3.jpg" class="img-responsive"/>
+                        </div>
+                        <a target="_blank" href="//slt.haui.edu.vn/vn/tin-tuc/nghiem-thu-de-tai-nghien-cuu-khoa-hoc-cap-truong-do-ths-le-duc-hanh-chu-nhiem/64722">
+                            <b>Nghiệm thu đề tài nghiên cứu khoa học cấp trường do ThS. Lê Đức Hạnh chủ nhiệm</b>
+                        </a>
+                    </div>
+                    <div class="item">
+                        <div class="news-img">
+                            <img src="/images/landing/tthd_3.jpg" class="img-responsive"/>
+                        </div>
+                        <a target="_blank" href="//slt.haui.edu.vn/vn/tin-tuc/nghiem-thu-de-tai-nghien-cuu-khoa-hoc-cap-truong-do-ths-le-duc-hanh-chu-nhiem/64722">
+                            <b>Nghiệm thu đề tài nghiên cứu khoa học cấp trường do ThS. Lê Đức Hạnh chủ nhiệm</b>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="cd">
+        <div class="container m-l m-r">
+            <div class="row">
+                <div class="content">
+                    <h2 class="text-center"><span class="text-success">Cộng đồng</span> học ngoại ngữ</h2>
+                    <ul>
+                        <li>Tạo môi trường giao tiếp bằng ngoại ngữ cho cán bộ, giảng viên, học sinh sinh viên trường Đại học Công nghiệp Hà Nội và các sinh viên đăng ký học ngoại khóa.</li>
+                        <li>Củng cố, nâng cao vốn kiến thức ngoại ngữ cơ bản, phát triển khả năng giao tiếp theo định hướng nghề nghiệp, đáp ứng được nhu cầu tuyển dụng của doanh nghiệp</li>
+                        <li>Hỗ trợ triển khai giảng dạy và học tập ngoại ngữ trong chương trình chính khóa nhằm đạt được mục tiêu nâng cao chất lượng đào tạo chung trong toàn trường</li>
+                        <li>Hình thành thói quen và sự tự tin trong giao tiếp hàng ngày, tăng cường giao lưu văn hóa, trau dồi kiến thức và các kỹ năng cần thiết khi xin việc.</li>
+                    </ul>
+                </div>
+                <div class="content-video">
+                    <div class="video-youtube">
+                        <iframe src="//www.youtube.com/shorts/XdDP5wz8xL0" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="dngv">
+        <div class="container m-l m-r m-t m-b">
+            <div class="content">
+                <h2 class="text-center">Đội ngũ <span class="text-success">giảng viên</span></h2>
+                <ul>
+                    <li>Cán bộ, giảng viên trong Khoa luôn tích cực phấn đấu giảng dạy tốt, nghiên cứu khoa học hiệu quả để góp phần xây dựng trường Đại học Công nghiệp Hà Nội thành một nhà trường sáng tạo, chất lượng, phát triển, hiệu quả, có đẳng cấp khu vực và quốc tế.</li>
+                    <li>Với nhiều năm kinh nghiệm trong giảng dạy, đội ngũ giảng viên của chúng tôi luôn giữ trong mình ngọn lửa nhiệt huyết và sự quyết tâm mang tri thức tới cho sinh viên.</li>
+                    <li>Đội ngũ giảng viên tham gia hoạt động cộng đồng học tập ngoại ngữ là những người có trình độ chuyên môn vững vàng, phương pháp giảng dạy, truyền đạt hiện đại, hiệu quả, đồng thời có tâm huyết, nhiệt tình với hoạt động.</li>
+                </ul>
+            </div>
+            <div class="content-img">
+                <div class="container">
+                    <div class="item-img">
+                        <img src="/images/landing/gv_1.png" alt="gv_1" class="avatar">
+                        <div class="information">
+                            <h3>Trần Mỹ Duyên</h3>
+                            <p>Giảng viên Khoa Ngoại ngữ</p>
+                        </div>
+                    </div>
+                    <div class="item-img">
+                        <img src="/images/landing/gv_2.png" alt="gv_2" class="avatar">
+                        <div class="information">
+                            <h3>Trần Thị Chi</h3>
+                            <p>Giảng viên Khoa Ngoại ngữ</p>
+                        </div>
+                    </div>
+                    <div class="item-img">
+                        <img src="/images/landing/gv_3.png" alt="gv_3" class="avatar">
+                        <div class="information">
+                            <h3>Nguyễn Thị Thư</h3>
+                            <p>Giảng viên Khoa Ngoại ngữ</p>
+                        </div>
+                    </div>
+                    <div class="item-img">
+                        <img src="/images/landing/gv_4.png" alt="gv_4" class="avatar">
+                        <div class="information">
+                            <h3>Trịnh Thị Ngọc Trinh</h3>
+                            <p>Giảng viên Khoa Ngoại ngữ</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="ctnk">
+        <div class="container m-r m-l m-t m-b">
+            <div class="row">
+                <div class="text-center">
+                    <h2>Chương trình <span class="text-success">ngoại khóa</span></h2>
+                </div>
+            </div>
+            <div id="news-slide">
+                <div class="items row">
+                    <div class="item">
+                        <div class="news-img">
+                            <img src="/images/landing/ctnk_1.jpg" class="img-responsive"/>
+                        </div>
+                        <div class="text-center">
+                            <h3>Tiếng Hàn giao tiếp</h3>
+                            <p>Kiến thức cơ bản và nâng cao</p>
+                            <div class="see-more">
+                                <a target="_blank" href="/">Xem thêm</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="item">
+                        <div class="news-img">
+                            <img src="/images/landing/ctnk_2.jpg" class="img-responsive"/>
+                        </div>
+                        <div class="text-center">
+                            <h3>Tiếng Hàn giao tiếp</h3>
+                            <p>Kiến thức cơ bản và nâng cao</p>
+                            <div class="see-more">
+                                <a target="_blank" href="/">Xem thêm</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="item">
+                        <div class="news-img">
+                            <img src="/images/landing/ctnk_3.jpg" class="img-responsive"/>
+                        </div>
+                        <div class="text-center">
+                            <h3>Tiếng Hàn giao tiếp</h3>
+                            <p>Kiến thức cơ bản và nâng cao</p>
+                            <div class="see-more">
+                                <a target="_blank" href="/">Xem thêm</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="item">
+                        <div class="news-img">
+                            <img src="/images/landing/ctnk_4.jpg" class="img-responsive"/>
+                        </div>
+                        <div class="text-center">
+                            <h3>Tiếng Hàn giao tiếp</h3>
+                            <p>Kiến thức cơ bản và nâng cao</p>
+                            <div class="see-more">
+                                <a target="_blank" href="/">Xem thêm</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="clb">
+        <div class="container m-l m-r">
+            <div class="row">
+                <div class="content-img">
+                    <div class="img-clb">
+                        <img src="/images/landing/clb_ta.jpg" alt="clb_ta">
+                    </div>
+                </div>
+                <div class="content">
+                    <h2 class="text-center"><span class="text-success">Câu lạc bộ</span> tiếng Anh</h2>
+                    <h3>CLB tiếng Anh English for You (E4U) thuộc Khoa Ngoại ngữ là một sân chơi bổ ích và lành mạnh giành cho tất cả các bạn sinh viên Đại học Công nghiệp Hà Nội yêu thích học tiếng Anh và mong muốn có cơ hội giao lưu, tăng cường kỹ năng giao tiếp nói chung và kỹ năng giao tiếp bằng tiếng Anh nói riêng</h3>
+                    <ul>
+                        <li>Câu lạc bộ E4U được dẫn dắt bởi một đội ngũ các bạn Phụ trách (Leader) với khả năng tiếng Anh tốt, năng động, nhiệt tình và tài năng.</li>
+                        <li>Không chỉ đơn thuần là một CLB tiếng Anh, E4U đã góp phần tạo nên một cộng đồng học ngoại ngữ cho tất cả các bạn SV ĐHCNHN cùng các hoạt động khác do khoa ngoại ngữ tổ chức như chương trình tiếng Anh ngoại khóa và gia sư tiếng Anh.</li>
+                        <li>Ngoài việc hỗ trợ các thành viên trong việc học tiếng Anh, các buổi sinh hoạt của CLB E4U còn là dịp giao lưu văn nghệ, thể hiện tài năng của các thành viên và đội ngũ phụ trách CLB.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="clb">
+        <div class="container m-l m-r">
+            <div class="row">
+                <div class="content">
+                    <h2 class="text-center"><span class="text-success">Câu lạc bộ</span> tiếng Trung</h2>
+                    <h3>Thành lập vào ngày 7/9/2017, đến nay CLB tiếng Trung C2 - Haui đã có hơn 250 thành viên, là những sinh viên yêu thích bộ môn tiếng Trung cũng như đam mê tìm hiểu văn hóa đất nước Trung Hoa. Sau 1 năm thành lập và đi vào hoạt động, CLB C2 đã có nhiều thành tích đóng góp đáng nể, trở thành một cộng đồng cho các bạn sinh viên tiếng Trung tham gia sinh hoạt, học tập, trao đổi kiến thức, kinh nghiệm trong học tập cũng như trong cuôc sống.</h3>
+                </div>
+                <div class="content-img">
+                    <div class="img-clb">
+                        <img src="/images/landing/clb_tt.png" alt="clb_tt">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer id="footer">
+        <div class="footer-container">
+            <div class="footer-col">
+                <img src="/images/landing/logo.png" alt="Logo ECE" class="footer-logo">
+                <p>Trung tâm ngoại ngữ ECE do cô Đoàn Nương sáng lập là địa chỉ học tiếng Anh uy tín tại Hà Nội. Với phương châm English Center for Everyone, ECE hướng tới việc tổ chức các lớp học Tiếng Anh phù hợp với tất cả mọi người.</p>
+
+                <div class="footer-socials">
+                    <a href="https://www.facebook.com/profile.php?id=100055880165513"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-tiktok"></i></a>
+                    <a href="#"><i class="fab fa-youtube"></i></a>
+                </div>
+
+                <p class="footer-note">
+                    Công ty TNHH tư vấn và dịch vụ ECE. <br>
+                    Mã số doanh nghiệp: 0109483355 <br>
+                    GPKD số 0109483355 cấp bởi Sở KH & ĐT Hà Nội. <br>
+                    Đại diện pháp luật: Đoàn Thị Nương.
+                </p>
+                </div>
+
+                <div class="footer-col">
+                <h3>Thông tin liên hệ</h3>
+                <ul>
+                    <li><i class="fas fa-home"></i> Tầng 1, tòa nhà VIP, Cầu giấy, Hà Nội</li>
+                    <li><i class="fas fa-phone"></i> 0967739047</li>
+                    <li><i class="fas fa-envelope"></i> kienxs292005@gmail.com</li>
+                    <li><i class="fas fa-map-marker-alt"></i> Cơ sở 1: số 36, Cầu Diễn, Nam Từ Niêm, Hà Nội</li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h3>Khóa Học Tại ECE</h3>
+                <ul>
+                    <li><a href="#">Khóa học tiếng Anh IELTS</a></li>
+                    <li><a href="#">Khóa học SAT</a></li>
+                    <li><a href="#">Lớp Tiếng Anh học thuật</a></li>
+                    <li><a href="#">Khóa ngữ pháp tiếng Anh</a></li>
+                    <li><a href="#">Khóa phát âm tiếng Anh</a></li>
+                    <li><a href="#">Khóa IELTS cấp tốc</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+</body>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // Lấy tất cả các section có slide
+  const sections = document.querySelectorAll('section');
+
+  sections.forEach(section => {
+    const slide = section.querySelector('.items');
+    const items = section.querySelectorAll('.item');
+    if (!slide || items.length === 0) return; // bỏ qua nếu không có slide
+
+    let index = 0;
+    const total = items.length;
+
+    function updateSlide() {
+      const itemWidth = items[0].clientWidth;
+      slide.style.transform = `translateX(-${index * itemWidth}px)`;
+      slide.style.transition = 'transform 0.5s ease';
+    }
+
+    function autoSlide() {
+      const visibleCount = window.innerWidth >= 1200 ? 3 : window.innerWidth >= 768 ? 2 : 1;
+      index = (index + 1) % (total - visibleCount + 1);
+      updateSlide();
+    }
+
+    // Chạy slide tự động riêng cho từng section
+    setInterval(autoSlide, 3500);
+    window.addEventListener('resize', updateSlide);
+  });
+});
+
+// Random lanterns
+const lanternContainer = document.getElementById('lanterns');
+  const lanternImg = "/images/lantern.png";
+
+  for (let i = 0; i < 7; i++) {
+    const lantern = document.createElement("img");
+    lantern.src = lanternImg;
+    lantern.classList.add("lantern");
+
+    const left = Math.random() * 100; // 0% - 100%
+    const size = 25 + Math.random() * 35; // 25px - 60px
+    const duration = 10 + Math.random() * 10; // 10s - 20s
+    const delay = Math.random() * 8; // 0s - 8s
+    const opacity = 0.6 + Math.random() * 0.4; // 0.6 - 1
+
+    lantern.style.left = `${left}%`;
+    lantern.style.width = `${size}px`;
+    lantern.style.opacity = opacity;
+    lantern.style.animationDuration = `${duration}s`;
+    lantern.style.animationDelay = `${delay}s`;
+
+    lanternContainer.appendChild(lantern);
+}
+
+</script>
+
+</html>
