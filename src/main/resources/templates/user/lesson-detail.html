@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+    <div class="header m-r m-l" th:with="courseId=${course.id}">
+        Các khóa học của tôi > <a th:href="@{'/user/my-course-detail/' + ${courseId}}"><span th:text="${course.name}">Thiết kế Web</span></a> > <span th:text="${lesson.title}">Lý thuyết - Bài 1</span>
+    </div>
+
+    <div class="main-container m-r m-l">
+        <div class="sidebar">
+            <div class="course-menu">
+                <div class="menu-header" th:text="${course.name}">Tên Khóa học</div>
+                
+                <div th:each="l : ${course.lessons}"> 
+                    <a th:href="@{'/user/lesson-detail/' + ${l.id}}" 
+                       th:class="${l.id == lesson.id ? 'menu-lesson active' : 'menu-lesson'}">
+                        <span th:text="${l.title}">Tên bài học</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+            <h2 th:text="${lesson.title}">Tiêu đề bài học</h2>
+            
+            <p class="lesson-intro">Nội dung dạy học trước khi lên lớp</p>
+            
+            <div class="material-list-container">
+                
+                <div th:each="material : ${lesson.materials}" class="material-row">
+                    <a th:href="@{${material.fileUrl}}" target="_blank" class="material-link-detail">
+                        
+                        <span class="material-icon">
+                            <i th:if="${material.type.name() == 'VIDEO'}" class="fas fa-video" style="color: #8dc63f;"></i>
+                            <i th:if="${material.type.name() == 'PDF' || material.type.name() == 'PPT'}" class="fas fa-file-pdf" style="color: #e74c3c;"></i>
+                            <i th:if="${material.type.name() == 'SCORM'}" class="fas fa-box" style="color: #f39c12;"></i>
+                            <i th:if="${material.type.name() == 'DOC'}" class="fas fa-file-word" style="color: #3498db;"></i>
+                        </span>
+
+                        <span class="material-name">
+                            <span th:if="${material.type.name() == 'VIDEO'}">
+                                Video phần <span th:text="${material.lesson.lessonOrder}"></span> 
+                                (<span th:text="${material.title}"></span>)
+                            </span>
+                            <span th:unless="${material.type.name() == 'VIDEO'}" th:text="${material.title}">
+                                Tên tài liệu
+                            </span>
+                        </span>
+                    </a>
+
+                    <div class="material-status">
+                        <i class="fas fa-check-square" style="color: #ccc; font-size: 1.2rem;"></i>
+                    </div>
+                </div>
+
+                <div th:each="test : ${selectedLesson.tests}" class="material-row">
+                    <a th:href="@{'/user/my-course-detail/' + ${test.id}}" class="material-link-detail">
+                        
+                        <span class="material-icon">
+                            <i class="fas fa-tasks" style="color: #9b59b6;"></i> </span>
+
+                        <span class="material-name">
+                            <span th:text="${test.title}">Bài kiểm tra 15 phút</span>
+                            <span style="font-size: 0.8em; color: #666;">(Trắc nghiệm)</span>
+                        </span>
+                    </a>
+
+                    <div class="material-status">
+                        <i class="far fa-check-square" style="color: #ccc; font-size: 1.2rem;"></i>
+                    </div>
+                </div>
+
+                <div th:if="${selectedTest != null}" class="test-intro-container">
+            
+                    <a th:href="@{'/user/my-course-detail/' + ${course.id}(lessonId=${selectedLesson.id})}" 
+                    style="margin-bottom: 20px; display: inline-block; color: #00c8ff;">
+                    <i class="fas fa-arrow-left"></i> Quay lại bài học
+                    </a>
+
+                    <h3 th:text="${selectedTest.title}" style="margin-bottom: 10px;">Câu hỏi trắc nghiệm bài 1</h3>
+
+                    <div style="text-align: center; margin-bottom: 20px; color: #555;">
+                        <p>Số lần thi cho phép: 2</p>
+                        <p>Thời gian làm bài: <span th:text="${selectedTest.durationMinutes}">15</span> phút</p>
+                        <p>Cách tính điểm: Lần cao nhất</p>
+                    </div>
+
+                    <h4 style="border-bottom: 1px solid #ddd; padding-bottom: 10px;">Tóm tắt những lần thi trước của bạn</h4>
+
+                    <table style="width: 100%; border-collapse: collapse; margin-top: 15px; background: #f9f9f9;">
+                        <thead>
+                            <tr style="background: #eee; text-align: left;">
+                                <th style="padding: 10px; border-bottom: 2px solid #ddd;">Lần thi</th>
+                                <th style="padding: 10px; border-bottom: 2px solid #ddd;">Trạng thái</th>
+                                <th style="padding: 10px; border-bottom: 2px solid #ddd;">Điểm / 10.00</th>
+                                <th style="padding: 10px; border-bottom: 2px solid #ddd;">Xem lại</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="padding: 10px; border-bottom: 1px solid #ddd;">1</td>
+                                <td style="padding: 10px; border-bottom: 1px solid #ddd;">
+                                    Đã xong<br>
+                                    <small style="color: #777;">Đã nộp Thứ sáu, 12 Tháng 9 2025</small>
+                                </td>
+                                <td style="padding: 10px; border-bottom: 1px solid #ddd;">8.50</td>
+                                <td style="padding: 10px; border-bottom: 1px solid #ddd;"><a href="#">Xem lại</a></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div style="text-align: center; margin-top: 30px;">
+                        <h3 style="margin-bottom: 20px;">Lần cao nhất: 8.50 / 10.00.</h3>
+                        
+                        <a th:href="@{'/user/do-test/' + ${selectedTest.id}}" 
+                        class="btn-do-test"
+                        style="background-color: #5f6368; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-weight: bold;">
+                        Thực hiện lại đề thi
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>  
+</body>
+</html>

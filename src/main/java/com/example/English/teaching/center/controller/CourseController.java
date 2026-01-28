@@ -1,10 +1,10 @@
 package com.example.English.teaching.center.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,75 +12,90 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.English.teaching.center.model.Course;
-import com.example.English.teaching.center.model.StudentCourse;
-import com.example.English.teaching.center.model.User;
+import com.example.English.teaching.center.model.Course.Status;
+import com.example.English.teaching.center.model.CourseComments;
+import com.example.English.teaching.center.model.dto.CommentDTO;
 import com.example.English.teaching.center.repository.CourseRepository;
-import com.example.English.teaching.center.service.CourseService;
-import com.example.English.teaching.center.service.UserService;
+import com.example.English.teaching.center.service.CourseCommentService;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.security.Principal;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/courses")
 public class CourseController {
 
-    @Autowired
-    private CourseRepository courseRepository;
+    private final CourseRepository courseRepository;
+    private final CourseCommentService courseCommentService;
 
-    @Autowired
-    private CourseService courseService;
-
-    @Autowired
-    private UserService userService;
-    
+    public CourseController(CourseRepository courseRepository,
+                            CourseCommentService courseCommentService) {
+        this.courseRepository = courseRepository;
+        this.courseCommentService = courseCommentService;
+    }   
 
     // Endpoint để lấy TẤT CẢ khóa học
     @GetMapping
-    public List<Course> getAllCourses(
-        @RequestParam(required = false) String category,
-        @RequestParam(required = false) String search) 
-    {
-        if (category != null) {
-            // (Bạn cần thêm logic để chuyển string "IELTS" thành Enum Category.IELTS)
-            // return courseRepository.findByCategory(...);
+    public ResponseEntity<Page<Course>> getAllCourses(
+                    @RequestParam(required = false) String category,
+                    @RequestParam(required = false) String search,
+                    @RequestParam(required = false) String status,
+                    @RequestParam(defaultValue = "0") int page,
+                    @RequestParam(defaultValue = "10") int size){
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+
+        Page<Course> resultPage;
+
+        if (status != null) {
+            try {
+                Status courseStatus = Status.valueOf(status.toUpperCase());
+                resultPage = courseRepository.findByStatus(courseStatus, pageable);
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.badRequest().build();
+            }
         }
-        if (search != null) {
-            // (Bạn cần thêm hàm tìm kiếm theo tên)
-            // return courseRepository.findByNameContaining(search);
+        else{
+            resultPage = courseRepository.findByStatus(Status.APPROVED, pageable);
         }
-        // Nếu không có filter, trả về tất cả
-        return courseRepository.findAll();
+
+        return ResponseEntity.ok(resultPage);
     }
 
-    @GetMapping("/user/my-courses")
-    public ResponseEntity<List<Course>> getMyEnrolledCourses(
-    Principal principal,
-    @RequestParam(name = "status", defaultValue = "ENROLLED")
-    String statusString) {
-        if (principal == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        String email = principal.getName();
-        User currentUser = userService.findByEmail(email);
-        if (currentUser == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-        Long currentStudentId = currentUser.getId();
+    @GetMapping("/comments/{courseId}")
+    public ResponseEntity<List<CommentDTO>> loadMoreComments(
+            @PathVariable Long courseId,
+            @RequestParam(defaultValue = "0") int page) {
+        
+        // 1. Lấy dữ liệu phân trang từ Service (5 item/trang)
+        Page<CourseComments> commentPage = courseCommentService.getCommentsByCourseId(courseId, page, 5);
+        
+        // 2. Định dạng ngày tháng cho đẹp (thay vì toString dài ngoằng)
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
-        // 2. Chuyển đổi String (ENROLLED, EXPIRED) sang Enum
-        StudentCourse.Status status;
-        try {
-            status = StudentCourse.Status.valueOf(statusString.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            // Nếu JavaScript gửi bậy, mặc định về ENROLLED
-            status = StudentCourse.Status.ENROLLED;
-        }
+        // 3. Convert Entity -> DTO
+        List<CommentDTO> dtos = commentPage.getContent().stream().map(cmt -> {
+            CommentDTO dto = new CommentDTO();
+            
+            // Null check an toàn
+            String userName = (cmt.getUser() != null) ? cmt.getUser().getName() : "Người dùng ẩn danh";
+            String avatarUrl = (cmt.getUser() != null) ? cmt.getUser().getAvatarUrl() : null;
 
-        // 3. Gọi hàm service mới
-        List<Course> courses = courseService.getCoursesByStudentAndStatus(currentStudentId, status);
-        return ResponseEntity.ok(courses);
+            dto.setUserName(userName);
+            dto.setUserAvatar(avatarUrl);
+            dto.setContent(cmt.getCommentText());
+            
+            // Format thời gian
+            if (cmt.getCreatedAt() != null) {
+                dto.setTimeAgo(cmt.getCreatedAt().format(formatter));
+            } else {
+                dto.setTimeAgo("");
+            }
+            
+            return dto;
+        }).collect(Collectors.toList());
+
+        return ResponseEntity.ok(dtos);
     }
 }

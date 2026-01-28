@@ -1,0 +1,267 @@
+/* Thiết lập chung */
+body {
+    margin: 0;
+    background-color: #f4f4f4; /* Màu nền nhẹ nhàng */
+}
+
+a{
+    text-decoration: none;
+}
+
+/* Thanh Tiêu đề (Header) */
+.header {
+    padding: 10px 20px;
+    color: #555;
+    font-size: 14px;
+}
+
+/* Container Chính (Sử dụng Flexbox cho bố cục 2 cột) */
+.main-container {
+    display: flex;
+    min-height: calc(100vh - 41px); /* Chiều cao tối thiểu, trừ đi chiều cao header */
+}
+
+/* Thanh điều hướng bên trái (Sidebar) */
+.sidebar {
+    width: 250px;
+    background-color: #fff;
+    padding: 15px 0;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+    flex-shrink: 0; /* Đảm bảo sidebar không bị co lại */
+}
+
+/* Các mục điều hướng chung */
+.nav-item, .course-item, .menu-section, .menu-lesson {
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #333;
+}
+
+.nav-item:hover, .course-item:hover, .menu-lesson:hover {
+    background-color: #f0f0f0;
+}
+
+/* Mục đang được chọn */
+.nav-item.active,
+.course-item.selected, 
+.menu-section.active,
+.menu-lesson.active {
+    background-color: #e0f7fa; /* Màu nền nhẹ cho mục đang chọn */
+    border-left: 3px solid #00bcd4; /* Thanh màu xanh đặc trưng */
+    font-weight: bold;
+    color: #00796b;
+}
+
+/* Menu Khóa học hiện tại */
+.course-menu {
+    border-top: 1px solid #eee;
+    margin-top: 10px;
+    padding-top: 10px;
+}
+
+.menu-header {
+    font-weight: bold;
+    padding: 10px 20px;
+    color: #000;
+    font-size: 15px;
+}
+
+/* Nội dung Chính (Main Content) */
+.content {
+    flex-grow: 1; /* Cho phép nội dung chính chiếm hết phần còn lại */
+    padding: 20px;
+    background-color: #f4f4f4;
+}
+
+.content h2 {
+    color: #333;
+    margin-top: 0;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+/* Định dạng Bài học (Lesson Card) */
+.lesson-card {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    padding: 15px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.lesson-title {
+    font-weight: bold;
+    color: #00796b; /* Màu xanh lá cây đậm */
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+.lesson-details {
+    display: flex;
+    flex-wrap: wrap; /* Cho phép xuống dòng nếu màn hình nhỏ */
+    font-size: 13px;
+    color: #777;
+}
+
+.detail-item {
+    margin-right: 20px;
+}
+
+.detail-item.progress {
+    font-weight: bold;
+    color: #e67e22; /* Màu cam nổi bật cho tiến trình */
+}
+
+/* Style cho Hình 1: Danh sách tổng quan */
+.lesson-card.overview-mode {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    margin-bottom: 15px;
+    padding: 20px;
+    border-radius: 4px;
+    transition: box-shadow 0.2s;
+}
+
+.lesson-card.overview-mode:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+}
+
+.lesson-link-wrapper {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.lesson-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.lesson-details {
+    display: flex;
+    font-size: 13px;
+    color: #777;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+/* Style cho Hình 2: Chi tiết nội dung */
+.material-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+    background-color: #fff;
+}
+
+.material-row:first-child {
+    border-top: 1px solid #eee;
+}
+
+.material-link-detail {
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    color: #2c3e50; /* Màu xanh đậm chữ */
+    font-weight: 500;
+    flex-grow: 1;
+}
+
+.material-link-detail:hover {
+    color: #00c8ff;
+}
+
+.material-icon {
+    margin-right: 15px;
+    font-size: 1.2rem;
+    width: 25px;
+    text-align: center;
+}
+
+/* =========================================
+   RESPONSIVE: GIAO DIỆN MOBILE & TABLET
+   (Áp dụng cho màn hình nhỏ hơn 768px)
+   ========================================= */
+@media (max-width: 768px) {
+
+    /* 1. Chuyển bố cục chính thành hàng dọc */
+    .main-container {
+        flex-direction: column; /* Sidebar nằm trên, Content nằm dưới */
+    }
+
+    /* 2. Sidebar chiếm 100% chiều rộng */
+    .sidebar {
+        width: 100%;
+        height: auto; /* Chiều cao tự động theo nội dung */
+        position: relative;
+        box-shadow: none;
+        border-bottom: 1px solid #ddd;
+        padding: 0;
+    }
+
+    /* 3. Content chiếm 100% chiều rộng */
+    .content {
+        width: 100%;
+        padding: 15px; /* Giảm padding cho đỡ chật */
+    }
+
+    /* 4. Tinh chỉnh Menu trong Sidebar */
+    .course-menu {
+        margin-top: 0;
+        border-top: none;
+    }
+
+    .menu-header {
+        padding: 15px;
+        background-color: #f9f9f9; /* Làm nổi bật tiêu đề menu */
+        cursor: pointer;
+    }
+    
+    /* Ẩn danh sách bài học mặc định trên mobile cho gọn (Tùy chọn) */
+    /* Bạn có thể dùng JS để toggle class này nếu muốn làm menu xổ xuống */
+    /* .course-menu div:not(.menu-header) { display: none; } */
+
+    /* 5. Tinh chỉnh thẻ Bài học (Overview Mode) */
+    .lesson-details {
+        flex-direction: column; /* Xếp dọc các thông tin chi tiết */
+        gap: 5px;
+        align-items: flex-start;
+    }
+
+    .detail-item {
+        margin-right: 0;
+    }
+    
+    .detail-item.progress {
+        margin-left: 0 !important; /* Reset margin-left: auto */
+        margin-top: 5px;
+    }
+
+    /* 6. Tinh chỉnh dòng Tài liệu (Detail Mode) */
+    .material-row {
+        padding: 10px;
+    }
+
+    .material-link-detail {
+        font-size: 14px; /* Giảm cỡ chữ một chút */
+    }
+
+    .material-icon {
+        font-size: 1rem;
+        margin-right: 10px;
+        width: 20px;
+    }
+    
+    .header {
+        font-size: 12px; /* Chữ breadcrumb nhỏ lại */
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis; /* Cắt bớt chữ nếu quá dài */
+    }
+}

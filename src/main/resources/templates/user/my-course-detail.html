@@ -1,11 +1,270 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Khóa học của tôi</title>
+
+    <link rel="stylesheet" href="/css/layout.css">
+    <link rel="stylesheet" href="/css/user/my-course-detail.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <script src="/js/main.js"></script>
 </head>
 <body>
+    <nav class="navbar m-r m-l">
+        <div class="row">
+            <a th:href="@{/user/home}"><img src="/images/landing/logo.png" alt="logo" class="logo-img"></a>
+
+            <button class="menu-toggle" id="menu-toggle-button">
+                <i class="fas fa-bars"></i> </button>
+
+            <ul id="nav-links">
+                <li><a th:href="@{/user/home}">Giới thiệu</a></li>
+                <li><a th:href="@{/user/courseList}">Khóa học</a></li>
+                <li><a th:href="@{/user/teacher}">Giảng viên</a></li>
+                <li><a th:href="@{/user/my-course}" style="color:#00c8ff; text-decoration: underline;">Học tập</a></li>
+                <li><a th:href="@{/user/news}">Tin tức sự kiện</a></li>
+                <li><a th:href="@{/user/blog}">Blog</a></li>
+                <li><a th:href="@{/user/advisory}">Tư vấn</a></li>
+                <li class="user-info">
+                    <img src="/images/home/avatar_clone.png" alt="avatar" class="navbar-avatar">
+                    <ul class="user-category">
+                        <li><a th:href="@{/user/userInfor}">Thông tin tài khoản</a></li>
+                        <li><a th:href="@{/logout}">Đăng Xuất</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="header m-r m-l">
+        Các khóa học của tôi > <span th:text="${course.name}">Tên khóa học</span>
+        <span th:if="${selectedLesson != null}"> > <span th:text="${selectedLesson.title}">Tên bài học</span></span>
+    </div>
+
+    <div class="main-container m-r m-l">
+        <div class="sidebar">
+            <a th:href="@{/user/my-course}" class="sidebar-link">
+                <div class="nav-item active"> Dashboard </div>
+            </a>
+            
+            <div class="course-menu">
+                <a th:href="@{'/user/my-course-detail/' + ${course.slug}}" class="course-header-link" >
+                    <div class="menu-header" th:text="${course.name}">
+                        Tên khóa học
+                    </div>
+                </a>
+                
+                <div th:each="lesson : ${course.lessons}">
+                    <a th:href="@{'/user/my-course-detail/' + ${course.slug}(lessonId=${lesson.id})}"
+                       style="text-decoration: none; color: inherit;">
+                        
+                        <div th:class="${selectedLesson != null && selectedLesson.id == lesson.id} ? 'menu-lesson active' : 'menu-lesson'">
+                            <span th:text="${lesson.title}">Tên bài học</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div th:if="${selectedLesson == null}">
+                
+                <div th:each="lesson : ${course.lessons}" class="lesson-card overview-mode">
+                    <a th:href="@{'/user/my-course-detail/' + ${course.slug}(lessonId=${lesson.id})}" class="lesson-link-wrapper">
+                        <div class="lesson-title" th:text="${lesson.title}">
+                            Lý thuyết - Bài 1: Các thẻ HTML cơ bản
+                        </div>
+                        
+                        <div class="lesson-details">
+                            <span class="detail-item">
+                                Các nhãn: <span th:text="${lesson.materials != null ? lesson.materials.size() : 0}">3</span>
+                            </span>
+                            <span class="detail-item">
+                                Các file: <span th:text="${lesson.materials != null ? lesson.materials.size() : 0}">3</span>
+                            </span>
+                            <span class="detail-item">
+                                Trắc nghiệm: <span th:text="${lesson.tests != null ? lesson.tests.size() : 0}">1</span> bài
+                            </span>
+                            
+                            <span class="detail-item progress" style="margin-left: auto;">Quá trình: 0 / 100</span>
+                        </div>
+                    </a>
+                </div>
+
+                <div th:if="${course.lessons == null || course.lessons.isEmpty()}">
+                    <p>Khóa học này chưa có bài học nào.</p>
+                </div>
+            </div>
+
+
+            <div th:if="${selectedLesson != null &&  selectedTest == null}">
+                <h2 th:text="${selectedLesson.title}">Tiêu đề bài học</h2>
+                
+                <div class="material-list-container">
+                    <div th:each="material : ${selectedLesson.materials}" class="material-row">
+                        <a th:href="@{${material.fileUrl}}" target="_blank" class="material-link-detail">
+                            
+                            <span class="material-icon">
+                                <i th:if="${material.type.name() == 'VIDEO'}" class="fas fa-play-circle" style="color: #8dc63f;"></i>
+                                <i th:if="${material.type.name() == 'PDF' || material.type.name() == 'PPT'}" class="fas fa-file-pdf" style="color: #e74c3c;"></i>
+                                <i th:if="${material.type.name() == 'SCORM'}" class="fas fa-box" style="color: #f39c12;"></i>
+                                <i th:if="${material.type.name() == 'DOC'}" class="fas fa-file-word" style="color: #3498db;"></i>
+                            </span>
+
+                            <span class="material-name" th:text="${material.title}">Tên tài liệu</span>
+                        </a>
+
+                        <div class="material-status">
+                            <i class="far fa-check-square" style="color: #ccc; font-size: 1.2rem;"></i>
+                        </div>
+                    </div>
+
+                    <div th:each="test : ${selectedLesson.tests}" class="material-row">
     
+                        <a th:href="@{'/user/my-course-detail/' + ${course.slug}(lessonId=${selectedLesson.id}, testSlug=${test.slug})}" 
+                        class="material-link-detail">
+                            
+                            <span class="material-icon">
+                                <i class="fas fa-tasks" style="color: #9b59b6;"></i> 
+                            </span>
+
+                            <span class="material-name">
+                                <span th:text="${test.title}">Bài kiểm tra 15 phút</span>
+                                <span style="font-size: 0.8em; color: #666;">(Trắc nghiệm)</span>
+                            </span>
+                        </a>
+
+                        <div class="material-status">
+                            <i class="far fa-check-square" style="color: #ccc;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div th:if="${selectedTest != null}" class="test-intro-container">
+            
+                <a th:href="@{'/user/my-course-detail/' + ${course.slug}(lessonId=${selectedLesson.id})}" 
+                style="margin-bottom: 20px; display: inline-block; color: #00c8ff;">
+                <i class="fas fa-arrow-left"></i> Quay lại bài học
+                </a>
+
+                <h3 th:text="${selectedTest.title}" style="margin-bottom: 10px;">Câu hỏi trắc nghiệm bài 1</h3>
+
+                <div style="text-align: center; margin-bottom: 20px; color: #555;">
+                    <p>Thời gian làm bài: <span th:text="${selectedTest.durationMinutes}">15</span> phút</p>
+                    <p>Cách tính điểm: Lần cao nhất</p>
+                </div>
+
+                <h4 style="border-bottom: 1px solid #ddd; padding-bottom: 10px;">Tóm tắt những lần thi trước của bạn</h4>
+
+                <table style="width: 100%; border-collapse: collapse; margin-top: 15px; background: #f9f9f9;">
+                    <thead>
+                        <tr style="background: #eee; text-align: left;">
+                            <th style="padding: 10px; border-bottom: 2px solid #ddd;">Lần thi</th>
+                            <th style="padding: 10px; border-bottom: 2px solid #ddd;">Trạng thái</th>
+                            <th style="padding: 10px; border-bottom: 2px solid #ddd;">Điểm / 10.00</th>
+                            <th style="padding: 10px; border-bottom: 2px solid #ddd;">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="result, iterStat : ${testHistory}">
+                            <td style="padding: 10px; border-bottom: 1px solid #ddd;" 
+                                th:text="${testHistory.size() - iterStat.index}">1</td>
+                            
+                            <td style="padding: 10px; border-bottom: 1px solid #ddd;">
+                                
+                                <div th:if="${result.status.name() == 'COMPLETED'}">
+                                    <span style="color: #27ae60; font-weight: bold;">Đã xong</span><br>
+                                    <small style="color: #777;" 
+                                        th:text="${#temporals.format(result.submitTime, 'dd/MM/yyyy HH:mm')}">12/09/2025</small>
+                                </div>
+
+                                <div th:if="${result.status.name() == 'DOING'}">
+                                    <span style="color: #e67e22; font-weight: bold;">Đang làm bài...</span><br>
+                                    <small style="color: #777;">Chưa nộp</small>
+                                </div>
+                            </td>
+                            
+                            <td style="padding: 10px; border-bottom: 1px solid #ddd;">
+                                <span th:if="${result.status.name() == 'COMPLETED'}" th:text="${result.score}"></span>
+                                <span th:if="${result.status.name() == 'DOING'}">--</span>
+                            </td>
+                            
+                            <td style="padding: 10px; border-bottom: 1px solid #ddd;">
+                                <a th:if="${result.status.name() == 'COMPLETED'}" href="#">Xem lại</a>
+                                
+                                <a th:if="${result.status.name() == 'DOING'}" 
+                                th:href="@{'/user/do-test/' + ${selectedTest.id}}"
+                                style="color: #e67e22; font-weight: bold;">Tiếp tục làm bài</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div style="text-align: center; margin-top: 30px;">
+                    <h3 style="margin-bottom: 20px;" th:if="${!testHistory.isEmpty()}">
+                        Lần cao nhất:
+                        <span th:text="${bestScore}"></span>/ 10.00.
+                    </h3>
+                    
+                    <a th:href="@{'/user/do-test/' + ${selectedTest.slug}}" 
+                    class="btn-do-test"
+                    style="background-color: #5f6368; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-weight: bold;">
+                    Thực hiện lại đề thi
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <footer id="footer">
+        <div class="container footer-container">
+            <div class="footer-col">
+                <img src="/images/landing/logo.png" alt="Logo ECE" class="footer-logo">
+                <p>Trung tâm ngoại ngữ ECE do cô Đoàn Nương sáng lập là địa chỉ học tiếng Anh uy tín tại Hà Nội. Với phương châm English Center for Everyone, ECE hướng tới việc tổ chức các lớp học Tiếng Anh phù hợp với tất cả mọi người.</p>
+
+                <div class="footer-socials">
+                    <a href="https://www.facebook.com/profile.php?id=100055880165513"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-tiktok"></i></a>
+                    <a href="#"><i class="fab fa-youtube"></i></a>
+                </div>
+
+                <p class="footer-note">
+                    Công ty TNHH tư vấn và dịch vụ ECE. <br>
+                    Mã số doanh nghiệp: 0109483355 <br>
+                    GPKD số 0109483355 cấp bởi Sở KH & ĐT Hà Nội. <br>
+                    Đại diện pháp luật: Đoàn Thị Nương.
+                </p>
+                </div>
+
+                <div class="footer-col">
+                <h3>Thông tin liên hệ</h3>
+                <ul class="contact-list">
+                    <li><i class="fas fa-home"></i> Tầng 1, tòa nhà VIP, Cầu giấy, Hà Nội</li>
+                    <li><i class="fas fa-phone"></i> 0967739047</li>
+                    <li><i class="fas fa-envelope"></i> kienxs292005@gmail.com</li>
+                    <li><i class="fas fa-map-marker-alt"></i> Cơ sở 1: số 36, Cầu Diễn, Nam Từ Niêm, Hà Nội</li>
+                </ul>
+                </div>
+
+                <div class="footer-col">
+                <h3>Khóa Học Tại ECE</h3>
+                <ul class="course-list">
+                    <li><a href="#">Khóa học tiếng Anh IELTS</a></li>
+                    <li><a href="#">Khóa học SAT</a></li>
+                    <li><a href="#">Lớp Tiếng Anh học thuật</a></li>
+                    <li><a href="#">Khóa ngữ pháp tiếng Anh</a></li>
+                    <li><a href="#">Khóa phát âm tiếng Anh</a></li>
+                    <li><a href="#">Khóa IELTS cấp tốc</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 ECE - English Center for Everyone. All rights reserved.</p>
+        </div>
+    </footer>
 </body>
 </html>

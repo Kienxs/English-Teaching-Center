@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,6 +12,24 @@
 
     <script src="/js/main.js"></script>
     <script src="/js/loadComments.js"></script>
+
+    <style>
+    .btn-see-more {
+        background: none;
+        border: none;
+        color: #0084ff;
+        font-weight: 600;
+        cursor: pointer;
+        padding: 10px;
+    }
+    .btn-see-more:hover {
+        text-decoration: underline;
+        background-color: #f0f2f5;
+        border-radius: 5px;
+    }
+</style>
+
+
 </head>
 <body>
     <nav class="navbar m-r m-l">
@@ -32,7 +50,7 @@
                 <li class="user-info">
                     <img src="/images/home/avatar_clone.png" alt="avatar" class="navbar-avatar">
                     <ul class="user-category">
-                        <li><a href="#">Thông tin tài khoản</a></li>
+                        <li><a th:href="@{/user/userInfor}">Thông tin tài khoản</a></li>
                         <li><a th:href="@{/logout}">Đăng Xuất</a></li>
                     </ul>
                 </li>
@@ -122,33 +140,56 @@
                         </div>
 
                         <div id="tab-binhluan" class="tab-pane">
-                            <div class="course-body-content comment-section">
-                                
-                                <div class="comment-input-area">
-                                    <img src="/images/home/avatar_clone.png" alt="Avatar" class="comment-avatar user-avatar">
+                            <div class="comment-section">
+                                <h3 style="font-size: 18px; margin-bottom: 15px; color: #1c1e21;">Bình luận</h3>
+
+                                <form th:action="@{/user/course-detail/comment}" method="post">
+                                    <input type="hidden" name="courseSlug" th:value="${course.slug}">
                                     
-                                    <div class="comment-input-box">
-                                        <textarea id="comment-textarea" placeholder="Viết bình luận của bạn..."></textarea>
-                                        <button id="btn-submit-comment" class="btn-submit-comment" disabled>Gửi bình luận</button>
+                                    <div class="comment-input-group">
+                                        <img src="/images/home/avatar_clone.png" alt="User Avatar" class="comment-avatar">
+                                        
+                                        <div class="comment-box-wrapper">
+                                            <textarea name="commentText" 
+                                                    class="comment-textarea" 
+                                                    placeholder="Viết bình luận công khai..." 
+                                                    required 
+                                                    oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea>
+                                            
+                                            <button type="submit" class="btn-send-comment">
+                                                <i class="fas fa-paper-plane"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+
+                                <div class="comment-list">
+                                    <div th:each="cmt : ${courseComments}" class="comment-item">
+                                        <img th:src="${cmt.user.avatarUrl != null ? cmt.user.avatarUrl : '/images/home/avatar_clone.png'}" 
+                                            class="comment-avatar">
+                                        
+                                        <div class="comment-content-wrapper">
+                                            <div class="comment-bubble">
+                                                <a href="#" class="comment-author" th:text="${cmt.user.name}">Nguyễn Văn A</a>
+                                                <p class="comment-text" th:text="${cmt.commentText}">Bài học rất hay!</p>
+                                            </div>
+                                            
+                                            <div class="comment-actions">
+                                                <span class="comment-time" th:text="${#temporals.format(cmt.createdAt, 'dd/MM HH:mm')}">Vừa xong</span>
+                                                </div>
+                                        </div>
+                                    </div>
+
+                                    <div th:if="${#lists.isEmpty(courseComments)}" style="text-align: center; color: #65676b; padding: 20px;">
+                                        <i class="far fa-comment-dots" style="font-size: 24px; margin-bottom: 5px;"></i>
+                                        <p>Chưa có bình luận nào. Hãy là người đầu tiên!</p>
                                     </div>
                                 </div>
 
-                                <div class="comment-list">
-                                    <div class="comment-item">
-                                        <img src="/images/home/avatar_clone.png" alt="Avatar" class="comment-avatar">
-                                        <div class="comment-content">
-                                            <span class="comment-author">Nguyễn Văn A</span>
-                                            <p class="comment-text">Khóa học rất hay!</p>
-                                        </div>
-                                    </div>
-
-                                    <div class="comment-item">
-                                        <img src="/images/home/avatar_clone.png" alt="Avatar" class="comment-avatar">
-                                        <div class="comment-content">
-                                            <span class="comment-author">Trần Thị B</span>
-                                            <p class="comment-text">Nội dung dễ hiểu, giảng viên nhiệt tình.</p>
-                                        </div>
-                                    </div>
+                                <div id="load-more-container" style="text-align: center; margin-top: 15px;">
+                                    <button id="btn-load-more" class="btn-see-more" onclick="loadMoreComments()">
+                                        Xem thêm bình luận cũ hơn
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -157,30 +198,101 @@
 
             <div class="course-sidebar">
                 <div class="sidebar-box">
-                    <div class="price-section">
-                        <span class="discount-price" th:text="${#numbers.formatDecimal(course.fee, 0, 'COMMA', 0, 'POINT')} + 'đ'">499.000đ</span>
-                        <span class="original-price">720.000đ</span>
-                        <span class="discount-badge">-31%</span>
-                    </div>
+                    
+                    <th:block th:unless="${isOwned}">
+                        <div class="price-section">
+                            <span class="discount-price" th:text="${#numbers.formatDecimal(course.fee, 0, 'COMMA', 0, 'POINT')} + 'đ'"></span>
+                            <span class="original-price">1.000.000đ</span>
+                            <span class="discount-badge">-50%</span>
+                        </div>
 
+                        <div class="button-group">
+                            <button class="btn btn-buy">Mua ngay</button>
+                            <button class="btn btn-cart" style="margin-top: 10px; background: #fff; color: #333; border: 1px solid #ccc;">Thêm vào giỏ</button>
+                        </div>
+                    </th:block>
+
+                    <th:block th:if="${isOwned}">
+                        <div class="owned-alert" style="background: #d4edda; color: #155724; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 20px;">
+                            <i class="fas fa-check-circle" style="font-size: 24px; display: block; margin-bottom: 5px;"></i>
+                            <strong>Bạn đã sở hữu khóa học này</strong>
+                            <p style="font-size: 13px; margin: 5px 0 0;">Ngày đăng ký: <span th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy')}"></span></p>
+                        </div>
+
+                        <div class="button-group">
+                            <a th:href="@{'/user/my-course-detail/' + ${course.slug}}" 
+                            class="btn" 
+                            style="background: #28a745; color: white; display: block; text-align: center; text-decoration: none; font-weight: bold; padding: 12px; border-radius: 5px;">
+                                <i class="fas fa-play"></i> TIẾP TỤC HỌC
+                            </a>
+                        </div>
+                    </th:block>
+
+
+                    <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
                     <h2>Thông tin khóa học</h2>
                     <ul class="course-info-list">
-                        <li><i class="fas fa-clock"></i> <span th:text="${course.duration}">10 giờ</span> học</li>
-                        <li><i class="fas fa-book-open"></i> 21 bài đọc</li>
-                        <li><i class="fas fa-video"></i> 9 video</li>
-                        <li><i class="fas fa-file-alt"></i> 9 bài tập</li>
-                        <li><i class="fas fa-check-circle"></i> 5 bài kiểm tra</li>
-                        <li><i class="fas fa-infinity"></i> Truy cập trọn đời</li>
-                        <li><i class="fas fa-certificate"></i> Chứng chỉ khi hoàn thành 80%</li>
+                        <li><i class="fas fa-clock"></i> <span th:text="${course.duration}"></span> giờ học</li>
+                        <li><i class="fas fa-video"></i> Truy cập trọn đời</li>
+                        <li><i class="fas fa-certificate"></i> Cấp chứng chỉ</li>
                     </ul>
 
-                    <div class="button-group">
-                        <button class="btn btn-buy">Mua ngay</button>
-                    </div>
                 </div>
             </div>
         </div>
     </main>
+
+<!-- Xử lí mua bán -->
+    <div id="paymentModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            
+            <h2>Xác nhận thanh toán</h2>
+            
+            <div class="payment-info">
+                <div class="payment-row">
+                    <span>Khóa học:</span>
+                    <strong th:text="${course.name}">Tên khóa học</strong>
+                </div>
+                <div class="payment-row">
+                    <span>Học phí:</span>
+                    <strong style="color: #dc3545;" 
+                            th:text="${#numbers.formatDecimal(course.fee, 0, 'COMMA', 0, 'POINT')} + 'đ'">0đ</strong>
+                </div>
+            </div>
+
+            <div class="balance-check">
+                <p>Số dư ví của bạn:</p>
+                <h3 th:text="${#numbers.formatDecimal(userBalance ?: 0, 0, 'COMMA', 0, 'POINT')} + 'đ'">0đ</h3>
+                
+                <p th:if="${userBalance >= course.fee}" class="text-success">
+                    <i class="fas fa-check-circle"></i> Số dư khả dụng
+                </p>
+                
+                <p th:if="${userBalance < course.fee}" class="text-danger">
+                    <i class="fas fa-times-circle"></i> Số dư không đủ
+                </p>
+            </div>
+
+            <div class="modal-actions">
+                <button th:if="${userBalance >= course.fee}" 
+                        id="btn-confirm-payment" 
+                        class="btn btn-confirm">
+                    Xác nhận thanh toán
+                </button>
+
+                <a th:if="${userBalance < course.fee}" 
+                href="/user/deposit" 
+                class="btn btn-deposit">
+                    Nạp thêm tiền
+                </a>
+            </div>
+            
+            <p style="margin-top: 15px; font-size: 0.9em; color: #666;">
+                * Số tiền sẽ được trừ trực tiếp vào ví của bạn.
+            </p>
+        </div>
+    </div>
 
     <footer id="footer">
         <div class="container footer-container">
@@ -229,4 +341,178 @@
         </div>
     </footer>
 </body>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    // --- 1. KHAI BÁO BIẾN TOÀN CỤC TỪ SERVER ---
+    const courseId = /*[[${course.id}]]*/ 0;
+    
+    // --- 2. LOGIC THANH TOÁN (PAYMENT) ---
+    const modal = document.getElementById("paymentModal");
+    const btnBuy = document.querySelector(".btn-buy");
+    const closeBtn = document.querySelector(".close-modal");
+    const btnConfirm = document.getElementById("btn-confirm-payment");
+
+    if (btnBuy) {
+        btnBuy.onclick = function() {
+            modal.style.display = "block";
+        }
+    }
+
+    if (closeBtn) {
+        closeBtn.onclick = function() {
+            modal.style.display = "none";
+        }
+    }
+    
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+
+    if (btnConfirm) {
+        btnConfirm.onclick = function() {
+            btnConfirm.disabled = true;
+            btnConfirm.innerText = "Đang xử lý...";
+
+            fetch('/api/courses/enroll', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ courseId: courseId })
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.text().then(msg => {
+                        alert("🎉 Đăng ký thành công!");
+                        // Load lại trang hoặc chuyển hướng
+                        window.location.href = "/user/my-course"; 
+                    });
+                } else {
+                    return response.text().then(msg => { throw new Error(msg); });
+                }
+            })
+            .catch(error => {
+                alert("⚠️ Lỗi: " + error.message);
+                btnConfirm.disabled = false;
+                btnConfirm.innerText = "Xác nhận thanh toán";
+            });
+        }
+    }
+
+    // --- 3. DOM CONTENT LOADED (Tabs & Xem thêm text) ---
+    document.addEventListener("DOMContentLoaded", function() {   
+        // XỬ LÝ TAB
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+
+            const targetBtn = document.querySelector(`.tab-item[data-tab="${tabId}"]`);
+            if(targetBtn) targetBtn.classList.add('active');
+
+            const targetPane = document.getElementById(tabId);
+            if(targetPane) targetPane.classList.add('active');
+        }
+
+        const tabs = document.querySelectorAll('.tab-item');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('data-tab');
+                switchTab(targetId);
+            });
+        });
+
+        if(window.location.hash === '#tab-binhluan') {
+            switchTab('tab-binhluan');
+            setTimeout(() => {
+                const commentSection = document.getElementById('tab-binhluan');
+                if(commentSection) commentSection.scrollIntoView({behavior: "smooth", block: "start"});
+            }, 100);
+        }
+
+        // XỬ LÝ BÌNH LUẬN DÀI (Read More)
+        const comments = document.querySelectorAll('.comment-text');
+        const MAX_LENGTH = 250; 
+
+        comments.forEach(comment => {
+            const fullText = comment.innerText; 
+            if (fullText.length > MAX_LENGTH) {
+                const shortText = fullText.substring(0, MAX_LENGTH) + "...";
+                comment.innerText = shortText;
+                
+                const seeMoreBtn = document.createElement('div');
+                seeMoreBtn.innerText = 'Xem thêm';
+                seeMoreBtn.className = 'see-more-link'; // CSS class này nên style cho giống link (cursor: pointer)
+                seeMoreBtn.style.color = '#0084ff';
+                seeMoreBtn.style.cursor = 'pointer';
+                seeMoreBtn.style.fontSize = '0.9em';
+                seeMoreBtn.style.marginTop = '5px';
+                
+                seeMoreBtn.onclick = function() {
+                    comment.innerText = fullText;
+                    seeMoreBtn.style.display = 'none';
+                };
+                comment.parentNode.appendChild(seeMoreBtn);
+            }
+        });
+    });
+
+    // --- 4. LOGIC TẢI THÊM BÌNH LUẬN (Load More) ---
+    // Biến này để ở ngoài để giữ trạng thái page
+    let currentPage = 0; 
+
+    function loadMoreComments() {
+        currentPage++; 
+        const btn = document.getElementById('btn-load-more');
+        btn.innerText = "Đang tải...";
+
+        // Sử dụng biến courseId đã khai báo ở đầu script
+        fetch(`/api/courses/comments/${courseId}?page=${currentPage}`)
+            .then(response => response.json())
+            .then(data => {
+                if (!data || data.length === 0) {
+                    btn.style.display = 'none'; 
+                    return;
+                }
+
+                // SỬA LỖI Ở ĐÂY: Dùng querySelector để lấy đúng element
+                const container = document.querySelector('.comment-list'); 
+
+                data.forEach(cmt => {
+                    // Xử lý an toàn cho ảnh avatar phòng khi null
+                    const avatar = cmt.userAvatar ? cmt.userAvatar : '/images/home/avatar_clone.png';
+                    
+                    const html = `
+                        <div class="comment-item">
+                            <img src="${avatar}" class="comment-avatar">
+                            <div class="comment-content-wrapper">
+                                <div class="comment-bubble">
+                                    <a href="#" class="comment-author">${cmt.userName}</a>
+                                    <p class="comment-text">${cmt.content}</p>
+                                </div>
+                                <div class="comment-actions">
+                                    <span class="comment-time">${cmt.timeAgo}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', html);
+                });
+
+                btn.innerText = "Xem thêm bình luận cũ hơn";
+                
+                // Ẩn nút nếu tải về ít hơn số lượng mặc định (ví dụ page size là 5)
+                if(data.length < 5) {
+                    btn.style.display = 'none';
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                btn.innerText = "Lỗi tải trang";
+            });
+    }
+    /*]]>*/
+</script>
 </html>
+

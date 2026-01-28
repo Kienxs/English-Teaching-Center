@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản lý Khóa học</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/teacher/dashboard.css">
+    <link rel="stylesheet" href="/css/pageStyle.css">
+</head>
+<body>
+    <div class="sidebar">
+        <div class="brand"><i class="fa-solid fa-graduation-cap"></i> English Center</div>
+        <a href="/teacher/dashboard" class="menu-item"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+        <a href="/teacher/course-management" class="menu-item active"><i class="fa-solid fa-book-open"></i> Khóa học</a>
+        <a href="/teacher/blog-management" class="menu-item"><i class="fa-solid fa-newspaper"></i> Blog cá nhân</a>
+        <a href="#" class="menu-item"><i class="fa-solid fa-user-gear"></i> Hồ sơ</a>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <h2>Danh sách khóa học</h2>
+            <a th:href="@{/teacher/course/create}" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Tạo khóa học mới</a>
+        </div>
+
+        <div class="card">
+            <div th:if="${successMessage}" class="alert alert-success" style="padding: 10px; background: #d4edda; color: #155724; margin-bottom: 15px; border-radius: 4px;">
+                <i class="fa-solid fa-check-circle"></i> <span th:text="${successMessage}"></span>
+            </div>
+
+            <div th:if="${errorMessage}" class="alert alert-danger" style="padding: 10px; background: #f8d7da; color: #721c24; margin-bottom: 15px; border-radius: 4px;">
+                <i class="fa-solid fa-exclamation-triangle"></i> <span th:text="${errorMessage}"></span>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tên khóa học</th>
+                        <th>Danh mục</th>
+                        <th>Học phí</th>
+                        <th>Trạng thái</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="course : ${coursePage.content}">
+                        <td>
+                            <div style="font-weight: 600;" th:text="${course.name}">IELTS Intensive 6.5</div>
+                            <small style="color: gray;" th:text="${course.mode}">ONLINE</small>
+                        </td>
+                        <td th:text="${course.category}">IELTS</td>
+                        <td th:text="${#numbers.formatDecimal(course.fee, 0, 'COMMA', 0, 'POINT')} + ' đ'">5.000.000 đ</td>
+                        <td>
+                            <span class="badge" 
+                                  th:classappend="'bg-' + ${course.status}" 
+                                  th:text="${course.status}">APPROVED</span>
+                        </td>
+                        <td>
+                            <a th:href="@{/teacher/course/edit/{id}(id=${course.slug})}" 
+                            class="btn btn-outline" 
+                            style="padding: 5px 10px; font-size: 13px;">
+                                <i class="fa-solid fa-pen"></i> Sửa
+                            </a>
+                            <!-- th:href="@{/teacher/course/publish/{id}(id=${course.id})}" -->
+                            <a th:if="${#strings.toString(course.status) == 'DRAFT'}"
+                            class="btn btn-success" 
+                            style="padding: 5px 10px; font-size: 13px; margin-left: 5px; background-color: #00c307">
+                                <i class="fa-solid fa-upload"></i> Xuất bản
+                            </a>
+
+                            <a th:if="${#strings.toString(course.status) == 'DRAFT'}" 
+                            th:href="@{/teacher/course/delete/{id}(id=${course.id})}"
+                            class="btn btn-danger" 
+                            style="padding: 5px 10px; font-size: 13px; color: white; background-color: #dc3545; border: none; border-radius: 4px; text-decoration: none;"
+                            onclick="return confirm('Bạn có chắc chắn muốn xóa khóa học nháp này không? Hành động này không thể hoàn tác.');">
+                                <i class="fa-solid fa-trash"></i> Xóa
+                            </a>
+
+                        </td>
+                    </tr>
+                    <tr th:if="${coursePage.totalElements == 0}">
+                        <td>Bạn chưa có khóa học nào trên hệ thống!</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="pagination-container" th:if="${totalPages > 1}">
+                <div class="pagination-info">
+                    Hiển thị [[${coursePage.numberOfElements}]] trên tổng số [[${coursePage.totalElements}]] khóa học
+                </div>
+                
+                <div class="pagination-controls">
+                    <a th:if="${currentPage > 0}" 
+                       th:href="@{/teacher/course-management(page=${currentPage - 1})}" 
+                       class="page-link"><i class="fa-solid fa-chevron-left"></i> Trước</a>
+                    <span th:unless="${currentPage > 0}" class="page-link disabled"><i class="fa-solid fa-chevron-left"></i> Trước</span>
+
+                    <span th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+                        <a th:if="${currentPage != i}" 
+                           th:href="@{/teacher/course-management(page=${i})}" 
+                           class="page-link">[[${i + 1}]]</a>
+                        <span th:if="${currentPage == i}" class="page-link active">[[${i + 1}]]</span>
+                    </span>
+
+                    <a th:if="${currentPage < totalPages - 1}" 
+                       th:href="@{/teacher/course-management(page=${currentPage + 1})}" 
+                       class="page-link">Sau <i class="fa-solid fa-chevron-right"></i></a>
+                    <span th:unless="${currentPage < totalPages - 1}" class="page-link disabled">Sau <i class="fa-solid fa-chevron-right"></i></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

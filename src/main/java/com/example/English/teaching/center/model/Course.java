@@ -1,21 +1,34 @@
 package com.example.English.teaching.center.model;
 
 import jakarta.persistence.*;
+import lombok.Data; // Thêm Lombok Data
+import lombok.NoArgsConstructor; // Thêm Lombok NoArgsConstructor
+import org.hibernate.annotations.CreationTimestamp; // Thay thế @PrePersist thủ công
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-
+import java.util.List; // Cần thiết cho @OneToMany
 
 @Entity
 @Table(name = "courses")
+@Data // Tự động tạo getters, setters, toString, equals, hashCode
+@NoArgsConstructor // Tự động tạo constructor không tham số
 public class Course {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "name", nullable = false, length = 150)
     private String name;
+    
+    @Column(name = "slug", nullable = false, length = 150)
+    private String slug;
 
+    @Lob // Tối ưu cho trường TEXT (description)
     @Column(name = "description")
     private String description;
 
@@ -30,16 +43,43 @@ public class Course {
     @Column(name = "duration", length = 50)
     private String duration;
 
+    @Column(name = "access_period_days")
+    private Integer accessPeriodDays;
+
     @Column(name = "fee", precision = 10, scale = 2)
     private BigDecimal fee;
 
     @Column(name = "image_url")
     private String imageUrl;
 
-    @ManyToOne
+    @Column(name = "view_count")
+    private Integer viewCount;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "teacher_id")
+    @JsonIgnore
     private Teacher teacher;
 
+    @Column(name = "status")
+    @Enumerated(EnumType.STRING)
+    private Status status;
+
+    @Lob 
+    @Column(name = "admin_note")
+    private String adminNote;
+    
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Lesson> lessons;
+    
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<StudentCourse> studentCourses;
+    
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private List<CourseComments> courseComments;
+
+    @CreationTimestamp 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt; 
 
@@ -47,7 +87,7 @@ public class Course {
         IELTS,
         TOEIC,
         KIDS,
-        OTHERS;
+        OTHER;
     }
 
     public enum Mode{
@@ -55,92 +95,11 @@ public class Course {
         OFFLINE;
     }
 
-
-    public Course() { }
-
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
+    public enum Status{
+        DRAFT, 
+        PENDING, 
+        APPROVED, 
+        REJECTED, 
+        HIDDEN;
     }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public Category getCategory() {
-        return category;
-    }
-
-    public void setCategory(Category category) {
-        this.category = category;
-    }
-
-    public Mode getMode() {
-        return mode;
-    }
-
-    public void setMode(Mode mode) {
-        this.mode = mode;
-    }
-
-    public String getDuration() {
-        return duration;
-    }
-
-    public void setDuration(String duration) {
-        this.duration = duration;
-    }
-
-    public BigDecimal getFee() {
-        return fee;
-    }
-
-    public void setFee(BigDecimal fee) {
-        this.fee = fee;
-    }
-
-    public String getImageUrl() {
-        return imageUrl;
-    }
-
-    public void setImageUrl(String imageUrl) {
-        this.imageUrl = imageUrl;
-    }
-
-    public Teacher getTeacher() {
-        return teacher;
-    }
-
-    public void setTeacher(Teacher teacher) {
-        this.teacher = teacher;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
 }

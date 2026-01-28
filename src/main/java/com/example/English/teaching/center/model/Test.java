@@ -19,12 +19,15 @@ public class Test {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "course_id")
-    private Course course;
+    @JoinColumn(name = "lesson_id") 
+    private Lesson lesson;
 
-    @Column(nullable = false, length = 200)
+    @Column(name = "title", nullable = false, length = 255)
     private String title;
 
+    @Column(name = "slug", nullable = false, length = 255)
+    private String slug;
+    
     @Column(name = "duration_minutes")
     private Integer durationMinutes = 0;
 

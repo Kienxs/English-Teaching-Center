@@ -1,7 +1,6 @@
 /* Thiết lập chung cho body */
 body {
     background-color: #f8f9fa; /* Màu nền xám rất nhạt */
-    font-family: Arial, sans-serif;
 }
 
 /* Container chung - Giả sử bạn đã có nó trong layout.css 

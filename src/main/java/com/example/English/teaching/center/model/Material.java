@@ -18,8 +18,8 @@ public class Material {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "course_id")
-    private Course course;
+    @JoinColumn(name = "lesson_id")
+    private Lesson lesson;
 
     @Column(nullable = false, length = 200)
     private String title;
@@ -39,12 +39,12 @@ public class Material {
     @Column(name = "uploaded_at", updatable = false)
     private LocalDateTime uploadedAt;
 
-    // Enum cho FileType
     public enum FileType {
         PDF,
         VIDEO,
         DOC,
         PPT,
+        SCORM,
         OTHER
     }
 }

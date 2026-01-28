@@ -21,7 +21,7 @@
                 <i class="fas fa-bars"></i> </button>
 
             <ul id="nav-links">
-                <li><a th:href="@{/user/home}">Giới thiệu</a></li>
+                <li><a th:href="@{/user/home}" >Giới thiệu</a></li>
                 <li><a th:href="@{/user/courseList}">Khóa học</a></li>
                 <li><a th:href="@{/user/teacher}">Giảng viên</a></li>
                 <li><a th:href="@{/user/my-course}">Học tập</a></li>
@@ -31,7 +31,7 @@
                 <li class="user-info">
                     <img src="/images/home/avatar_clone.png" alt="avatar" class="navbar-avatar">
                     <ul class="user-category">
-                        <li><a href="#">Thông tin tài khoản</a></li>
+                        <li><a th:href="@{/user/userInfor}">Thông tin tài khoản</a></li>
                         <li><a th:href="@{/logout}">Đăng Xuất</a></li>
                     </ul>
                 </li>

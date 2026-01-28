@@ -5,6 +5,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -21,6 +23,7 @@ public class StudentCourse {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id", nullable = false)
+    @JsonIgnore
     private User student;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -34,6 +37,10 @@ public class StudentCourse {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Status status = Status.ENROLLED;
+
+    @CreationTimestamp
+    @Column(name = "expires_at", updatable = false)
+    private LocalDateTime ExpiresAt;
 
     public enum Status{
         ENROLLED,

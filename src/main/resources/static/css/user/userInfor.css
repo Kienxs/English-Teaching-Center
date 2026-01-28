@@ -1,8 +1,5 @@
 body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         background-color: #f4f7fa; /* Màu nền xám nhạt */
-        margin: 0;
-        padding: 20px;
         color: #333;
     }
 
@@ -146,6 +143,64 @@ body {
         text-decoration: none;
     }
 
+    /* CSS cho phần Ví */
+    .infor-balance {
+        text-align: center;
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
+        border: 2px dashed #cce5ff;
+    }
+
+    .deposit-section {
+        margin-top: 20px;
+    }
+
+    .deposit-form {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        max-width: 400px;
+        margin: 0 auto;
+    }
+
+    .input-group-deposit {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .input-group-deposit input {
+        width: 100%;
+        padding: 12px 50px 12px 15px; /* Chừa chỗ cho chữ VNĐ */
+        font-size: 18px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-weight: bold;
+    }
+
+    .currency-suffix {
+        position: absolute;
+        right: 15px;
+        color: #888;
+        font-weight: bold;
+    }
+
+    .btn-deposit-submit {
+        background-color: #28a745;
+        color: white;
+        padding: 12px;
+        font-size: 16px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+
+    .btn-deposit-submit:hover {
+        background-color: #218838;
+    }
+
     /* --- Nút bấm (Button) --- */
     .btn {
         padding: 10px 16px;
@@ -246,3 +301,110 @@ body {
     .form-row .form-group {
         flex: 1;
     }
+
+
+
+    /* =========================================
+   RESPONSIVE MOBILE (Max-width: 768px)
+   ========================================= */
+@media (max-width: 768px) {
+
+    /* 1. Layout tổng: Chuyển từ Ngang sang Dọc */
+    .profile-container {
+        flex-direction: column; /* Sidebar lên trên, Content xuống dưới */
+        margin: 1rem auto;
+        padding: 0 10px; /* Thêm chút lề 2 bên màn hình */
+        gap: 15px;
+    }
+
+    /* 2. Sidebar: Biến thành menu trượt ngang (Horizontal Scroll) */
+    .sidebar-menu {
+        flex: none;
+        width: 100%; /* Full màn hình */
+        padding: 10px;
+        overflow-x: auto; /* Cho phép trượt ngang */
+        white-space: nowrap; /* Không xuống dòng các mục menu */
+        background: #fff;
+        box-sizing: border-box;
+        
+        /* Ẩn thanh scrollbar cho đẹp */
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none; /* Firefox */
+    }
+    .sidebar-menu::-webkit-scrollbar {
+        display: none; /* Chrome/Safari */
+    }
+
+    .sidebar-menu ul {
+        display: flex;
+        gap: 10px;
+    }
+
+    .sidebar-menu li a {
+        display: inline-block;
+        padding: 8px 15px;
+        background: #f8f9fa;
+        border: 1px solid #eee;
+        border-radius: 20px; /* Bo tròn giống nút bấm (Chips layout) */
+        font-size: 0.85em;
+    }
+
+    .sidebar-menu li a.active {
+        background-color: #e6f0ff;
+        border-color: #4a90e2;
+    }
+
+    /* 3. Card & Form: Căn chỉnh lại khoảng cách */
+    .card {
+        padding: 15px; /* Giảm padding cho đỡ tốn diện tích */
+    }
+
+    .card-header {
+        flex-direction: column; /* Tiêu đề lên trên, nút xuống dưới */
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .card-header .button-group {
+        width: 100%;
+    }
+    
+    .card-header .button-group button {
+        width: 100%; /* Nút to dễ bấm */
+    }
+
+    /* 4. Avatar & Form Fields: Xếp chồng lên nhau */
+    .profile-details {
+        flex-direction: column;
+        align-items: center; /* Căn giữa avatar */
+        gap: 20px;
+    }
+
+    .avatar-upload {
+        margin-bottom: 10px;
+    }
+
+    /* 5. Các hàng input (Ngày sinh + SĐT): Xếp chồng dọc */
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    /* 6. Phần Ví (Wallet) */
+    .deposit-form {
+        width: 100%;
+        max-width: 100%;
+    }
+    
+    .input-group-deposit input {
+        font-size: 16px; /* Font nhỏ lại xíu */
+    }
+    
+    .infor-balance strong {
+        font-size: 1.5em !important; /* Số dư nhỏ lại xíu cho đỡ vỡ */
+    }
+}

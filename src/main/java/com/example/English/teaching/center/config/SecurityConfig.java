@@ -16,8 +16,6 @@ import com.example.English.teaching.center.securty.ReCaptchaFilter;
 
 @Configuration
 public class SecurityConfig {
-    // Remove UserService dependency from constructor
-    // The CustomAuthenticationProvider bean will be created independently
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, @Lazy CustomAuthenticationProvider customAuthProvider, ReCaptchaFilter reCaptchaFilter) throws Exception {
@@ -26,7 +24,9 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/landing", "/login", "/register", "/css/**", "/js/**", "/images/**").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
-                .requestMatchers("/user/home").hasAnyRole("STUDENT")
+                .requestMatchers("/admin/**").hasRole("TECHNICAL")
+                .requestMatchers("/teacher/**").hasRole("TEACHER")
+                .requestMatchers("/user/**").hasAnyRole("STUDENT")
                 .anyRequest().authenticated()
             )
             .authenticationProvider(customAuthProvider)
@@ -61,6 +61,10 @@ public class SecurityConfig {
             for (var auth : authorities) {
                 if (auth.getAuthority().equals("ROLE_ADMIN")) {
                     redirectUrl = "/admin/dashboard";
+                    break;
+                }
+                else if(auth.getAuthority().equals("ROLE_TEACHER")){
+                    redirectUrl = "/teacher/course-management";
                     break;
                 }
             }

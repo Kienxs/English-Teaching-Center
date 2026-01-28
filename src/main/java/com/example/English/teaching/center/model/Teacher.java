@@ -3,6 +3,8 @@ package com.example.English.teaching.center.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "teachers")
 public class Teacher {
@@ -11,15 +13,11 @@ public class Teacher {
     @Column(name = "id")
     private Long id;
 
-    // 1. Đánh dấu mối quan hệ 1-1 với User
-    @OneToOne(fetch = FetchType.LAZY) 
-    
-    // 2. Báo cho JPA rằng "hãy dùng 'id' của User làm 'id' cho Teacher"
-    @MapsId 
-    
-    // 3. Chỉ định cột vật lý trong DB dùng để nối 2 bảng
+    @OneToOne(fetch = FetchType.LAZY)
+    @MapsId
     @JoinColumn(name = "id")
-    private User user; // Giả định bạn đã có @Entity User
+    @JsonIgnore
+    private User user;
 
     @Column(name = "bio", columnDefinition = "TEXT")
     private String bio;

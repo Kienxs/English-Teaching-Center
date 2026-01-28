@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Chỉnh sửa khóa học</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/teacher/course-edit.css">
+    <style>
+        /* CSS cho thông báo lỗi và trạng thái lưu */
+        .error-message { color: #dc3545; font-size: 12px; margin-top: 5px; display: none; }
+        .input-error { border-color: #dc3545 !important; }
+        
+        #saveStatus {
+            font-size: 13px; color: #28a745; font-weight: bold; margin-right: 15px; 
+            opacity: 0; transition: opacity 0.5s; display: inline-flex; align-items: center; gap: 5px;
+        }
+        .spinner { border: 2px solid #f3f3f3; border-top: 2px solid #3498db; border-radius: 50%; width: 12px; height: 12px; animation: spin 1s linear infinite; display: none;}
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="brand"><i class="fa-solid fa-graduation-cap"></i> English Center</div>
+        <a th:href="@{/teacher/course-management}" class="menu-item active"><i class="fa-solid fa-arrow-left"></i> Quay lại</a>
+    </div>
+
+    <div class="main-content">
+        <form th:action="@{/teacher/course/save}" method="post" th:object="${course}" id="courseForm">
+            <input type="hidden" th:field="*{id}" id="currentCourseId">
+            <input type="hidden" th:field="*{slug}" id="currentCourseSlug">
+            
+            <div class="page-header">
+                <h2 th:text="${course.id == null ? 'Tạo khóa học mới' : 'Chỉnh sửa: ' + course.name}">Tiêu đề</h2>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span id="saveStatus"><i class="fa-solid fa-check"></i> Đã lưu nháp</span>
+                    <button type="button" class="btn btn-primary" onclick="validateAndSubmit()">
+                        <i class="fa-solid fa-floppy-disk"></i> Lưu Thay Đổi
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid-container">
+                <div class="left-col">
+                    <div class="card">
+                        <div class="form-group">
+                            <label class="form-label">Tên khóa học <span style="color:red">*</span></label>
+                            <input type="text" class="form-control" th:field="*{name}" id="courseNameInput" 
+                                   oninput="updateSlugPreview(); clearError(this)" 
+                                   onblur="autoSaveDraft()"
+                                   placeholder="Nhập tên khóa học (Bắt buộc)">
+                            <div class="error-message" id="nameError">Vui lòng nhập tên khóa học!</div>
+                        </div>
+                        <div class="form-group" style="background: #f8f9fa; padding: 10px; border-radius: 4px;">
+                            <label class="form-label" style="font-size: 12px; color: #666;">
+                                <i class="fa-solid fa-link"></i> Đường dẫn (Slug):
+                            </label>
+                            <div id="slugPreview" style="color: var(--primary); font-family: monospace; font-size: 13px;">
+                                [[${course.slug != null ? course.slug : 'duong-dan-tu-dong'}]]
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <span>Giáo trình (Bài học)</span>
+                            <button type="button" class="btn btn-outline" style="font-size: 12px;" onclick="handleOpenLessonModal()">
+                                <i class="fa-solid fa-plus"></i> Thêm bài
+                            </button>
+                        </div>
+
+                        <div id="lessonListContainer">
+                            <div th:if="${#lists.isEmpty(course.lessons)}" style="text-align: center; padding: 20px; color: gray;">
+                                Chưa có bài học nào. Hãy thêm bài mới!
+                            </div>
+
+                            <div class="lesson-item" th:each="lesson : *{lessons}">
+                                <div class="lesson-header" onclick="toggleLesson(this)">
+                                    <div class="lesson-info">
+                                        <i class="fa-solid fa-book" style="color: var(--primary); margin-right: 8px;"></i>
+                                        <strong th:text="'Bài ' + ${lesson.lessonOrder} + ': ' + ${lesson.title}">Bài 1</strong>
+                                    </div>
+                                    <div class="lesson-actions">
+                                        <button type="button" class="btn btn-outline btn-edit"
+                                                th:data-id="${lesson.id}"
+                                                th:data-title="${lesson.title}"
+                                                th:data-order="${lesson.lessonOrder}"
+                                                th:data-description="${lesson.description}"
+                                                onclick="openEditLessonModal(this); event.stopPropagation();">
+                                            <i class="fa-solid fa-pen"></i>
+                                        </button>
+                                        <button type="submit" class="btn btn-outline btn-delete" 
+                                                th:formaction="@{/teacher/lesson/delete/{lId}/{cSlug}(lId=${lesson.id}, cSlug=${course.slug})}"
+                                                onclick="event.stopPropagation(); return confirm('Xóa bài học này?');">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="lesson-body" style="display: none;">
+                                    <div style="padding: 10px;">
+                                        Nội dung bài học... (Phần này giữ nguyên code cũ của bạn)
+                                        <div th:if="${lesson.materials}" >...</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="right-col">
+                    <div class="card">
+                        <div class="card-header">Cài đặt</div>
+                        <div class="form-group">
+                            <label class="form-label">Học phí</label>
+                            <input type="number" class="form-control" th:field="*{fee}" onblur="autoSaveDraft()">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Danh mục</label>
+                            <select class="form-control" th:field="*{category}" onchange="autoSaveDraft()">
+                                <option value="IELTS">IELTS</option>
+                                <option value="TOEIC">TOEIC</option>
+                                <option value="KIDS">KIDS</option>
+                                <option value="OTHER">OTHER</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div id="modalLesson" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span id="modalLessonTitle">Thêm Bài Học Mới</span>
+                <span class="close-btn" onclick="closeModal('modalLesson')">&times;</span>
+            </div>
+            <form th:action="@{/teacher/lesson/save}" method="post">
+                <input type="hidden" name="id" id="lessonId">
+                <input type="hidden" name="courseId" id="modalCourseId" th:value="${course.id}"> 
+                
+                <div class="form-group">
+                    <label>Tiêu đề bài học</label>
+                    <input type="text" name="title" id="lessonTitle" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Thứ tự</label>
+                    <input type="number" name="lessonOrder" id="lessonOrder" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Mô tả</label>
+                    <textarea name="description" id="lessonDescription" class="form-control"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Lưu Bài Học</button>
+            </form>
+        </div>
+    </div>
+    
+    <div id="modalMaterial" class="modal-overlay"> ... (Giữ nguyên) ... </div>
+    <div id="modalTest" class="modal-overlay"> ... (Giữ nguyên) ... </div>
+
+    <script>
+        let isSaving = false;
+        // 1. Validate Form (Bắt lỗi tên trống)
+        async function validateAndSubmit() {
+            const nameInput = document.getElementById('courseNameInput');
+            const nameError = document.getElementById('nameError');
+            
+            // Validate
+            if (!nameInput.value.trim()) {
+                nameInput.classList.add('input-error');
+                nameError.style.display = 'block';
+                nameInput.focus();
+                // Hiệu ứng rung
+                nameInput.animate([
+                    { transform: 'translateX(0)' }, { transform: 'translateX(5px)' }, 
+                    { transform: 'translateX(-5px)' }, { transform: 'translateX(0)' }
+                ], { duration: 200 });
+                return;
+            }
+
+            // Gọi hàm lưu chung (Thay vì submit form truyền thống gây reload trang)
+            await saveCourseData(true); // true = hiển thị thông báo "Lưu thành công"
+        }
+
+        function clearError(input) {
+            input.classList.remove('input-error');
+            document.getElementById('nameError').style.display = 'none';
+        }
+
+        // 2. Sự kiện Auto-Save (Lưu ngầm)
+        function autoSaveDraft() {
+            const nameInput = document.getElementById('courseNameInput');
+            if(nameInput.value.trim()) {
+                saveCourseData(false); // false = lưu ngầm, không popup alert
+            }
+        }
+
+        async function saveCourseData(isShowSuccessAlert) {
+            // [QUAN TRỌNG] Nếu đang lưu thì chặn lại ngay
+            if (isSaving) return;
+            
+            const form = document.getElementById('courseForm');
+            const formData = new FormData(form);
+            const statusLabel = document.getElementById('saveStatus');
+
+            // Bật cờ đang lưu
+            isSaving = true;
+            statusLabel.innerHTML = '<div class="spinner" style="display:inline-block"></div> Đang lưu...';
+            statusLabel.style.opacity = '1';
+            statusLabel.style.color = '#666';
+
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    redirect: 'follow'
+                });
+
+                if (response.ok) {
+                    const htmlText = await response.text();
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(htmlText, 'text/html');
+                    
+                    // Lấy ID và Slug mới từ server trả về
+                    const newId = doc.getElementById('currentCourseId').value;
+                    const newSlug = doc.getElementById('currentCourseSlug').value;
+
+                    // Cập nhật ngay lập tức vào form hiện tại để các lần lưu sau là UPDATE
+                    if (newId) {
+                        document.getElementById('currentCourseId').value = newId;
+                        if(document.getElementById('modalCourseId')) {
+                            document.getElementById('modalCourseId').value = newId;
+                        }
+                        
+                        // Đổi URL trên trình duyệt đẹp hơn mà không reload
+                        const newUrl = `/teacher/course/edit/${newSlug}`;
+                        window.history.replaceState(null, '', newUrl);
+                    }
+
+                    // Cập nhật UI
+                    statusLabel.innerHTML = '<i class="fa-solid fa-check"></i> Đã lưu';
+                    statusLabel.style.color = '#28a745';
+                    
+                    if(isShowSuccessAlert) {
+                        // Hiệu ứng nháy xanh nhẹ để báo người dùng biết đã bấm nút
+                        statusLabel.style.fontWeight = '900';
+                        setTimeout(() => statusLabel.style.fontWeight = 'bold', 500);
+                    }
+
+                    setTimeout(() => { statusLabel.style.opacity = '0'; }, 3000);
+                } else {
+                    throw new Error('Server error');
+                }
+            } catch (error) {
+                console.error(error);
+                statusLabel.innerText = 'Lỗi lưu dữ liệu!';
+                statusLabel.style.color = '#dc3545';
+            } finally {
+                // [QUAN TRỌNG] Mở khóa để cho phép lưu lần tiếp theo
+                isSaving = false;
+            }
+        }
+
+        // 3. Xử lý logic mở Modal thông minh
+        async function handleOpenLessonModal() {
+            let courseId = document.getElementById('currentCourseId').value;
+            const nameInput = document.getElementById('courseNameInput');
+
+            if (!nameInput.value.trim()) {
+                validateAndSubmit(); 
+                return;
+            }
+
+            if (!courseId) {
+                await saveCourseData(false); // Đợi lưu xong mới lấy ID
+                courseId = document.getElementById('currentCourseId').value;
+            }
+
+            if (courseId) {
+                openLessonModal();
+            }
+        }
+        
+    function updateSlugPreview() {
+    const name = document.getElementById('courseNameInput').value;
+    // Gọi hàm convert tương tự SlugUtils nhưng bằng JS (để preview nhanh)
+    const slug = name.toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, "") // Khử dấu
+        .replace(/[đĐ]/g, 'd')
+        .replace(/([^0-9a-z-\s])/g, '')
+        .replace(/(\s+)/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-+|-+$/g, '');
+    document.getElementById('slugPreview').innerText = slug || 'chua-co-duong-dan';
+}
+    function toggleLesson(headerElement) {
+        const bodyElement = headerElement.nextElementSibling;
+        const icon = headerElement.querySelector('.fa-chevron-down');
+        if (bodyElement.style.display === "none") {
+            bodyElement.style.display = "block";
+            icon.style.transform = "rotate(180deg)";
+        } else {
+            bodyElement.style.display = "none";
+            icon.style.transform = "rotate(0deg)";
+        }
+    }
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+    }
+
+    function openLessonModal() {
+        document.getElementById('modalLessonTitle').innerText = "Thêm Bài Học Mới";
+        document.getElementById('lessonId').value = ""; 
+        document.getElementById('lessonTitle').value = "";
+        document.getElementById('lessonOrder').value = "";
+        document.getElementById('lessonDescription').value = "";
+        
+        document.getElementById('modalCourseId').value = document.getElementById('currentCourseId').value;
+        document.getElementById('modalLesson').style.display = 'flex';
+    }
+
+    function openEditLessonModal(btn) { 
+        document.getElementById('modalLessonTitle').innerText = "Chỉnh sửa bài học";
+        document.getElementById('lessonId').value = btn.getAttribute('data-id');
+        document.getElementById('lessonTitle').value = btn.getAttribute('data-title');
+        document.getElementById('lessonOrder').value = btn.getAttribute('data-order');
+        document.getElementById('lessonDescription').value = btn.getAttribute('data-description');
+        document.getElementById('modalLesson').style.display = 'flex';
+    }
+    function openMaterialModal(lid) { 
+        document.getElementById('modalMaterialTitle').innerText = "Thêm Tài Liệu";
+        document.getElementById('materialId').value = ""; 
+        document.getElementById('materialLessonId').value = lid;
+        document.getElementById('materialTitle').value = "";
+        document.getElementById('materialUrl').value = "";
+        document.getElementById('modalMaterial').style.display = 'flex';
+    }
+    function openEditMaterialModal(btn) {
+        document.getElementById('modalMaterialTitle').innerText = "Chỉnh sửa tài liệu";
+        document.getElementById('materialId').value = btn.getAttribute('data-id');
+        document.getElementById('materialLessonId').value = btn.getAttribute('data-lesson-id');
+        document.getElementById('materialTitle').value = btn.getAttribute('data-title');
+        document.getElementById('materialUrl').value = btn.getAttribute('data-url');
+        document.getElementById('materialType').value = btn.getAttribute('data-type');
+        document.getElementById('modalMaterial').style.display = 'flex';
+    }
+    function openTestModal(lid) { 
+        document.getElementById('modalTestHeaderTitle').innerText = "Thêm Bài Test";
+        document.getElementById('testLessonId').value = lid;
+        document.getElementById('testId').value = ""; 
+        document.getElementById('testTitle').value = ""; 
+        document.getElementById('testDuration').value = "15"; 
+        document.getElementById('modalTest').style.display = 'flex';
+    }
+    function openEditTestModal(btn) { 
+        document.getElementById('testLessonId').value = btn.getAttribute('data-lesson-id');
+        document.getElementById('testId').value = btn.getAttribute('data-id'); 
+        document.getElementById('testTitle').value = btn.getAttribute('data-title'); 
+        document.getElementById('testDuration').value = btn.getAttribute('data-duration'); 
+        document.getElementById('modalTest').style.display = 'flex';
+    }
+    window.onclick = function(e) { if(e.target.classList.contains('modal-overlay')) e.target.style.display="none";}
+    </script>
+</body>
+</html>

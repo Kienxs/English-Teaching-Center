@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${pageTitle}">Chỉnh sửa Blog</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/teacher/course-edit.css">
+    <style>
+        /* CSS cho Section Block */
+        .section-block {
+            background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; margin-bottom: 20px; position: relative;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .section-title { font-weight: bold; color: #333; }
+        .btn-remove-section { color: #dc3545; cursor: pointer; border: none; background: none; font-size: 14px; }
+        .btn-remove-section:hover { text-decoration: underline; }
+        .btn-add-section { width: 100%; padding: 12px; background: #eef5ff; border: 2px dashed #007bff; color: #007bff; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn-add-section:hover { background: #e0eeff; }
+        
+        /* CSS Validation & Auto-save */
+        .error-message { color: #dc3545; font-size: 12px; margin-top: 5px; display: none; }
+        .input-error { border-color: #dc3545 !important; }
+        #saveStatus {
+            font-size: 13px; color: #28a745; font-weight: bold; margin-right: 15px; 
+            opacity: 0; transition: opacity 0.5s; display: inline-flex; align-items: center; gap: 5px;
+        }
+        .spinner { border: 2px solid #f3f3f3; border-top: 2px solid #3498db; border-radius: 50%; width: 12px; height: 12px; animation: spin 1s linear infinite; display: none;}
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Tùy chỉnh Editor */
+        .ck-editor__editable { min-height: 200px !important; }
+        .image-preview { width: 100%; height: 150px; border: 2px dashed #ddd; border-radius: 6px; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-top: 5px; background: #f9f9f9; }
+        .image-preview img { max-width: 100%; max-height: 100%; object-fit: cover; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="brand"><i class="fa-solid fa-graduation-cap"></i> English Center</div>
+        <a th:href="@{/teacher/blog-management}" class="menu-item active"><i class="fa-solid fa-arrow-left"></i> Quay lại</a>
+    </div>
+
+    <div class="main-content">
+        <form th:action="@{/teacher/blogPost/save}" method="post" th:object="${blogPost}" id="blogForm">
+            <input type="hidden" th:field="*{id}" id="currentBlogId">
+            <input type="hidden" th:field="*{slug}" id="currentBlogSlug">
+            
+            <div class="page-header">
+                <h2 th:text="${blogPost.id == null ? 'Tạo bài Blog mới' : 'Chỉnh sửa: ' + blogPost.title}">Tiêu đề</h2>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span id="saveStatus"><i class="fa-solid fa-check"></i> Đã lưu nháp</span>
+                    
+                    <button type="button" class="btn btn-primary" onclick="validateAndSubmit()">
+                        <i class="fa-solid fa-floppy-disk"></i> Lưu Bài Viết
+                    </button>
+                </div>
+            </div>
+
+            <div th:if="${successMessage}" class="alert alert-success" style="color: green; margin-bottom: 10px;">[[${successMessage}]]</div>
+            <div th:if="${errorMessage}" class="alert alert-danger" style="color: red; margin-bottom: 10px;">[[${errorMessage}]]</div>
+
+            <div class="grid-container">
+                <div class="left-col">
+                    <div class="card">
+                        <div class="card-header">Thông tin chung</div>
+                        <div class="form-group">
+                            <label class="form-label">Tiêu đề bài viết <span style="color:red">*</span></label>
+                            
+                            <input type="text" class="form-control" th:field="*{title}" id="blogTitleInput" 
+                                   oninput="updateBlogSlug(); clearError(this)" 
+                                   onblur="autoSaveDraft()"
+                                   placeholder="Nhập tiêu đề..." required>
+                            <div class="error-message" id="titleError">Vui lòng nhập tiêu đề bài viết!</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Tóm tắt (Summary)</label>
+                            <textarea class="form-control" th:field="*{summary}" rows="3" onblur="autoSaveDraft()" placeholder="Mô tả ngắn gọn nội dung bài viết..."></textarea>
+                        </div>
+                    </div>
+
+                    <div id="sections-container">
+                        <div th:each="section, stat : *{sections}" class="section-block" th:id="'section-' + ${stat.index}">
+                            <div class="section-header">
+                                <span class="section-title">Mục #<span th:text="${stat.index + 1}"></span></span>
+                                <button type="button" class="btn-remove-section" th:onclick="'removeSection(' + ${stat.index} + ')'"><i class="fa-solid fa-trash"></i> Xóa mục này</button>
+                            </div>
+                            
+                            <input type="hidden" th:field="*{sections[__${stat.index}__].id}">
+                            
+                            <div class="form-group">
+                                <label>Tiêu đề mục con</label>
+                                <input type="text" class="form-control" th:field="*{sections[__${stat.index}__].sectionTitle}" placeholder="Ví dụ: 1. Giới thiệu...">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Nội dung chi tiết</label>
+                                <textarea th:field="*{sections[__${stat.index}__].sectionContent}" th:id="'editor-' + ${stat.index}" class="editor-content"></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Ảnh minh họa (URL)</label>
+                                <input type="text" class="form-control" th:field="*{sections[__${stat.index}__].imageUrl}" th:oninput="'previewSectionImage(this, ' + ${stat.index} + ')'" placeholder="https://...">
+                                <div class="image-preview" th:id="'preview-box-' + ${stat.index}">
+                                    <img th:if="${section.imageUrl != null && section.imageUrl != ''}" th:src="${section.imageUrl}">
+                                    <span th:unless="${section.imageUrl != null && section.imageUrl != ''}"><i class="fa-regular fa-image"></i></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn-add-section" onclick="addNewSection()">
+                        <i class="fa-solid fa-plus-circle"></i> Thêm mục nội dung mới
+                    </button>
+                </div>
+
+                <div class="right-col">
+                    <div class="card">
+                        <div class="card-header">Ảnh bìa (Thumbnail)</div>
+                        <input type="text" class="form-control" th:field="*{thumbnail}" id="thumbInput" oninput="previewMainThumb()" onblur="autoSaveDraft()">
+                        <div class="image-preview" id="mainThumbPreview">
+                            <img th:if="*{thumbnail != null && thumbnail != ''}" th:src="*{thumbnail}">
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                         <div class="card-header">Trạng thái</div>
+                         <div th:text="*{status}" style="font-weight: bold; text-align: center; padding: 10px;"></div>
+                         <div style="font-size: 12px; color: #666; margin-top: 10px;">
+                             Slug: <span id="slugPreview" th:text="*{slug}"></span>
+                         </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
+    <script>
+        // Danh sách lưu trữ các instance của CKEditor
+        const editors = {};
+
+        // 1. Khởi tạo CKEditor
+        document.addEventListener("DOMContentLoaded", function() {
+            document.querySelectorAll('.editor-content').forEach((textarea) => {
+                initEditor(textarea);
+            });
+        });
+
+        // Hàm khởi tạo 1 editor lẻ (để tái sử dụng khi thêm section mới)
+        function initEditor(textareaElement) {
+            ClassicEditor
+                .create(textareaElement, { toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', '|', 'undo', 'redo'] })
+                .then(editor => {
+                    editors[textareaElement.id] = editor; 
+                })
+                .catch(error => console.error(error));
+        }
+
+        // 2. Thêm Section Mới
+        function addNewSection() {
+            const container = document.getElementById('sections-container');
+            const index = container.children.length; 
+            
+            const html = `
+                <div class="section-block" id="section-${index}">
+                    <div class="section-header">
+                        <span class="section-title">Mục mới #${index + 1}</span>
+                        <button type="button" class="btn-remove-section" onclick="removeSection(${index})"><i class="fa-solid fa-trash"></i> Xóa</button>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Tiêu đề mục con</label>
+                        <input type="text" class="form-control" name="sections[${index}].sectionTitle" placeholder="Nhập tiêu đề mục...">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Nội dung chi tiết</label>
+                        <textarea name="sections[${index}].sectionContent" id="editor-${index}"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Ảnh minh họa (URL)</label>
+                        <input type="text" class="form-control" name="sections[${index}].imageUrl" oninput="previewSectionImage(this, ${index})" placeholder="https://...">
+                        <div class="image-preview" id="preview-box-${index}">
+                            <span><i class="fa-regular fa-image"></i></span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            container.insertAdjacentHTML('beforeend', html);
+            // Khởi tạo Editor cho textarea mới
+            initEditor(document.querySelector(`#editor-${index}`));
+        }
+
+        // 3. Xóa Section
+        function removeSection(index) {
+            const section = document.getElementById(`section-${index}`);
+            if(confirm("Bạn có chắc muốn xóa mục này?")) {
+                section.remove();
+                reIndexInputs();
+                // Xóa instance CKEditor khỏi bộ nhớ để tránh lỗi
+                if(editors[`editor-${index}`]) {
+                    delete editors[`editor-${index}`];
+                }
+            }
+        }
+
+        function reIndexInputs() {
+            const blocks = document.querySelectorAll('.section-block');
+            blocks.forEach((block, newIndex) => {
+                block.id = `section-${newIndex}`;
+                block.querySelector('.section-title').innerText = `Mục #${newIndex + 1}`;
+                
+                block.querySelectorAll('input, textarea').forEach(input => {
+                    if(input.name.includes('sections[')) {
+                        input.name = input.name.replace(/sections\[\d+\]/, `sections[${newIndex}]`);
+                    }
+                });
+                const btnRemove = block.querySelector('.btn-remove-section');
+                btnRemove.setAttribute('onclick', `removeSection(${newIndex})`);
+            });
+        }
+
+        function validateAndSubmit() {
+            // Cập nhật dữ liệu từ CKEditor xuống textarea trước khi submit
+            updateEditorsData();
+
+            const titleInput = document.getElementById('blogTitleInput');
+            const titleError = document.getElementById('titleError');
+
+            if (!titleInput.value.trim()) {
+                titleInput.classList.add('input-error');
+                titleError.style.display = 'block';
+                titleInput.focus();
+                // Hiệu ứng rung
+                titleInput.animate([
+                    { transform: 'translateX(0)' }, 
+                    { transform: 'translateX(5px)' }, 
+                    { transform: 'translateX(-5px)' }, 
+                    { transform: 'translateX(0)' }
+                ], { duration: 200 });
+                return false;
+            }
+
+            // Nếu hợp lệ thì submit form
+            document.getElementById('blogForm').submit();
+        }
+
+        function clearError(input) {
+            input.classList.remove('input-error');
+            document.getElementById('titleError').style.display = 'none';
+        }
+
+        function updateEditorsData() {
+            for (const key in editors) {
+                if (editors.hasOwnProperty(key)) {
+                    editors[key].updateSourceElement();
+                }
+            }
+        }
+
+        async function autoSaveDraft() {
+            const titleInput = document.getElementById('blogTitleInput');
+            // Nếu chưa có tiêu đề thì không lưu
+            if(!titleInput.value.trim()) return;
+
+            const form = document.getElementById('blogForm');
+            const statusLabel = document.getElementById('saveStatus');
+
+            // 1. Đồng bộ dữ liệu CKEditor xuống form
+            updateEditorsData();
+
+            // 2. Tạo data gửi đi
+            const formData = new FormData(form);
+
+            // UI Loading
+            statusLabel.innerHTML = '<div class="spinner" style="display:inline-block"></div> Đang lưu...';
+            statusLabel.style.opacity = '1';
+            statusLabel.style.color = '#666';
+
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    redirect: 'follow'
+                });
+
+                if (response.ok) {
+                    // Lấy ID mới từ phản hồi HTML (để cập nhật URL và tránh tạo trùng bài)
+                    const htmlText = await response.text();
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(htmlText, 'text/html');
+                    
+                    const newId = doc.getElementById('currentBlogId').value;
+                    const newSlug = doc.getElementById('currentBlogSlug').value;
+
+                    if (newId) {
+                        // Cập nhật ID vào form hiện tại
+                        document.getElementById('currentBlogId').value = newId;
+                        document.getElementById('currentBlogSlug').value = newSlug;
+                        
+                        // Cập nhật URL trên thanh địa chỉ mà không load lại trang
+                        const newUrl = `/teacher/blogPost/edit/${newSlug}`;
+                        window.history.replaceState(null, '', newUrl);
+                    }
+
+                    statusLabel.innerHTML = '<i class="fa-solid fa-check"></i> Đã lưu nháp';
+                    statusLabel.style.color = '#28a745';
+                    setTimeout(() => { statusLabel.style.opacity = '0'; }, 3000);
+                } else {
+                    throw new Error("Save failed");
+                }
+            } catch (e) {
+                console.error(e);
+                statusLabel.innerText = 'Lỗi lưu tự động!';
+                statusLabel.style.color = '#dc3545';
+            }
+        }
+
+        function previewSectionImage(input, index) {
+            const url = input.value;
+            const box = document.getElementById(`preview-box-${index}`);
+            if(url) box.innerHTML = `<img src="${url}" onerror="this.src='/images/no-image.png'">`;
+            else box.innerHTML = `<span><i class="fa-regular fa-image"></i></span>`;
+        }
+
+        function previewMainThumb() {
+            const url = document.getElementById('thumbInput').value;
+            const box = document.getElementById('mainThumbPreview');
+            if(url) box.innerHTML = `<img src="${url}" onerror="this.src='/images/no-image.png'">`;
+        }
+        
+        function updateBlogSlug() {
+            const title = document.getElementById('blogTitleInput').value;
+            const slug = title.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, "")
+                .replace(/[đĐ]/g, 'd').replace(/([^0-9a-z-\s])/g, '').replace(/(\s+)/g, '-')
+                .replace(/-+/g, '-').replace(/^-+|-+$/g, '');
+            document.getElementById('slugPreview').innerText = slug || 'duong-dan-tu-dong';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Soạn câu hỏi</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/teacher/test-questions.css">
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <div>
+            <a th:href="@{/teacher/course/edit/{id}(id=${test.lesson.course.id})}" style="color: #666; text-decoration: none; font-size: 14px;">
+                <i class="fa-solid fa-arrow-left"></i> Quay lại khóa học
+            </a>
+            <h2 th:text="'Soạn câu hỏi: ' + ${test.title}">Tên bài Test</h2>
+            <span style="color: gray; font-size: 13px;" th:text="'Thời gian: ' + ${test.durationMinutes} + ' phút'"></span>
+        </div>
+        <button class="btn btn-primary" onclick="openQuestionModal()">
+            <i class="fa-solid fa-plus"></i> Thêm Câu Hỏi
+        </button>
+    </div>
+
+    <div th:if="${#lists.isEmpty(questions)}" style="text-align: center; color: gray; padding: 30px;">
+        Chưa có câu hỏi nào. Hãy thêm câu hỏi đầu tiên!
+    </div>
+
+    <div class="question-list">
+        <div class="question-card" th:each="q, iter : ${questions}">
+            <div class="question-header">
+                <span th:text="'Câu ' + ${iter.count} + ': ' + ${q.questionText}">Câu 1: ...</span>
+                <div>
+                    <span style="font-size: 12px; background: #eee; padding: 2px 6px; border-radius: 4px;" th:text="${q.points} + ' điểm'"></span>
+                    <button class="btn btn-warning" style="font-size: 10px; padding: 2px 5px;" 
+                            th:data-id="${q.id}"
+                            th:data-text="${q.questionText}"
+                            th:data-a="${q.optionA}"
+                            th:data-b="${q.optionB}"
+                            th:data-c="${q.optionC}"
+                            th:data-d="${q.optionD}"
+                            th:data-correct="${q.correctAnswer}"
+                            th:data-points="${q.points}"
+                            onclick="openEditQuestionModal(this)">
+                        <i class="fa-solid fa-pen"></i>
+                    </button>
+                    <a th:href="@{/teacher/question/delete/{id}(id=${q.id})}" class="btn btn-danger" style="font-size: 10px; padding: 2px 5px;" onclick="return confirm('Xóa câu này?')">
+                        <i class="fa-solid fa-trash"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="options-grid">
+                <div th:class="${q.correctAnswer == 'A' ? 'correct-ans' : ''}">A. <span th:text="${q.optionA}"></span></div>
+                <div th:class="${q.correctAnswer == 'B' ? 'correct-ans' : ''}">B. <span th:text="${q.optionB}"></span></div>
+                <div th:class="${q.correctAnswer == 'C' ? 'correct-ans' : ''}">C. <span th:text="${q.optionC}"></span></div>
+                <div th:class="${q.correctAnswer == 'D' ? 'correct-ans' : ''}">D. <span th:text="${q.optionD}"></span></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="modalQuestion" class="modal-overlay">
+    <div class="modal-content">
+        <h3 id="modalTitle">Thêm Câu Hỏi Mới</h3>
+        <form th:action="@{/teacher/question/save}" method="post">
+            <input type="hidden" name="testId" th:value="${test.id}">
+            <input type="hidden" name="id" id="qId">
+
+            <div class="form-group">
+                <label>Nội dung câu hỏi</label>
+                <textarea name="questionText" id="qText" class="form-control" rows="2" required></textarea>
+            </div>
+
+            <div class="row">
+                <div class="form-group" style="flex:1">
+                    <label>Đáp án A</label>
+                    <input type="text" name="optionA" id="qA" class="form-control" required>
+                </div>
+                <div class="form-group" style="flex:1">
+                    <label>Đáp án B</label>
+                    <input type="text" name="optionB" id="qB" class="form-control" required>
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group" style="flex:1">
+                    <label>Đáp án C</label>
+                    <input type="text" name="optionC" id="qC" class="form-control" required>
+                </div>
+                <div class="form-group" style="flex:1">
+                    <label>Đáp án D</label>
+                    <input type="text" name="optionD" id="qD" class="form-control" required>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="form-group" style="flex:1">
+                    <label>Đáp án Đúng</label>
+                    <select name="correctAnswer" id="qCorrect" class="form-control">
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                        <option value="D">D</option>
+                    </select>
+                </div>
+                <div class="form-group" style="flex:1">
+                    <label>Điểm số</label>
+                    <input type="number" step="0.5" name="points" id="qPoints" class="form-control" value="1.0">
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; margin-top: 15px;">
+                <button type="button" class="btn btn-warning" onclick="document.getElementById('modalQuestion').style.display='none'">Hủy</button>
+                <button type="submit" class="btn btn-primary">Lưu Câu Hỏi</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openQuestionModal() {
+        document.getElementById('modalTitle').innerText = "Thêm Câu Hỏi Mới";
+        document.getElementById('qId').value = "";
+        document.getElementById('qText').value = "";
+        document.getElementById('qA').value = "";
+        document.getElementById('qB').value = "";
+        document.getElementById('qC').value = "";
+        document.getElementById('qD').value = "";
+        document.getElementById('qCorrect').value = "A";
+        document.getElementById('qPoints').value = "1.0";
+        document.getElementById('modalQuestion').style.display = 'flex';
+    }
+
+    function openEditQuestionModal(btn) {
+        document.getElementById('modalTitle').innerText = "Chỉnh Sửa Câu Hỏi";
+        // Lấy dữ liệu từ data- attribute
+        document.getElementById('qId').value = btn.getAttribute('data-id');
+        document.getElementById('qText').value = btn.getAttribute('data-text');
+        document.getElementById('qA').value = btn.getAttribute('data-a');
+        document.getElementById('qB').value = btn.getAttribute('data-b');
+        document.getElementById('qC').value = btn.getAttribute('data-c');
+        document.getElementById('qD').value = btn.getAttribute('data-d');
+        document.getElementById('qCorrect').value = btn.getAttribute('data-correct');
+        document.getElementById('qPoints').value = btn.getAttribute('data-points');
+        
+        document.getElementById('modalQuestion').style.display = 'flex';
+    }
+
+    // Đóng modal khi click ra ngoài
+    window.onclick = function(event) {
+        if (event.target == document.getElementById('modalQuestion')) {
+            document.getElementById('modalQuestion').style.display = "none";
+        }
+    }
+</script>
+
+</body>
+</html>

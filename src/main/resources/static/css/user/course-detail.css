@@ -1,6 +1,5 @@
 body {
     background-color: #f0f2f5;
-    font-family: Arial, sans-serif;
     line-height: 1.6;
 }
 
@@ -303,97 +302,220 @@ main {
     border-radius: 8px;
 }
 
-/* --- CSS CHO KHU VỰC BÌNH LUẬN --- */
+/* --- PHẦN BÌNH LUẬN GIỐNG FACEBOOK --- */
 .comment-section {
-    max-width: 800px; /* Giới hạn chiều rộng cho dễ đọc */
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    margin-top: 20px;
 }
 
-.comment-input-area {
+.comment-input-group {
     display: flex;
-    gap: 1rem;
-    align-items: flex-start;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 1.5rem;
+    gap: 12px;
+    margin-bottom: 25px;
 }
 
 .comment-avatar {
-    width: 48px;
-    height: 48px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     object-fit: cover;
+    border: 1px solid #eee;
 }
 
-.comment-input-box {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end; /* Đưa nút button sang phải */
+.comment-box-wrapper {
+    flex-grow: 1;
+    position: relative;
 }
 
-.comment-input-box textarea {
+.comment-textarea {
     width: 100%;
-    min-height: 80px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 0.75rem;
-    font-size: 1rem;
-    font-family: Arial, sans-serif;
-    resize: vertical;
-    margin-bottom: 0.75rem;
-}
-
-.btn-submit-comment {
-    /* Sử dụng màu xanh #00b29b giống nút "Mua ngay" của bạn */
-    background-color: #00b29b; 
-    color: white;
+    background: #f0f2f5;
     border: none;
-    padding: 0.6rem 1.2rem;
-    border-radius: 8px;
-    font-weight: bold;
-    font-size: 0.9rem;
+    border-radius: 20px;
+    padding: 10px 15px;
+    font-size: 14px;
+    resize: none;
+    outline: none;
+    overflow: hidden; /* Tự ẩn scroll */
+    min-height: 40px;
+    font-family: inherit;
+    transition: 0.2s;
+}
+
+.comment-textarea:focus {
+    background: #e4e6eb;
+}
+
+.btn-send-comment {
+    position: absolute;
+    right: 10px;
+    bottom: 8px;
+    color: #0084ff; /* Màu xanh Facebook */
+    background: none;
+    border: none;
     cursor: pointer;
-    transition: background-color 0.2s;
+    font-size: 16px;
+    display: none; /* Ẩn mặc định, hiện khi gõ */
 }
 
-.btn-submit-comment:hover:not(:disabled) {
-    background-color: #008a75; /* Hơi đậm hơn khi hover */
+.comment-textarea:not(:placeholder-shown) + .btn-send-comment {
+    display: block; /* Hiện nút gửi khi có chữ */
 }
 
-/* CSS cho nút bị vô hiệu hóa (disabled) */
-.btn-submit-comment:disabled {
-    background-color: #e0e0e0; /* Màu xám nhạt */
-    color: #999;
-    cursor: not-allowed;
-}
-
+/* --- DANH SÁCH BÌNH LUẬN --- */
 .comment-list {
-    margin-top: 2rem;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 15px;
 }
 
 .comment-item {
     display: flex;
-    gap: 1rem;
-    align-items: flex-start;
+    gap: 10px;
 }
 
-.comment-content {
-    flex: 1;
-    background-color: #f4f5fa; /* Nền xám nhạt cho bình luận */
-    border-radius: 8px;
-    padding: 0.75rem 1rem;
+.comment-bubble {
+    background: #f0f2f5;
+    padding: 8px 12px;
+    border-radius: 18px;
+    position: relative;
+    max-width: 90%;
+    display: inline-block;
 }
 
 .comment-author {
-    font-weight: bold;
-    font-size: 1rem;
-    color: #333;
+    font-weight: 600;
+    font-size: 13px;
+    color: #050505;
+    text-decoration: none;
+    display: block;
+    margin-bottom: 2px;
 }
 
 .comment-text {
-    font-size: 0.95rem;
-    color: #222;
-    margin: 0.25rem 0 0 0; /* Xóa margin mặc định của <p> */
+    font-size: 14px;
+    color: #050505;
+    line-height: 1.4;
+    margin: 0;
+    
+    word-wrap: break-word;     
+    overflow-wrap: break-word;  
+    
+    word-break: break-word;     
+    /* Nếu vẫn không được, đổi thành: word-break: break-all; */
+    
+    white-space: pre-wrap; 
+    max-width: 100%;
+}
+
+.comment-actions {
+    margin-left: 12px;
+    margin-top: 3px;
+    font-size: 12px;
+    color: #65676b;
+}
+
+.comment-time {
+    color: #65676b;
+}
+
+.see-more-link {
+    display: inline-block;
+    color: #65676b;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    margin-top: 5px;
+}
+.see-more-link:hover {
+    text-decoration: underline;
+}
+
+/* Modal Thanh Toán */
+.modal {
+    display: none; /* Ẩn mặc định */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5); /* Màu nền mờ */
+    animation: fadeIn 0.3s;
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 25px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    text-align: center;
+    position: relative;
+}
+
+.close-modal {
+    position: absolute;
+    right: 20px;
+    top: 15px;
+    font-size: 28px;
+    font-weight: bold;
+    color: #aaa;
+    cursor: pointer;
+}
+.close-modal:hover { color: #333; }
+
+.payment-info h2 { margin-bottom: 20px; color: #333; }
+.payment-row {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 0;
+    font-size: 16px;
+    border-bottom: 1px dashed #eee;
+    padding-bottom: 10px;
+}
+
+.balance-check {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.text-success { color: #28a745; font-weight: bold; }
+.text-danger { color: #dc3545; font-weight: bold; }
+
+.modal-actions { margin-top: 20px; }
+
+.btn-confirm {
+    background-color: #007bff;
+    color: white;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: 0.3s;
+}
+.btn-confirm:hover { background-color: #0056b3; }
+.btn-confirm:disabled { background-color: #ccc; cursor: not-allowed; }
+
+.btn-deposit {
+    background-color: #28a745;
+    color: white;
+    padding: 12px 30px;
+    text-decoration: none;
+    border-radius: 5px;
+    display: inline-block;
+}
+
+@keyframes fadeIn {
+    from {opacity: 0;}
+    to {opacity: 1;}
 }

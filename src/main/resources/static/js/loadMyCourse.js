@@ -1,5 +1,3 @@
-// File: loadMyCourse.js
-
 document.addEventListener("DOMContentLoaded", function() {
     
     // 1. Lấy các phần tử
@@ -46,7 +44,7 @@ function fetchMyCourses(status) {
     grid.innerHTML = '<p>Đang tải khóa học...</p>';
 
     // 1. Tạo URL động với tham số status
-    const apiUrl = `http://localhost:8080/api/courses/user/my-courses?status=${status}`;
+    const apiUrl = `/user/my-courses?status=${status}`;
 
     // 2. Gọi API
     fetch(apiUrl, {
@@ -88,10 +86,10 @@ function fetchMyCourses(status) {
             // Nếu khóa học đang học, link tới trang học.
             // Nếu hết hạn, link về trang chi tiết (để mua lại)
             if (status === 'ENROLLED') {
-                link.href = `/user/my-course/${course.id}`; // Link đến trang HỌC
+                link.href = `/user/my-course-detail/${course.slug}`; // Link đến trang HỌC
                 link.className = 'course-card-link';
             } else {
-                link.href = `/user/course/${course.id}`; // Link đến trang CHI TIẾT
+                link.href = `/user/course-detail/${course.slug}`; // Link đến trang CHI TIẾT
                 link.className = 'course-card-link expired-link'; // Thêm class để CSS nếu muốn
             }
             

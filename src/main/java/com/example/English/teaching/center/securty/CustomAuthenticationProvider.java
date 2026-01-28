@@ -29,7 +29,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
             return new UsernamePasswordAuthenticationToken(
                     user.getEmail(),
                     user.getPassword(),
-                    user.getRole().getAuthorities() // phải implement getAuthorities() trong Role
+                    user.getRole().getAuthorities() 
             );
         } catch (IllegalAccessException e) {
             throw new BadCredentialsException(e.getMessage());

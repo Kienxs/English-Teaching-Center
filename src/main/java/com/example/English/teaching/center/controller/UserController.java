@@ -2,6 +2,9 @@ package com.example.English.teaching.center.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -12,46 +15,46 @@ import org.springframework.validation.FieldError;
 
 import com.example.English.teaching.center.model.User;
 import com.example.English.teaching.center.model.dto.UserProfileDTO;
-import com.example.English.teaching.center.repository.UserRepository;
 import com.example.English.teaching.center.securty.ReCaptchaService;
+import com.example.English.teaching.center.service.CourseCommentService;
 import com.example.English.teaching.center.service.CourseService;
+import com.example.English.teaching.center.service.TestService;
 import com.example.English.teaching.center.service.UserService;
 import com.example.English.teaching.center.model.Course;
+import com.example.English.teaching.center.model.CourseComments;
+import com.example.English.teaching.center.model.StudentCourse;
+import com.example.English.teaching.center.model.TestResult;
 import com.example.English.teaching.center.model.dto.PasswordChangeDTO;
 
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 
-import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-
+import java.util.Map;
 
 @Controller
 public class UserController {
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
+    private final CourseCommentService courseCommentService;
+    private final CourseService courseService;
+    private final TestService testService;
+    private final ReCaptchaService reCaptchaService;
 
     @Value("${recaptcha.site-key}")
     private String recaptchaSiteKey;
 
-    private final ReCaptchaService reCaptchaService;
-    private final CourseService courseService;
-
     @Autowired
-    public UserController(UserRepository userRepository,
-                         UserService userService,
-                         ReCaptchaService reCaptchaService,
-                         CourseService courseService) {
-        this.userRepository = userRepository;
+    public UserController(UserService userService,
+                          CourseCommentService courseCommentService,
+                          CourseService courseService,
+                          TestService testService,
+                          ReCaptchaService reCaptchaService) {
         this.userService = userService;
-        this.reCaptchaService = reCaptchaService;
+        this.courseCommentService = courseCommentService;
         this.courseService = courseService;
+        this.testService = testService;
+        this.reCaptchaService = reCaptchaService;
     }
 
     // Landing page
@@ -70,18 +73,16 @@ public class UserController {
 
     @PostMapping("/register")
     public String registerUser(@Valid @ModelAttribute("user") User user,
-                           BindingResult bindingResult, 
-                           Model model,
+                           BindingResult bindingResult, Model model,
                            @RequestParam("g-recaptcha-response") String recaptchaResponse) { 
 
-    // 1. Xác thực reCAPTCHA trước
+    // Xác thực reCAPTCHA 
     if (!reCaptchaService.verify(recaptchaResponse)) {
         model.addAttribute("errorMessage", "Xác thực CAPTCHA không thành công. Vui lòng thử lại.");
         model.addAttribute("recaptchaSiteKey", recaptchaSiteKey);
         return "register";
     }
 
-        // 2. Kiểm tra lỗi validation của form (ví dụ: mật khẩu yếu)
         if(bindingResult.hasErrors()){
             FieldError passwordError = bindingResult.getFieldError("password");
             if(passwordError != null){
@@ -93,7 +94,6 @@ public class UserController {
             return "register";
         }
 
-        // 3. Nếu mọi thứ hợp lệ, tiến hành đăng ký
         try {
             userService.register(user);
             model.addAttribute("successMessage", "Đăng ký thành công! Bạn có thể đăng nhập ngay.");
@@ -124,15 +124,7 @@ public class UserController {
         model.addAttribute("logoutMessage", logout != null ? "Bạn đã đăng xuất thành công!" : null);
 
         return "login";
-    }
-
-
-    // Admin Dashboard-----------------------------------------------------------
-    @GetMapping("/admin/dashboard")
-    public String dashboard() {
-        return "admin/dashboard"; 
-    }
-    
+    }    
 
     // User Dashboard------------------------------------------------------------
     @GetMapping("/user/home")
@@ -144,31 +136,6 @@ public class UserController {
     public String courseList(){
         return "user/courseList";
     }
-
-    @GetMapping("/user/course/{id}")
-        public String getCourseDetail(@PathVariable("id") Long id, Model model) {
-            
-            try {
-            // 1. Gọi hàm trả về Optional
-            Optional<Course> courseOptional = courseService.findCourseById(id);
-
-            // 2. Lấy đối tượng Course, nếu không có sẽ ném lỗi
-            Course course = courseOptional.orElseThrow(() -> new NoSuchElementException("Không tìm thấy khóa học với ID: " + id));
-            
-            // 3. Đưa vào model
-            model.addAttribute("course", course);
-            
-            // 4. Trả về tên template
-            return "user/course-detail"; // (Tên file: /templates/user/course-detail.html)
-
-        } catch (NoSuchElementException e) {
-            // 5. Nếu không tìm thấy, quay về trang danh sách
-            return "redirect:/user/courseList?error=notfound";
-        } catch (Exception e) {
-            // 6. Lỗi chung khác
-            return "redirect:/user/courseList?error=generic";
-        }
-    } 
 
     @GetMapping("/user/teacher")
     public String teacher(){
@@ -195,25 +162,14 @@ public class UserController {
         return "user/advisory";
     }
 
-    // Process User Information
+//------------------------- Process User Information--------------------------------
     @GetMapping("/user/userInfor")
     public String userInfor(Model model, Principal principal){
         String email = principal.getName();
-        User user = userService.findByEmail(email);
-        model.addAttribute("user", user);
 
-        if(!model.containsAttribute("userProfileDTO")){
-            // Điền sẵn DTO với thông tin của user
-            UserProfileDTO dto = new UserProfileDTO();
-            dto.setFullName(user.getName()); // Giả sử DTO có setFullName
-            dto.setPhone(user.getPhone());   // Giả sử DTO có setPhone
-
-            model.addAttribute("userProfileDTO", dto);
-        }
-        if(!model.containsAttribute("passwordChangeDTO")){
-            model.addAttribute("passwordChangeDTO", new PasswordChangeDTO());
-        }
-
+        model.addAttribute("user", userService.findByEmail(email));
+        model.addAttribute("userProfileDTO", userService.getUserProfile(email));
+        model.addAttribute("passwordChangeDTO", new PasswordChangeDTO());
         return "user/userInfor";
     }
 
@@ -222,16 +178,11 @@ public class UserController {
                                 @Valid @ModelAttribute("userProfileDTO") UserProfileDTO dto,
                                 @RequestParam("avatarFile") MultipartFile avatarFile,
                                 RedirectAttributes redirectAttributes){
-        if (principal == null) {
-            return "redirect:/login";
-        }
-
-
         try {
-            userService.updateUserProfile(principal.getName(), dto);
+            userService.updateUserProfile(principal.getName(), dto, avatarFile);
             redirectAttributes.addFlashAttribute("successMessage", "Cập nhật thông tin thành công!");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Cập nhật thất bại: " /*+ e.getMessage()*/);
+            redirectAttributes.addFlashAttribute("errorMessage", "Cập nhật thất bại: " + e.getMessage());
         }
         return "redirect:/user/userInfor";
     }
@@ -240,16 +191,123 @@ public class UserController {
     public String changePassword(Principal principal,
                                  @ModelAttribute("passwordChangeDTO") PasswordChangeDTO dto,
                                  RedirectAttributes redirectAttributes) {
-        if (principal == null) {
-            return "redirect:/login";
-        }
         try {
             userService.changePassword(principal.getName(), dto);
             redirectAttributes.addFlashAttribute("successMessage", "Đổi mật khẩu thành công!");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Đổi mật khẩu thất bại: " /*+ e.getMessage()*/);
+            redirectAttributes.addFlashAttribute("errorMessage", "Đổi mật khẩu thất bại: " + e.getMessage());
         }
-        // Chuyển hướng người dùng quay lại tab mật khẩu
         return "redirect:/user/userInfor?tab=password";
+    }
+
+//--------------------------- Process download details for my course and courses-------------------------
+    @GetMapping("/user/course-detail/{slug}")
+    public String courseDetail(@PathVariable String slug, 
+                            Model model, Principal principal,
+                            HttpSession session){ 
+        String email = (principal != null) ? principal.getName() : "anonymousUser";
+        
+        Map<String, Object> data = courseService.getCourseDetailData(slug, email, session);
+
+        Course course = (Course) data.get("course");
+        Page<CourseComments> pageComments = courseCommentService.getCommentsByCourseId(course.getId(), 0, 5);
+        
+        model.addAttribute("courseComments", pageComments.getContent());
+        model.addAttribute("totalComments", pageComments.getTotalElements());
+        model.addAllAttributes(data);
+        return "user/course-detail";
+    }
+
+
+    @GetMapping("/user/my-courses") 
+    public ResponseEntity<List<Course>> getMyEnrolledCourses(
+        Principal principal,
+        @RequestParam(name = "status", defaultValue = "ENROLLED") String statusString
+    ) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        String email = principal.getName();
+        User currentUser = userService.findByEmail(email);
+        if (currentUser == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        Long currentStudentId = currentUser.getId();
+
+        StudentCourse.Status status;
+        try {
+            status = StudentCourse.Status.valueOf(statusString.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            status = StudentCourse.Status.ENROLLED;
+        }
+
+        List<Course> courses = courseService.getCoursesByStudentAndStatus(currentStudentId, status);
+        return ResponseEntity.ok(courses);
+    }
+
+    @GetMapping("/user/my-course-detail/{courseSlug}")
+    public String myCoursesDetail(@PathVariable String courseSlug, 
+                                @RequestParam(name = "lessonId", required = false) Long lessonId,
+                                @RequestParam(name = "testId", required = false) Long testId,
+                                Model model, Principal principal) {
+
+        if (principal == null) return "redirect:/login";
+
+        User currentUser = userService.findByEmail(principal.getName());
+        Map<String, Object> data = courseService.getMyCourseDetailData(courseSlug, lessonId, testId, currentUser.getId());
+
+        model.addAllAttributes(data);
+        return "user/my-course-detail"; 
+    }
+
+    @PostMapping("/user/course-detail/comment")
+    public String postComment(@RequestParam("courseSlug") String courseSlug,
+                            @RequestParam("commentText") String text,
+                            Principal principal) {
+        if (principal != null && text != null && !text.trim().isEmpty()) {
+            courseService.findBySlug(courseSlug).ifPresent(course -> {
+                courseCommentService.saveComment(course.getId(), principal.getName(), text);
+            });
+        }
+        return "redirect:/user/course-detail/" + courseSlug + "#tab-binhluan";
+    }
+
+    // --- 1. HÀM BẮT ĐẦU LÀM BÀI  ---
+    @GetMapping("/user/do-test/{testSlug}")
+    public String doTest(@PathVariable String testSlug, 
+                        Model model, 
+                        Principal principal,
+                        RedirectAttributes ra) {
+        
+        if (principal == null) return "redirect:/login";
+        
+        try {
+            User user = userService.findByEmail(principal.getName());
+            TestResult result = testService.startOrResumeTest(testSlug, user);
+
+            model.addAttribute("test", result.getTest());
+            model.addAttribute("resultId", result.getId());
+            return "user/do-test";
+        } catch (RuntimeException e) { 
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/user/home";
+        }
+    }
+
+    // --- 2. HÀM NỘP BÀI  ---
+    @PostMapping("/user/submit-test")
+    public String submitTest(@RequestParam("testSlug") String testSlug, 
+                             @RequestParam Map<String, String> allParams, 
+                             Principal principal) {  
+        if (principal == null) return "redirect:/login";
+
+        TestResult result = testService.submitTest(testSlug, allParams, principal.getName());
+        
+        String courseSlug = result.getTest().getLesson().getCourse().getSlug();
+        Long lessonId = result.getTest().getLesson().getId();
+
+        return "redirect:/user/my-course-detail/" + courseSlug 
+                + "?lessonId=" + lessonId 
+                + "&testId=" + testSlug;
     }
 }

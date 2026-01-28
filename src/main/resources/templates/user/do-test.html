@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Làm bài thi</title>
+    <link rel="stylesheet" href="/css/layout.css">
+    <link rel="stylesheet" href="/css/user/do-test.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+</head>
+<body>
+    <nav class="navbar m-r m-l">
+        <div class="row">
+            <a th:href="@{/user/home}"><img src="/images/landing/logo.png" alt="logo" class="logo-img"></a>
+            <div style="margin-left: auto; display: flex; align-items: center; gap: 20px;">
+            <div style="font-weight: bold; color: #d32f2f; font-size: 1.1em; background: #ffebee; padding: 5px 15px; border-radius: 20px; border: 1px solid #ffcdd2;">
+                <i class="far fa-clock"></i> <span id="timer">00:00</span>
+            </div>
+            <div style="font-weight: bold;">
+                Đang làm bài: <span th:text="${test.title}"></span>
+            </div>
+        </div>
+        </div>
+    </nav>
+
+    <div class="main-container m-r m-l">
+        
+        <form th:action="@{/user/submit-test}" method="post" id="examForm"> 
+            <input type="hidden" name="testId" th:value="${test.id}">
+
+            <div class="exam-container" id="test-interface">
+                
+                <div class="question-palette">
+                    <div class="palette-title">Danh sách câu hỏi</div>
+                    <div class="palette-grid">
+                        <a th:each="question, stat : ${test.questions}" 
+                           href="javascript:void(0);"
+                           th:onclick="'goToQuestion(' + ${stat.index} + ')'"
+                           th:id="'palette-' + ${stat.index}"
+                           th:class="${stat.first} ? 'palette-item current-q' : 'palette-item'" 
+                           th:text="${stat.count}">1</a>
+                    </div>
+                    <a href="#" onclick="showSummary();" class="finish-link">Kết thúc bài thi/kiểm tra ...</a>
+                </div>
+
+                <div class="question-list">
+                    <div th:each="question, stat : ${test.questions}" 
+                         th:class="${stat.first} ? 'question-box active' : 'question-box'" 
+                         th:data-index="${stat.index}"
+                         th:data-id="${question.id}"> <div class="q-info">
+                            <span class="q-number" th:text="'Câu hỏi ' + ${stat.count}"></span>
+                            <span class="q-status">Chưa trả lời</span>
+                            <span class="q-score">Đạt điểm <span th:text="${question.points}"></span></span>
+                            <div class="q-flag"><i class="fas fa-flag"></i> Đặt cờ</div>
+                        </div>
+
+                        <div class="q-content">
+                            <div class="q-text" th:text="'Câu ' + ${stat.count} + ': ' + ${question.questionText}"></div>
+                            <div class="q-answers">
+                                <label class="answer-option"><input type="radio" th:name="'answers[' + ${question.id} + ']'" value="A" onclick="markAnswered(this)"><span th:text="'a. ' + ${question.optionA}"></span></label>
+                                <label class="answer-option"><input type="radio" th:name="'answers[' + ${question.id} + ']'" value="B" onclick="markAnswered(this)"><span th:text="'b. ' + ${question.optionB}"></span></label>
+                                <label class="answer-option"><input type="radio" th:name="'answers[' + ${question.id} + ']'" value="C" onclick="markAnswered(this)"><span th:text="'c. ' + ${question.optionC}"></span></label>
+                                <label class="answer-option"><input type="radio" th:name="'answers[' + ${question.id} + ']'" value="D" onclick="markAnswered(this)"><span th:text="'d. ' + ${question.optionD}"></span></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="nav-buttons" style="margin-bottom: 50px;">
+                        <button type="button" class="btn-nav" id="btnPrev" onclick="changeQuestion(-1)" style="visibility: hidden;">Quay lại</button>
+                        <button type="button" class="btn-nav" id="btnNext" onclick="changeQuestion(1)">Tiếp theo</button>
+                        
+                        <button type="button" class="submit-btn" id="btnShowSummary" onclick="showSummary()">Nộp bài và kết thúc</button>
+                    </div>
+                </div>
+            </div>
+
+
+            <div id="summary-interface">
+                <div class="question-palette">
+                    <div class="palette-title">Danh sách câu hỏi</div>
+                    <div class="palette-grid">
+                        <a th:each="question, stat : ${test.questions}" 
+                           href="javascript:void(0);"
+                           th:id="'palette-sum-' + ${stat.index}" 
+                           class="palette-item" 
+                           th:text="${stat.count}">1</a>
+                    </div>
+                    <a href="#" class="finish-link">Kết thúc bài thi/kiểm tra ...</a>
+                </div>
+
+                <div class="summary-content">
+                    <h2 th:text="'Trắc nghiệm kiến thức về: ' + ${test.title}"></h2>
+                    <h3>Tóm tắt của bài thi</h3>
+
+                    <table class="summary-table">
+                        <thead>
+                            <tr>
+                                <th>Câu hỏi</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody id="summary-table-body">
+                            </tbody>
+                    </table>
+
+                    <div class="summary-actions">
+                        <button type="button" class="btn-return" onclick="returnToTest()">Quay lại bài thi</button>
+                        <button type="submit" class="btn-final-submit">Nộp bài và kết thúc</button>
+                    </div>
+                </div>
+            </div>
+
+        </form>
+    </div>
+
+    <script th:inline="javascript">
+        // --- 1. CẤU HÌNH DỮ LIỆU ---
+        let currentIndex = 0;
+        const totalQuestions = /*[[${test.questions != null ? test.questions.size() : 0}]]*/ 0;
+        const testDurationMinutes = /*[[${test.durationMinutes}]]*/ 0; // Lấy thời gian từ DB
+        const testId = /*[[${test.id}]]*/ 0;
+        
+        // --- 2. LOGIC ĐỒNG HỒ ĐẾM NGƯỢC (TIMER) ---
+        const timerElement = document.getElementById('timer');
+        const examForm = document.getElementById('examForm');
+        
+        function startTimer(durationMinutes) {
+            // Tạo key duy nhất cho bài test này trong LocalStorage
+            const storageKey = 'exam_start_time_' + testId;
+            const now = new Date().getTime();
+            const durationMs = durationMinutes * 60 * 1000;
+
+            // Kiểm tra xem đã bắt đầu làm bài chưa
+            let startTime = localStorage.getItem(storageKey);
+
+            if (!startTime) {
+                // Nếu chưa -> Lưu thời điểm bắt đầu
+                startTime = now;
+                localStorage.setItem(storageKey, startTime);
+            } else {
+                startTime = parseInt(startTime);
+            }
+
+            // Tính thời điểm phải kết thúc
+            const endTime = startTime + durationMs;
+
+            const x = setInterval(function() {
+                const currentTime = new Date().getTime();
+                const distance = endTime - currentTime;
+
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                timerElement.innerHTML = 
+                    (minutes < 10 ? "0" + minutes : minutes) + ":" + 
+                    (seconds < 10 ? "0" + seconds : seconds);
+
+                // Đổi màu đỏ khi còn dưới 1 phút
+                if (distance < 60000) {
+                    timerElement.parentElement.style.backgroundColor = "#ffcdd2"; // Đỏ đậm hơn
+                    timerElement.parentElement.style.color = "#b71c1c";
+                }
+
+                // HẾT GIỜ
+                if (distance < 0) {
+                    clearInterval(x);
+                    timerElement.innerHTML = "00:00";
+                    alert("Đã hết thời gian làm bài! Hệ thống sẽ tự động nộp bài.");
+                    
+                    // Xóa thời gian trong storage để lần sau thi lại được tính mới
+                    localStorage.removeItem(storageKey);
+                    
+                    examForm.submit();
+                }
+            }, 1000);
+        }
+
+        // Gọi hàm đếm ngược ngay khi trang load
+        if(testDurationMinutes > 0) {
+            startTimer(testDurationMinutes);
+        } else {
+            timerElement.innerHTML = "--:--"; // Không giới hạn thời gian
+        }
+
+        // --- 3. LOGIC GIAO DIỆN CŨ (GIỮ NGUYÊN) ---
+        const testInterface = document.getElementById('test-interface');
+        const summaryInterface = document.getElementById('summary-interface');
+        const summaryTableBody = document.getElementById('summary-table-body');
+
+        const questions = document.querySelectorAll('.question-box');
+        const btnPrev = document.getElementById('btnPrev');
+        const btnNext = document.getElementById('btnNext');
+        const btnShowSummary = document.getElementById('btnShowSummary');
+
+
+        function updateUI() {
+            questions.forEach(q => q.classList.remove('active'));
+            questions[currentIndex].classList.add('active');
+
+            document.querySelectorAll('#test-interface .palette-item').forEach(item => item.classList.remove('current-q'));
+            
+            // Fix lỗi null nếu index ko tồn tại
+            let paletteItem = document.getElementById('palette-' + currentIndex);
+            if(paletteItem) paletteItem.classList.add('current-q');
+
+            if (currentIndex === 0) btnPrev.style.visibility = 'hidden';
+            else btnPrev.style.visibility = 'visible';
+
+            if (currentIndex === totalQuestions - 1) {
+                btnNext.style.display = 'none';
+                btnShowSummary.style.display = 'block';
+            } else {
+                btnNext.style.display = 'block';
+                btnShowSummary.style.display = 'none';
+            }
+        }
+
+        function changeQuestion(step) {
+            currentIndex += step;
+            if (currentIndex < 0) currentIndex = 0;
+            if (currentIndex >= totalQuestions) currentIndex = totalQuestions - 1;
+            updateUI();
+        }
+
+        function goToQuestion(index) {
+            currentIndex = index;
+            updateUI();
+        }
+
+        function markAnswered(radio) {
+            let questionBox = radio.closest('.question-box');
+            let index = questionBox.getAttribute('data-index');
+            
+            let p1 = document.getElementById('palette-' + index);
+            let p2 = document.getElementById('palette-sum-' + index);
+            
+            [p1, p2].forEach(p => {
+                if(p) {
+                    p.style.backgroundColor = '#e9ecef';
+                    p.style.color = '#333';
+                }
+            });
+
+            questionBox.querySelector('.q-status').innerText = "Đã trả lời";
+            questionBox.querySelector('.q-status').style.color = "green";
+        }
+
+        function showSummary() {
+            testInterface.style.display = 'none';
+            summaryInterface.classList.add('active');
+            summaryTableBody.innerHTML = '';
+
+            questions.forEach((q, index) => {
+                const inputs = q.querySelectorAll('input[type="radio"]');
+                let isAnswered = false;
+                inputs.forEach(input => {
+                    if (input.checked) isAnswered = true;
+                });
+
+                const row = document.createElement('tr');
+                const cellNum = document.createElement('td');
+                cellNum.innerHTML = `<a href="#" onclick="returnToQuestion(${index})" style="text-decoration:none; color:#333;">${index + 1}</a>`;
+                
+                const cellStatus = document.createElement('td');
+                if (isAnswered) {
+                    cellStatus.innerText = "Đã trả lời";
+                    cellStatus.style.color = "green";
+                } else {
+                    cellStatus.innerText = "Chưa trả lời";
+                    cellStatus.style.color = "red";
+                }
+
+                row.appendChild(cellNum);
+                row.appendChild(cellStatus);
+                summaryTableBody.appendChild(row);
+            });
+        }
+
+        function returnToTest() {
+            summaryInterface.classList.remove('active');
+            testInterface.style.display = 'none'; 
+            updateUI(); 
+        }
+
+        function returnToQuestion(index) {
+            currentIndex = index;
+            returnToTest();
+        }
+
+        // Xử lý khi người dùng nộp bài thủ công -> Xóa timer storage
+        document.querySelector('.btn-final-submit').addEventListener('click', function() {
+             localStorage.removeItem('exam_start_time_' + testId);
+        });
+
+        updateUI();
+    </script>
+
+</body>
+</html>

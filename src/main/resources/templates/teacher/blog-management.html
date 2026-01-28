@@ -1,0 +1,124 @@
+<!--blog-management.html-->
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Quản lý Blog</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/teacher/dashboard.css">
+    <link rel="stylesheet" href="/css/pageStyle.css">
+</head>
+<body>
+    <div class="sidebar">
+        <div class="brand"><i class="fa-solid fa-graduation-cap"></i> English Center</div>
+        <a href="/teacher/dashboard" class="menu-item"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+        <a href="/teacher/course-management" class="menu-item"><i class="fa-solid fa-book-open"></i> Khóa học</a>
+        <a href="/teacher/blog-management" class="menu-item active"><i class="fa-solid fa-newspaper"></i> Blog cá nhân</a>
+        <a href="#" class="menu-item"><i class="fa-solid fa-user-gear"></i> Hồ sơ</a>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <h2>Danh sách bài post</h2>
+            <a th:href="@{/teacher/blogPost/create}" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Tạo bài post mới</a>
+        </div>
+
+        <div class="card">
+            <div th:if="${successMessage}" class="alert alert-success" style="padding: 10px; background: #d4edda; color: #155724; margin-bottom: 15px; border-radius: 4px;">
+                <i class="fa-solid fa-check-circle"></i> <span th:text="${successMessage}"></span>
+            </div>
+
+            <div th:if="${errorMessage}" class="alert alert-danger" style="padding: 10px; background: #f8d7da; color: #721c24; margin-bottom: 15px; border-radius: 4px;">
+                <i class="fa-solid fa-exclamation-triangle"></i> <span th:text="${errorMessage}"></span>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Ảnh</th>
+                        <th>Tên bài Blog</th>
+                        <th>Ngày tạo</th>
+                        <th>Ngày cập nhật</th>
+                        <th>Trạng thái</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="blog : ${blogPage.content}">
+                        <td>
+                            <img th:if="${blog.thumbnail != null && blog.thumbnail != ''}" 
+                                th:src="${blog.thumbnail}" 
+                                style="width: 60px; height: 40px; object-fit: cover; border-radius: 4px;">
+                            <span th:unless="${blog.thumbnail != null && blog.thumbnail != ''}" 
+                                style="font-size: 20px; color: #ccc;"><i class="fa-regular fa-image"></i></span>
+                        </td>
+                        <td>
+                            <div style="font-weight: 600;" th:text="${blog.title}">share the English learning process</div>
+                        </td>
+                        <td th:text="${#temporals.format(blog.createdAt, 'dd/MM/yyyy')}"></td>
+                        <td th:text="${#temporals.format(blog.updatedAt, 'dd/MM/yyyy')}"></td>
+                        <td>
+                            <span class="badge" 
+                                  th:classappend="'bg-' + ${blog.status}" 
+                                  th:text="${blog.status}">APPROVED</span>
+                        </td>
+                        <td>
+                            <a th:href="@{/teacher/blogPost/edit/{slug}(slug=${blog.slug})}"
+                            class="btn btn-outline" 
+                            style="padding: 5px 10px; font-size: 13px;">
+                                <i class="fa-solid fa-pen"></i> Sửa
+                            </a>
+                            
+                             <!-- th:href="@{/teacher/blogPost/publish/{id}(id=${blog.id})}" -->
+                            <a
+                            th:if="${#strings.toString(blog.status) == 'DRAFT'}"
+                            class="btn btn-success" 
+                            style="padding: 5px 10px; font-size: 13px; margin-left: 5px; background-color: #00c307">
+                                <i class="fa-solid fa-upload"></i> Xuất bản
+                            </a>
+
+                            <a th:if="${#strings.toString(blog.status) == 'DRAFT'}" 
+                            th:href="@{/teacher/blogPost/delete/{id}(id=${blog.id})}"
+                            class="btn btn-danger" 
+                            style="padding: 5px 10px; font-size: 13px; color: white; background-color: #dc3545; border: none; border-radius: 4px; text-decoration: none;"
+                            onclick="return confirm('Bạn có chắc chắn muốn xóa bài nháp này không? Hành động này không thể hoàn tác.');">
+                                <i class="fa-solid fa-trash"></i> Xóa
+                            </a>
+                        </td>
+                    </tr>
+                    <tr th:if="${blogPage.totalElements == 0}">
+                        <td>Bạn chưa có blog post nào trên hệ thống!</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="pagination-container" th:if="${totalPages > 1}">
+                <div class="pagination-info">
+                    Hiển thị [[${blogPage.numberOfElements}]] trên tổng số [[${blogPage.totalElements}]] bài viết
+                </div>
+                
+                <div class="pagination-controls">
+                    <a th:if="${currentPage > 0}" 
+                       th:href="@{/teacher/blog-management(page=${currentPage - 1})}" 
+                       class="page-link"><i class="fa-solid fa-chevron-left"></i> Trước</a>
+                    
+                    <span th:unless="${currentPage > 0}" class="page-link disabled"><i class="fa-solid fa-chevron-left"></i> Trước</span>
+
+                    <span th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+                        <a th:if="${currentPage != i}" 
+                           th:href="@{/teacher/blog-management(page=${i})}" 
+                           class="page-link">[[${i + 1}]]</a>
+                        <span th:if="${currentPage == i}" class="page-link active">[[${i + 1}]]</span>
+                    </span>
+
+                    <a th:if="${currentPage < totalPages - 1}" 
+                       th:href="@{/teacher/blog-management(page=${currentPage + 1})}" 
+                       class="page-link">Sau <i class="fa-solid fa-chevron-right"></i></a>
+                       
+                    <span th:unless="${currentPage < totalPages - 1}" class="page-link disabled">Sau <i class="fa-solid fa-chevron-right"></i></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
