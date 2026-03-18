@@ -4,8 +4,8 @@ import java.math.BigDecimal;
 
 import org.springframework.stereotype.Service;
 
-import com.example.English.teaching.center.model.Transaction;
-import com.example.English.teaching.center.model.User;
+import com.example.English.teaching.center.entity.Transaction;
+import com.example.English.teaching.center.entity.User;
 import com.example.English.teaching.center.repository.TransactionRepository;
 import com.example.English.teaching.center.repository.UserRepository;
 

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Duyệt khóa học - ECE</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="/css/admin/dashboard.css">
+</head>
+<body>
+
+    <div class="d-flex" id="wrapper">
+        <div class="border-right" id="sidebar-wrapper">
+            <div class="sidebar-heading">ECE MANAGER</div>
+            <div class="list-group list-group-flush">
+                <a href="/admin/dashboard" class="list-group-item list-group-item-action"><i class="fas fa-home me-2"></i> Trang chủ</a>
+                
+                <p class="text-uppercase text-secondary ml-3 mt-3 mb-1 px-3" style="font-size: 0.75rem; font-weight: bold;">Quản lý nội dung</p>
+                <a href="/admin/posts/approve" class="list-group-item list-group-item-action">
+                    <i class="fas fa-pen-nib me-2"></i> Duyệt bài viết <span class="badge bg-danger float-end">5</span>
+                </a>
+                <a href="/admin/courses/approve" class="list-group-item list-group-item-action active"><i class="fas fa-graduation-cap me-2"></i> Duyệt khóa học</a>
+                <a href="/admin/finance/reports" class="list-group-item list-group-item-action"><i class="fas fa-chart-line me-2"></i> Báo cáo tài chính</a>
+                
+                <a href="/logout" class="list-group-item list-group-item-action mt-5 text-danger"><i class="fas fa-sign-out-alt me-2"></i> Đăng xuất</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid mt-4">
+        <h3 class="mb-4">Khóa học đang chờ duyệt</h3>
+        
+        <div th:if="${param.status}" class="alert alert-success alert-dismissible fade show">
+            Thao tác thành công!
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Tên khóa học</th>
+                            <th>Giáo viên</th>
+                            <th>Học phí</th>
+                            <th>Ngày tạo</th>
+                            <th class="text-end">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="course : ${coursePage.content}">
+                            <td>
+                                <strong th:text="${course.name}"></strong><br>
+                                <span class="badge bg-secondary" th:text="${course.category}"></span>
+                            </td>
+                            <td th:text="${course.teacher.fullName}"></td>
+                            <td th:text="${#numbers.formatDecimal(course.fee, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+                            <td th:text="${#temporals.format(course.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
+                            <td class="text-end">
+                                <a th:href="@{'/admin/courses/preview/' + ${course.id}}" class="btn btn-sm btn-outline-primary">Xem</a>
+                                
+                                <form th:action="@{'/admin/courses/approve/' + ${course.id}}" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-success">Duyệt</button>
+                                </form>
+                                
+                                <button class="btn btn-sm btn-danger" data-bs-toggle="modal" th:data-bs-target="'#rejectModal' + ${course.id}">Từ chối</button>
+                                
+                                <div class="modal fade" th:id="'rejectModal' + ${course.id}" tabindex="-1">
+                                    <div class="modal-dialog text-start">
+                                        <form th:action="@{'/admin/courses/reject/' + ${course.id}}" method="post">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Lý do từ chối</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p>Khóa học: <b th:text="${course.name}"></b></p>
+                                                    <textarea name="note" class="form-control" rows="3" required placeholder="Ví dụ: Nội dung chưa đủ yêu cầu..."></textarea>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="submit" class="btn btn-danger text-white">Xác nhận từ chối</button>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

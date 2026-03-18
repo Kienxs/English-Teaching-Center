@@ -1,6 +1,6 @@
 package com.example.English.teaching.center.controller;
 
-import com.example.English.teaching.center.model.User;
+import com.example.English.teaching.center.entity.User;
 import com.example.English.teaching.center.repository.StudentCourseRepository;
 import com.example.English.teaching.center.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;

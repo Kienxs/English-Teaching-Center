@@ -10,9 +10,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
-import com.example.English.teaching.center.model.BlogPost;
-import com.example.English.teaching.center.model.BlogPostSection;
-import com.example.English.teaching.center.model.Teacher;
+import com.example.English.teaching.center.entity.BlogPost;
+import com.example.English.teaching.center.entity.BlogPostSection;
+import com.example.English.teaching.center.entity.Teacher;
 import com.example.English.teaching.center.repository.BlogPostRepository;
 import com.example.English.teaching.center.repository.TeacherRepository;
 import com.example.English.teaching.center.utils.SlugUtils;

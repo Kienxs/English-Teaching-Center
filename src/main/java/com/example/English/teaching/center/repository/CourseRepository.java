@@ -1,10 +1,10 @@
 package com.example.English.teaching.center.repository;
 
-import com.example.English.teaching.center.model.Course;
-import com.example.English.teaching.center.model.Course.Category;
-import com.example.English.teaching.center.model.Course.Status;
-import com.example.English.teaching.center.model.dto.MonthlyRevenueDTO;
-import com.example.English.teaching.center.model.StudentCourse;
+import com.example.English.teaching.center.dto.MonthlyRevenueDTO;
+import com.example.English.teaching.center.entity.Course;
+import com.example.English.teaching.center.entity.StudentCourse;
+import com.example.English.teaching.center.entity.Course.Category;
+import com.example.English.teaching.center.entity.Course.Status;
 
 import java.util.List;
 import java.util.Map;

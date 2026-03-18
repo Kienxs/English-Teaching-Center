@@ -1,0 +1,41 @@
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Chi tiết khóa học: <span th:text="${course.name}"></span></h2>
+        <a href="/admin/courses/approve" class="btn btn-secondary">Quay lại</a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">Mô tả khóa học</div>
+                <div class="card-body" th:utext="${course.description}"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-header bg-dark text-white">Danh sách bài học</div>
+                <ul class="list-group list-group-flush">
+                    <li th:each="lesson : ${course.lessons}" class="list-group-item d-flex justify-content-between">
+                        <span th:text="${lesson.lessonOrder + '. ' + lesson.title}"></span>
+                        <small class="text-muted" th:text="${#temporals.format(lesson.createdAt, 'dd/MM/yyyy')}"></small>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card border-info">
+                <div class="card-body">
+                    <p><b>Giáo viên:</b> <span th:text="${course.teacher.fullName}"></span></p>
+                    <p><b>Hình thức:</b> <span th:text="${course.mode}"></span></p>
+                    <p><b>Học phí:</b> <span class="text-danger fw-bold" th:text="${#numbers.formatDecimal(course.fee, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span></p>
+                    <hr>
+                    <div class="d-grid gap-2">
+                        <form th:action="@{'/admin/courses/approve/' + ${course.id}}" method="post">
+                            <button type="submit" class="btn btn-success w-100">DUYỆT NGAY</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

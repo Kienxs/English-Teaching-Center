@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="/js/main.js"></script>
 </head>
 <body>
@@ -63,25 +64,25 @@
 
         <main class="content-wrapper">
 
-            <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
-            <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+            <!-- <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+            <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div> -->
 
             <div id="tab-profile" class="content-tab" 
                  th:classappend="${param.tab == null && errorMessage == null} ? 'active' : (${param.tab == 'profile' || (errorMessage != null && param.tab == null)} ? 'active' : '')">
                 
-                <form th:action="@{/user/userInfor/update}" th:object="${userProfileDTO}" method="post">
+                <form id="profileForm" th:action="@{/user/userInfor/update}" th:object="${userProfileDTO}" enctype="multipart/form-data" method="post">
                     
                     <div class="card">
                         <div class="card-header">
                             <h2>THÔNG TIN</h2>
                             <div class="button-group">
-                                <button type="submit" class="btn btn-secondary">Cập nhật</button>
+                                <button type="submit" id="btnUpdate" class="btn btn-secondary">Cập nhật</button>
                             </div>
                         </div>
     
                         <div class="profile-details">
                             <div class="avatar-upload">
-                                <img th:src="${user.avatarUrl != null ? user.avatarUrl : 'https://via.placeholder.com/120'}" alt="Avatar" id="avatar-preview">
+                                <img th:src="${user.avatarUrl != null ? user.avatarUrl : '/images/home/avatar_clone.png'}" alt="Avatar" id="avatar-preview">
                                 
                                 <input type="file" id="avatar-input" name="avatarFile" accept="image/*" style="display: none;">
                                 
@@ -353,6 +354,49 @@
                 }
             });
         });
+
+
+        /* --- Xử lý Thông báo bằng SweetAlert2 --- */
+        // Lấy giá trị từ Spring Boot thông qua Thymeleaf
+        const successMsg = "[[${successMessage}]]";
+        const errorMsg = "[[${errorMessage}]]";
+
+        // Kiểm tra và hiển thị nếu có tin nhắn thành công (không phải chuỗi rỗng)
+        if (successMsg && successMsg !== "null" && successMsg.trim() !== "") {
+            Swal.fire({
+                title: 'Thành công!',
+                text: successMsg,
+                icon: 'success',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#28a745'
+            });
+        }
+
+        // Kiểm tra và hiển thị nếu có lỗi
+        if (errorMsg && errorMsg !== "null" && errorMsg.trim() !== "") {
+            Swal.fire({
+                title: 'Thất bại!',
+                text: errorMsg,
+                icon: 'error',
+                confirmButtonText: 'Đã rõ',
+                confirmButtonColor: '#dc3545'
+            });
+        }
+
+
+        const profileForm = document.getElementById('profileForm');
+        const btnUpdate = document.getElementById('btnUpdate');
+
+        if (profileForm && btnUpdate) {
+            profileForm.addEventListener('submit', function() {
+                btnUpdate.disabled = true;
+
+                btnUpdate.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+
+                document.body.style.cursor = 'wait';
+                
+            });
+        }
     });
 </script>
 </html>

@@ -4,7 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.example.English.teaching.center.model.CourseComments;
+import com.example.English.teaching.center.entity.CourseComments;
 
 public interface CourseCommentRepository extends JpaRepository<CourseComments, Long>{
     // Page

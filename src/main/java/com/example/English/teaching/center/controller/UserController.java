@@ -13,18 +13,20 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 
-import com.example.English.teaching.center.model.User;
-import com.example.English.teaching.center.model.dto.UserProfileDTO;
 import com.example.English.teaching.center.securty.ReCaptchaService;
 import com.example.English.teaching.center.service.CourseCommentService;
 import com.example.English.teaching.center.service.CourseService;
 import com.example.English.teaching.center.service.TestService;
 import com.example.English.teaching.center.service.UserService;
-import com.example.English.teaching.center.model.Course;
-import com.example.English.teaching.center.model.CourseComments;
-import com.example.English.teaching.center.model.StudentCourse;
-import com.example.English.teaching.center.model.TestResult;
-import com.example.English.teaching.center.model.dto.PasswordChangeDTO;
+import com.example.English.teaching.center.dto.PasswordChangeDTO;
+import com.example.English.teaching.center.dto.UserProfileDTO;
+import com.example.English.teaching.center.entity.Course;
+import com.example.English.teaching.center.entity.CourseComments;
+import com.example.English.teaching.center.entity.StudentCourse;
+import com.example.English.teaching.center.entity.TestResult;
+import com.example.English.teaching.center.entity.User;
+import com.example.English.teaching.center.exception.InvalidFileException;
+import com.example.English.teaching.center.exception.RateLimitException;
 
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -73,35 +75,27 @@ public class UserController {
 
     @PostMapping("/register")
     public String registerUser(@Valid @ModelAttribute("user") User user,
-                           BindingResult bindingResult, Model model,
-                           @RequestParam("g-recaptcha-response") String recaptchaResponse) { 
-
-    // Xác thực reCAPTCHA 
-    if (!reCaptchaService.verify(recaptchaResponse)) {
-        model.addAttribute("errorMessage", "Xác thực CAPTCHA không thành công. Vui lòng thử lại.");
-        model.addAttribute("recaptchaSiteKey", recaptchaSiteKey);
-        return "register";
-    }
+                           BindingResult bindingResult, 
+                           Model model,
+                           @RequestParam("g-recaptcha-response") String recaptchaResponse,
+                           RedirectAttributes redirectAttributes) { 
 
         if(bindingResult.hasErrors()){
             FieldError passwordError = bindingResult.getFieldError("password");
-            if(passwordError != null){
-                model.addAttribute("errorMessage", passwordError.getDefaultMessage());
-            } else {
-                model.addAttribute("errorMessage", "Dữ liệu không hợp lệ, vui lòng kiểm tra lại.");
-            }
+            model.addAttribute("errorMessage", passwordError != null ?
+                    passwordError.getDefaultMessage() : "Dữ liệu không hợp lệ");
             model.addAttribute("recaptchaSiteKey", recaptchaSiteKey);
             return "register";
         }
 
-        try {
-            userService.register(user);
-            model.addAttribute("successMessage", "Đăng ký thành công! Bạn có thể đăng nhập ngay.");
-            model.addAttribute("user", new User()); // Reset form
-        } catch (IllegalArgumentException e) {
+        try{
+            userService.registerNewUser(user, recaptchaResponse);
+            redirectAttributes.addFlashAttribute("successMessage", "Đăng ký thành công! Bạn có thể đăng nhập ngay.");
+            return "redirect:/login";
+        }catch(RateLimitException | IllegalArgumentException e){
             model.addAttribute("errorMessage", e.getMessage());
-        } catch (Exception e) {
-            model.addAttribute("errorMessage", "Đã xảy ra lỗi trong quá trình đăng ký.");
+        }catch(Exception e){
+            model.addAttribute("errorMessage", "Đã xảy ra lỗi trong quá trình đăng ký." + e.getMessage());
         }
         
         model.addAttribute("recaptchaSiteKey", recaptchaSiteKey);
@@ -111,17 +105,22 @@ public class UserController {
     // Spring Security sẽ xử lý POST /process-login
     @GetMapping("/login")
     public String showLoginForm( @RequestParam(value = "error", required = false) String error,
-            @RequestParam(value = "message", required = false) String message,
-            @RequestParam(value = "logout", required = false) String logout,
-            @RequestParam(value = "captcha", required = false) String captchaError,
-            Model model) {
+                            @RequestParam(value = "logout", required = false) String logout,
+                            @RequestParam(value = "captcha", required = false) String captchaError,
+                            Model model) {
 
         model.addAttribute("recaptchaSiteKey", recaptchaSiteKey);
-        model.addAttribute("loginError", error != null);
-        model.addAttribute("captchaError", captchaError != null);
-        model.addAttribute("errorMessage", message != null ? message : (error != null ? "Email hoặc mật khẩu không đúng!" : null));
-        model.addAttribute("captchaErrorMessage", captchaError != null ? "Vui lòng xác minh bạn không phải robot!" : null);
-        model.addAttribute("logoutMessage", logout != null ? "Bạn đã đăng xuất thành công!" : null);
+        // 1. Xử lý thông báo lỗi đăng nhập (Email/Password sai)
+        if (error != null) 
+            model.addAttribute("errorMessage", "Email hoặc mật khẩu không chính xác!");
+
+        // 2. Xử lý thông báo lỗi Captcha 
+        if (captchaError != null) 
+            model.addAttribute("captchaErrorMessage", "Vui lòng xác minh bạn không phải robot!");
+
+        // 3. Xử lý thông báo đăng xuất
+        if (logout != null) 
+            model.addAttribute("successMessage", "Bạn đã đăng xuất thành công!");                  
 
         return "login";
     }    
@@ -174,16 +173,20 @@ public class UserController {
     }
 
     @PostMapping("/user/userInfor/update")
-    public String updateProfile(Principal principal,
-                                @Valid @ModelAttribute("userProfileDTO") UserProfileDTO dto,
-                                @RequestParam("avatarFile") MultipartFile avatarFile,
-                                RedirectAttributes redirectAttributes){
+    public String updateProfile(@ModelAttribute UserProfileDTO dto,
+                                @RequestParam(value = "avatarFile", required = false) MultipartFile avatarFile,
+                                Principal principal,
+                                RedirectAttributes redirectAttributes) {
         try {
             userService.updateUserProfile(principal.getName(), dto, avatarFile);
-            redirectAttributes.addFlashAttribute("successMessage", "Cập nhật thông tin thành công!");
+            redirectAttributes.addFlashAttribute("successMessage", "Cập nhật thành công!");
+        } catch (RateLimitException | InvalidFileException e) {
+            // Bắt các lỗi nghiệp vụ từ Service và hiển thị ra View
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Cập nhật thất bại: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Có lỗi hệ thống xảy ra!");
         }
+
         return "redirect:/user/userInfor";
     }
 

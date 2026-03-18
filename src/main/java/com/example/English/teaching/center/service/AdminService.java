@@ -10,9 +10,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.English.teaching.center.model.BlogPost;
-import com.example.English.teaching.center.model.Course;
-import com.example.English.teaching.center.model.dto.MonthlyRevenueDTO;
+import com.example.English.teaching.center.dto.MonthlyRevenueDTO;
+import com.example.English.teaching.center.entity.BlogPost;
+import com.example.English.teaching.center.entity.Course;
 import com.example.English.teaching.center.repository.BlogPostRepository;
 import com.example.English.teaching.center.repository.CourseRepository;
 
@@ -30,7 +30,7 @@ public class AdminService {
 // --------------------------------- BLOG MANAGER ---------------------------------------
     public Page<BlogPost> getPendingBlogs(int page, int size){
         Pageable pageable =  PageRequest.of(page, size, Sort.by("createdAt").descending());
-        return blogPostRepository.findByStatus("PENDING", pageable);
+        return blogPostRepository.findByStatus(BlogPost.Status.PENDING, pageable);
     }
 
     @Transactional

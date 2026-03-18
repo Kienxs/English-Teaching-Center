@@ -1,7 +1,10 @@
 package com.example.English.teaching.center.controller;
 
-import com.example.English.teaching.center.model.*;
-import com.example.English.teaching.center.model.dto.TeacherDashboardDTO;
+import com.example.English.teaching.center.dto.TeacherDashboardDTO;
+import com.example.English.teaching.center.entity.BlogPost;
+import com.example.English.teaching.center.entity.Course;
+import com.example.English.teaching.center.entity.Test;
+import com.example.English.teaching.center.entity.User;
 import com.example.English.teaching.center.service.*;
 
 import org.springframework.data.domain.Page;
@@ -70,7 +73,7 @@ public class TeacherController {
         model.addAttribute("coursePage", coursePage); 
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", coursePage.getTotalPages());
-        model.addAttribute("teacherName", teacher.getName());
+        model.addAttribute("teacherName", teacher.getFullName());
         
         return "teacher/course-management";
     }
@@ -201,7 +204,7 @@ public class TeacherController {
         model.addAttribute("blogPage", blogPage); // Đối tượng Page chứa list bài viết + thông tin phân trang
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", blogPage.getTotalPages());
-        model.addAttribute("teacherName", teacher.getName());
+        model.addAttribute("teacherName", teacher.getFullName());
         
         return "teacher/blog-management";
     }

@@ -8,11 +8,11 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
-import com.example.English.teaching.center.model.Lesson;
-import com.example.English.teaching.center.model.Question;
-import com.example.English.teaching.center.model.Test;
-import com.example.English.teaching.center.model.TestResult;
-import com.example.English.teaching.center.model.User;
+import com.example.English.teaching.center.entity.Lesson;
+import com.example.English.teaching.center.entity.Question;
+import com.example.English.teaching.center.entity.Test;
+import com.example.English.teaching.center.entity.TestResult;
+import com.example.English.teaching.center.entity.User;
 import com.example.English.teaching.center.repository.LessonRepository;
 import com.example.English.teaching.center.repository.QuestionRepository;
 import com.example.English.teaching.center.repository.TestRepository;

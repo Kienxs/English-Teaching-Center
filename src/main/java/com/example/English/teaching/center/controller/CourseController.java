@@ -11,10 +11,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.English.teaching.center.model.Course;
-import com.example.English.teaching.center.model.Course.Status;
-import com.example.English.teaching.center.model.CourseComments;
-import com.example.English.teaching.center.model.dto.CommentDTO;
+import com.example.English.teaching.center.dto.CommentDTO;
+import com.example.English.teaching.center.entity.Course;
+import com.example.English.teaching.center.entity.CourseComments;
+import com.example.English.teaching.center.entity.Course.Status;
 import com.example.English.teaching.center.repository.CourseRepository;
 import com.example.English.teaching.center.service.CourseCommentService;
 
@@ -79,7 +79,7 @@ public class CourseController {
             CommentDTO dto = new CommentDTO();
             
             // Null check an toàn
-            String userName = (cmt.getUser() != null) ? cmt.getUser().getName() : "Người dùng ẩn danh";
+            String userName = (cmt.getUser() != null) ? cmt.getUser().getFullName() : "Người dùng ẩn danh";
             String avatarUrl = (cmt.getUser() != null) ? cmt.getUser().getAvatarUrl() : null;
 
             dto.setUserName(userName);

@@ -1,7 +1,9 @@
 package com.example.English.teaching.center.repository;
 
-import com.example.English.teaching.center.model.Transaction;
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.example.English.teaching.center.entity.Transaction;
+
 import java.util.List;
 
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {

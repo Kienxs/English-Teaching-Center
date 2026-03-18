@@ -9,6 +9,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <script src="/js/main.js"></script>
   <script src="https://www.google.com/recaptcha/api.js?hl=vi"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="/js/auth-logic.js"></script>
 </head>
 <body>
   <nav class="navbar m-r m-l">
@@ -33,42 +35,27 @@
       </div>
 
       <div class="login-right">
-        <h2>Đăng nhập</h2>
+          <h2>Đăng nhập</h2>
+          <form id="loginForm" th:action="@{/process-login}" method="post">
+              
+              <label for="username">Email <span>*</span></label>
+              <input type="text" id="username" name="username" placeholder="Nhập email" required tabindex="1">
 
-        <form th:action="@{/process-login}" method="post" th:object="${user}">
-          <div th:if="${loginError and !captchaError}" class="alert alert-error">
-              <span th:text="${errorMessage}">Email hoặc mật khẩu không đúng!</span>
-          </div>
+              <label for="password">Mật khẩu <span>*</span></label>
+              <div class="password-wrapper">
+                  <input type="password" id="password" name="password" placeholder="Nhập mật khẩu" required tabindex="2">
+                  <span class="toggle-password">👁️</span>
+              </div>
 
-          <div th:if="${captchaError}" class="alert alert-error">
-            <span th:text="${captchaErrorMessage}">Vui lòng xác minh bạn không phải robot!</span>
-          </div>
-          
-          <div th:if="${logoutMessage != null}" class="alert alert-success">
-              <span th:text="${logoutMessage}">Đăng xuất thành công!</span>
-          </div>
+              <div class="g-recaptcha" th:attr="data-sitekey=${recaptchaSiteKey}" style="margin-bottom: 15px;"></div>
 
-          <label for="username">Email <span>*</span></label>
-          <input type="text" id="username" name="username" placeholder="Nhập email" required tabindex="1">
+              <div class="options">
+                  <a th:href="@{/forgot-password}">Quên mật khẩu?</a>
+              </div>
 
-          <label for="password">Mật khẩu <span>*</span></label>
-          <div class="password-wrapper">
-            <input type="password" id="password" name="password" placeholder="Nhập mật khẩu" required tabindex="2">
-            <span class="toggle-password">👁️</span>
-          </div>
-
-          <div class="g-recaptcha" th:attr="data-sitekey=${recaptchaSiteKey}" tabindex="3"></div>
-
-          <div class="options">
-            <a th:href="@{/forgot-password}" tabindex="-1">Quên mật khẩu</a>
-          </div>
-
-          <button type="submit" class="btn-login" tabindex="4">Đăng nhập</button>
-
-          <p class="register-link">
-            Bạn chưa có tài khoản? <a th:href="@{/register}">Đăng ký</a>
-          </p>
-        </form>
+              <button type="submit" id="btnLogin" class="btn-login" tabindex="4">Đăng nhập</button>
+              <p class="register-link">Chưa có tài khoản? <a th:href="@{/register}">Đăng ký</a></p>
+          </form>
       </div>
     </div>
   </div>
@@ -118,15 +105,26 @@
     </footer>
   
 
-<script>
-    const togglePassword = document.querySelector('.toggle-password');
-    const passwordInput = document.querySelector('#password');
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        // 1. Logic ẩn hiện mật khẩu
+        const toggleBtn = document.querySelector('.toggle-password');
+        const passInput = document.querySelector('#password');
+        if(toggleBtn && passInput) {
+            toggleBtn.addEventListener('click', () => {
+                passInput.type = passInput.type === 'password' ? 'text' : 'password';
+                toggleBtn.textContent = passInput.type === 'password' ? '👁️' : '🙈';
+            });
+        }
 
-    togglePassword.addEventListener('click', () => {
-      const isPassword = passwordInput.type === 'password';
-      passwordInput.type = isPassword ? 'text' : 'password';
-      togglePassword.textContent = isPassword ? '🙈' : '👁️';
+        // 2. Lấy dữ liệu từ Controller qua Thymeleaf
+        const success = /*[[${successMessage}]]*/ null;
+        const error = /*[[${errorMessage}]]*/ null;
+        const captcha = /*[[${captchaErrorMessage}]]*/ null;
+
+        // 3. Gọi hàm từ auth-logic.js
+        initAuthFeatures(success, error, captcha);
     });
-  </script>
+</script>
 </body>
 </html>

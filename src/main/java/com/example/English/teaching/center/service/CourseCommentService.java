@@ -1,7 +1,6 @@
 package com.example.English.teaching.center.service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
@@ -9,9 +8,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
-import com.example.English.teaching.center.model.Course;
-import com.example.English.teaching.center.model.CourseComments;
-import com.example.English.teaching.center.model.User;
+import com.example.English.teaching.center.entity.Course;
+import com.example.English.teaching.center.entity.CourseComments;
+import com.example.English.teaching.center.entity.User;
 import com.example.English.teaching.center.repository.CourseCommentRepository;
 import com.example.English.teaching.center.repository.CourseRepository;
 import com.example.English.teaching.center.repository.UserRepository;

@@ -7,7 +7,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
 
-import com.example.English.teaching.center.model.User;
+import com.example.English.teaching.center.entity.User;
 import com.example.English.teaching.center.service.UserService;
 
 @Component

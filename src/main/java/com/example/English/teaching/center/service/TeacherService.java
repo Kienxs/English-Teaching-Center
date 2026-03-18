@@ -6,8 +6,8 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.example.English.teaching.center.model.User;
-import com.example.English.teaching.center.model.dto.TeacherDashboardDTO;
+import com.example.English.teaching.center.dto.TeacherDashboardDTO;
+import com.example.English.teaching.center.entity.User;
 import com.example.English.teaching.center.repository.CourseRepository;
 import com.example.English.teaching.center.repository.StudentCourseRepository;
 import com.example.English.teaching.center.repository.UserRepository;

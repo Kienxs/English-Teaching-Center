@@ -7,7 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.example.English.teaching.center.model.BlogPost;
+import com.example.English.teaching.center.entity.BlogPost;
 
 public interface BlogPostRepository extends JpaRepository<BlogPost, Long> {
 
@@ -21,5 +21,5 @@ public interface BlogPostRepository extends JpaRepository<BlogPost, Long> {
     boolean existsBySlugAndIdNot(String slug, Long id);
 
 // Process display for admin ---------------------------------------------------------------
-    Page<BlogPost> findByStatus(String status, Pageable pageable);
+    Page<BlogPost> findByStatus(BlogPost.Status status, Pageable pageable);
 }

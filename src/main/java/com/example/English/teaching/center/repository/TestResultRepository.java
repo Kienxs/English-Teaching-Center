@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.example.English.teaching.center.model.TestResult;
+import com.example.English.teaching.center.entity.TestResult;
 
 public interface TestResultRepository extends JpaRepository<TestResult, Long> {
     List<TestResult> findByTestIdAndStudentIdOrderByTakenAtDesc(Long testId, Long studentId);

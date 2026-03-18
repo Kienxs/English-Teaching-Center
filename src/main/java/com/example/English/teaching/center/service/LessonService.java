@@ -2,8 +2,8 @@ package com.example.English.teaching.center.service;
 
 import org.springframework.stereotype.Service;
 
-import com.example.English.teaching.center.model.Lesson;
-import com.example.English.teaching.center.model.Material;
+import com.example.English.teaching.center.entity.Lesson;
+import com.example.English.teaching.center.entity.Material;
 import com.example.English.teaching.center.repository.CourseRepository;
 import com.example.English.teaching.center.repository.LessonRepository;
 import com.example.English.teaching.center.repository.MaterialRepository;

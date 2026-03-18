@@ -1,12 +1,12 @@
 package com.example.English.teaching.center.service;
 
-import com.example.English.teaching.center.model.Course;
-import com.example.English.teaching.center.model.Lesson;
-import com.example.English.teaching.center.model.StudentCourse;
-import com.example.English.teaching.center.model.Teacher;
-import com.example.English.teaching.center.model.Test;
-import com.example.English.teaching.center.model.TestResult;
-import com.example.English.teaching.center.model.User;
+import com.example.English.teaching.center.entity.Course;
+import com.example.English.teaching.center.entity.Lesson;
+import com.example.English.teaching.center.entity.StudentCourse;
+import com.example.English.teaching.center.entity.Teacher;
+import com.example.English.teaching.center.entity.Test;
+import com.example.English.teaching.center.entity.TestResult;
+import com.example.English.teaching.center.entity.User;
 import com.example.English.teaching.center.repository.CourseRepository;
 import com.example.English.teaching.center.repository.LessonRepository;
 import com.example.English.teaching.center.repository.StudentCourseRepository;
