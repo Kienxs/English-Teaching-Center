@@ -1,7 +1,6 @@
 package com.example.English.teaching.center.service;
 
 import java.math.BigDecimal;
-import java.util.Optional;
 
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -9,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.example.English.teaching.center.dto.PasswordChangeDTO;
+import com.example.English.teaching.center.dto.UserLoginResponseDTO;
 import com.example.English.teaching.center.dto.UserProfileDTO;
 import com.example.English.teaching.center.dto.UserRegisterDTO;
 import com.example.English.teaching.center.entity.User;
@@ -17,8 +17,10 @@ import com.example.English.teaching.center.exception.RateLimitException;
 import com.example.English.teaching.center.mapper.UserMapper;
 import com.example.English.teaching.center.repository.UserRepository;
 import com.example.English.teaching.center.securty.ReCaptchaService;
+import com.example.English.teaching.center.utils.JwtUtils;
 
 import io.github.bucket4j.Bucket;
+import jakarta.transaction.Transactional;
 
 @Service
 public class UserService {
@@ -28,21 +30,28 @@ public class UserService {
     private final CloudinaryService cloudinaryService;
     private final RateLimitingService rateLimitingService;
     private final ReCaptchaService reCaptchaService;
+    private final JwtUtils jwtUtils;
+    private final RefreshTokenService refreshTokenService;
 
     public UserService(UserRepository userRepository, 
             PasswordEncoder passwordEncoder, 
             UserMapper userMapper,
             CloudinaryService cloudinaryService,
             RateLimitingService rateLimitingService,
-            ReCaptchaService reCaptchaService) {
+            ReCaptchaService reCaptchaService,
+            JwtUtils jwtUtils,
+            RefreshTokenService refreshTokenService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.userMapper = userMapper;
         this.cloudinaryService = cloudinaryService;
         this.rateLimitingService = rateLimitingService;
         this.reCaptchaService = reCaptchaService;
+        this.jwtUtils = jwtUtils;
+        this.refreshTokenService = refreshTokenService;
     }
 
+    @Transactional
     public void registerNewUser(UserRegisterDTO dto, String recaptchaResponse) {
         // 1. Kiểm tra Rate Limit (Chống spam đăng ký)
         Bucket bucket = rateLimitingService.resolveBucket(dto.getEmail());
@@ -71,24 +80,25 @@ public class UserService {
         userRepository.save(user);
     }
 
-    public User login(String email, String rawPassword) throws IllegalAccessException {
+    public UserLoginResponseDTO login(String email, String rawPassword) throws IllegalAccessException {
+        // 1. Rate Limit
         Bucket bucket = rateLimitingService.resolveBucket("login_" + email); 
         if (!bucket.tryConsume(1)) {
             throw new RateLimitException("Bạn đã nhập sai quá nhiều lần. Vui lòng thử lại sau 10 phút.");
         }
 
-        Optional<User> optionalUser = userRepository.findByEmail(email);
-        if (!optionalUser.isPresent()) {
-            throw new IllegalAccessException("Email không chính xác");
-        }
+        // 2. Find user
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new IllegalAccessException("Email không tồn tại"));
 
-        User user = optionalUser.get();
-        if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
+        // 3. Check password
+        if(!passwordEncoder.matches(rawPassword, user.getPassword())){
             throw new IllegalAccessException("Mật khẩu không đúng");
         }
         
-        return user;
+        return userMapper.toLoginResponseDTO(user, null);
     }
+
 
 
     public User findByEmail(String email) {
@@ -101,6 +111,7 @@ public class UserService {
         return userMapper.toDTO(user);
     }
 
+    @Transactional
     public void updateUserProfile(String email, UserProfileDTO dto, MultipartFile avatarFile) {
         // 1. Kiểm tra Rate Limit
         Bucket bucket = rateLimitingService.resolveBucket(email);
@@ -150,6 +161,7 @@ public class UserService {
         .orElse(BigDecimal.ZERO);
     }
 
+    @Transactional
     public void changePassword(String email, PasswordChangeDTO dto) {
         User user = findByEmail(email);
 

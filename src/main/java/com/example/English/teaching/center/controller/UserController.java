@@ -20,6 +20,7 @@ import com.example.English.teaching.center.service.TestService;
 import com.example.English.teaching.center.service.UserService;
 import com.example.English.teaching.center.dto.PasswordChangeDTO;
 import com.example.English.teaching.center.dto.UserProfileDTO;
+import com.example.English.teaching.center.dto.UserRegisterDTO;
 import com.example.English.teaching.center.entity.Course;
 import com.example.English.teaching.center.entity.CourseComments;
 import com.example.English.teaching.center.entity.StudentCourse;
@@ -74,7 +75,7 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public String registerUser(@Valid @ModelAttribute("user") User user,
+    public String registerUser(@Valid @ModelAttribute("user") UserRegisterDTO dto,
                            BindingResult bindingResult, 
                            Model model,
                            @RequestParam("g-recaptcha-response") String recaptchaResponse,
@@ -89,8 +90,8 @@ public class UserController {
         }
 
         try{
-            userService.registerNewUser(user, recaptchaResponse);
-            redirectAttributes.addFlashAttribute("successMessage", "Đăng ký thành công! Bạn có thể đăng nhập ngay.");
+            userService.registerNewUser(dto, recaptchaResponse);
+            redirectAttributes.addFlashAttribute("successMessage", "Đăng ký thành công!");
             return "redirect:/login";
         }catch(RateLimitException | IllegalArgumentException e){
             model.addAttribute("errorMessage", e.getMessage());
@@ -107,12 +108,16 @@ public class UserController {
     public String showLoginForm( @RequestParam(value = "error", required = false) String error,
                             @RequestParam(value = "logout", required = false) String logout,
                             @RequestParam(value = "captcha", required = false) String captchaError,
+                            HttpSession session,
                             Model model) {
-
         model.addAttribute("recaptchaSiteKey", recaptchaSiteKey);
         // 1. Xử lý thông báo lỗi đăng nhập (Email/Password sai)
-        if (error != null) 
-            model.addAttribute("errorMessage", "Email hoặc mật khẩu không chính xác!");
+        if (error != null) {
+            // Lấy thông báo lỗi cuối cùng từ Spring Security Session
+            Exception lastException = (Exception) session.getAttribute("SPRING_SECURITY_LAST_EXCEPTION");
+            String errorMsg = (lastException != null) ? lastException.getMessage() : "Email hoặc mật khẩu không đúng!";
+            model.addAttribute("errorMessage", errorMsg);
+        }
 
         // 2. Xử lý thông báo lỗi Captcha 
         if (captchaError != null) 
