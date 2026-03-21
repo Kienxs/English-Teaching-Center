@@ -136,7 +136,7 @@ public class CourseService {
         return data;
     }
 
-    public Map<String, Object> getMyCourseDetailData(String identifier, Long lessonId, Long testId, Long userId) {
+    public Map<String, Object> getMyCourseDetailData(String identifier, Long lessonId, String testSlug, Long userId) {
         Course course = Optional.ofNullable(findCourseByIdOrSlug(identifier))
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy khóa học: " + identifier));
         
@@ -153,8 +153,8 @@ public class CourseService {
                     selectedLesson.setTests(lessonWithTests.getTests());
                     data.put("selectedLesson", selectedLesson);
 
-                    if (testId != null) {
-                        processTestData(testId, userId, selectedLesson, data);
+                    if (testSlug != null && !testSlug.trim().isEmpty()) {
+                        processTestData(testSlug.trim(), userId, selectedLesson, data);
                     }
                 }
             });
@@ -162,13 +162,13 @@ public class CourseService {
         return data;
     }
 
-    private void processTestData(Long testId, Long userId, Lesson lesson, Map<String, Object> data) {
+    private void processTestData(String testSlug, Long userId, Lesson lesson, Map<String, Object> data) {
         Test selectedTest = lesson.getTests().stream()
-                .filter(t -> t.getId().equals(testId))
+                .filter(t -> t.getSlug().equals(testSlug))
                 .findFirst().orElse(null);
 
         if (selectedTest != null) {
-            List<TestResult> history = testResultRepository.findByTestIdAndStudentIdOrderByTakenAtDesc(testId, userId);
+            List<TestResult> history = testResultRepository.findByTestIdAndStudentIdOrderByTakenAtDesc(selectedTest.getId(), userId);
             BigDecimal bestScore = history.stream()
                     .filter(r -> r.getStatus() == TestResult.Status.COMPLETED)
                     .map(TestResult::getScore)

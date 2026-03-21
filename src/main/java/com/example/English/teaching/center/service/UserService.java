@@ -17,7 +17,6 @@ import com.example.English.teaching.center.exception.RateLimitException;
 import com.example.English.teaching.center.mapper.UserMapper;
 import com.example.English.teaching.center.repository.UserRepository;
 import com.example.English.teaching.center.securty.ReCaptchaService;
-import com.example.English.teaching.center.utils.JwtUtils;
 
 import io.github.bucket4j.Bucket;
 import jakarta.transaction.Transactional;
@@ -30,25 +29,19 @@ public class UserService {
     private final CloudinaryService cloudinaryService;
     private final RateLimitingService rateLimitingService;
     private final ReCaptchaService reCaptchaService;
-    private final JwtUtils jwtUtils;
-    private final RefreshTokenService refreshTokenService;
 
     public UserService(UserRepository userRepository, 
             PasswordEncoder passwordEncoder, 
             UserMapper userMapper,
             CloudinaryService cloudinaryService,
             RateLimitingService rateLimitingService,
-            ReCaptchaService reCaptchaService,
-            JwtUtils jwtUtils,
-            RefreshTokenService refreshTokenService) {
+            ReCaptchaService reCaptchaService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.userMapper = userMapper;
         this.cloudinaryService = cloudinaryService;
         this.rateLimitingService = rateLimitingService;
         this.reCaptchaService = reCaptchaService;
-        this.jwtUtils = jwtUtils;
-        this.refreshTokenService = refreshTokenService;
     }
 
     @Transactional
@@ -167,7 +160,7 @@ public class UserService {
 
         // 1. Kiểm tra mật khẩu hiện tại
         if (!passwordEncoder.matches(dto.getCurrentPassword(), user.getPassword())) {
-            throw new RuntimeException("Mật khẩu hiện tại không đúng");
+            throw new IllegalArgumentException("Mật khẩu hiện tại không đúng");
         }
 
         // 2. Kiểm tra mật khẩu mới và xác nhận
@@ -177,6 +170,5 @@ public class UserService {
 
         // 3. Cập nhật mật khẩu mới (đã mã hóa)
         user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
-        userRepository.save(user);
     }
 }

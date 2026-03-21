@@ -12,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
+import org.springframework.security.core.Authentication;
 
 import com.example.English.teaching.center.securty.ReCaptchaService;
 import com.example.English.teaching.center.service.CourseCommentService;
@@ -19,11 +20,13 @@ import com.example.English.teaching.center.service.CourseService;
 import com.example.English.teaching.center.service.TestService;
 import com.example.English.teaching.center.service.UserService;
 import com.example.English.teaching.center.dto.PasswordChangeDTO;
+import com.example.English.teaching.center.dto.TestDTO;
 import com.example.English.teaching.center.dto.UserProfileDTO;
 import com.example.English.teaching.center.dto.UserRegisterDTO;
 import com.example.English.teaching.center.entity.Course;
 import com.example.English.teaching.center.entity.CourseComments;
 import com.example.English.teaching.center.entity.StudentCourse;
+import com.example.English.teaching.center.entity.Test;
 import com.example.English.teaching.center.entity.TestResult;
 import com.example.English.teaching.center.entity.User;
 import com.example.English.teaching.center.exception.InvalidFileException;
@@ -61,8 +64,12 @@ public class UserController {
     }
 
     // Landing page
-    @GetMapping("/landing")
-    public String showLandingPage() {
+    @GetMapping({"/", "/landing"})
+    public String showLandingPage(Authentication authentication) {
+        if(authentication != null && authentication.isAuthenticated()){
+            return redirectUserBaseOnRole(authentication);
+        }
+
         return "landing";
     }
 
@@ -79,7 +86,12 @@ public class UserController {
                            BindingResult bindingResult, 
                            Model model,
                            @RequestParam("g-recaptcha-response") String recaptchaResponse,
-                           RedirectAttributes redirectAttributes) { 
+                           RedirectAttributes redirectAttributes,
+                           Authentication authentication) { 
+
+        if(authentication != null && authentication.isAuthenticated()){
+            return redirectUserBaseOnRole(authentication);
+        }
 
         if(bindingResult.hasErrors()){
             FieldError passwordError = bindingResult.getFieldError("password");
@@ -103,13 +115,20 @@ public class UserController {
         return "register";
     }
 
+
     // Spring Security sẽ xử lý POST /process-login
     @GetMapping("/login")
     public String showLoginForm( @RequestParam(value = "error", required = false) String error,
                             @RequestParam(value = "logout", required = false) String logout,
                             @RequestParam(value = "captcha", required = false) String captchaError,
                             HttpSession session,
-                            Model model) {
+                            Model model,
+                            Authentication authentication) {
+
+        if(authentication != null && authentication.isAuthenticated()){
+            return redirectUserBaseOnRole(authentication);
+        }
+
         model.addAttribute("recaptchaSiteKey", recaptchaSiteKey);
         // 1. Xử lý thông báo lỗi đăng nhập (Email/Password sai)
         if (error != null) {
@@ -129,6 +148,23 @@ public class UserController {
 
         return "login";
     }    
+
+    private String redirectUserBaseOnRole(Authentication authentication) {
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN")
+                    || auth.getAuthority().equals("ROLE_TECHNICAL"));
+
+        boolean isTeacher = authentication.getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_TEACHER"));
+
+        if(isAdmin){
+            return "redirect:/admin/dashboard";
+        } else if(isTeacher){
+            return "redirect:/teacher/course-management";
+        } else {
+            return "redirect:/user/home";
+        }
+    }
 
     // User Dashboard------------------------------------------------------------
     @GetMapping("/user/home")
@@ -256,13 +292,13 @@ public class UserController {
     @GetMapping("/user/my-course-detail/{courseSlug}")
     public String myCoursesDetail(@PathVariable String courseSlug, 
                                 @RequestParam(name = "lessonId", required = false) Long lessonId,
-                                @RequestParam(name = "testId", required = false) Long testId,
+                                @RequestParam(name = "testSlug", required = false) String testSlug,
                                 Model model, Principal principal) {
 
         if (principal == null) return "redirect:/login";
 
         User currentUser = userService.findByEmail(principal.getName());
-        Map<String, Object> data = courseService.getMyCourseDetailData(courseSlug, lessonId, testId, currentUser.getId());
+        Map<String, Object> data = courseService.getMyCourseDetailData(courseSlug, lessonId, testSlug, currentUser.getId());
 
         model.addAllAttributes(data);
         return "user/my-course-detail"; 
@@ -293,7 +329,9 @@ public class UserController {
             User user = userService.findByEmail(principal.getName());
             TestResult result = testService.startOrResumeTest(testSlug, user);
 
-            model.addAttribute("test", result.getTest());
+            TestDTO safeTest = testService.getSafeTestDetails(testSlug);
+
+            model.addAttribute("test", safeTest);
             model.addAttribute("resultId", result.getId());
             return "user/do-test";
         } catch (RuntimeException e) { 

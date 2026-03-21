@@ -27,7 +27,7 @@
     <div class="main-container m-r m-l">
         
         <form th:action="@{/user/submit-test}" method="post" id="examForm"> 
-            <input type="hidden" name="testId" th:value="${test.id}">
+            <input type="hidden" name="testSlug" th:value="${test.slug}">
 
             <div class="exam-container" id="test-interface">
                 

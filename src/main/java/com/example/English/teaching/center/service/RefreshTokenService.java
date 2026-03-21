@@ -13,7 +13,7 @@ import com.example.English.teaching.center.repository.UserRepository;
 
 @Service
 public class RefreshTokenService {
-    @Value("${ece.jwt.refreshExpirationMs: 7 * 24 * 60 * 60 * 1000}") //7 ngày
+    @Value("${ece.jwt.refreshExpirationMs: 604800000}") //7 ngày
     private Long refreshExpirationMs;
 
     private final RefreshTokenRepository refreshTokenRepository;

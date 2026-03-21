@@ -1,80 +1,67 @@
 package com.example.English.teaching.center.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import com.example.English.teaching.center.securty.CustomAuthenticationProvider;
+import com.example.English.teaching.center.securty.CustomAuthenticationSuccessHandler;
+import com.example.English.teaching.center.securty.JwtAuthenticationFilter;
 import com.example.English.teaching.center.securty.ReCaptchaFilter;
-
 
 @Configuration
 public class SecurityConfig {
 
-    @Autowired
-    private UserDetailsService userDetailsService;
+    private final CustomAuthenticationProvider customAuthProvider;
+    private final ReCaptchaFilter reCaptchaFilter;
+    private final CustomAuthenticationSuccessHandler customSuccessHandler;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    public SecurityConfig(@Lazy CustomAuthenticationProvider customAuthProvider, 
+                          ReCaptchaFilter reCaptchaFilter,
+                          CustomAuthenticationSuccessHandler customSuccessHandler,
+                          JwtAuthenticationFilter jwtAuthenticationFilter) {
+        this.customAuthProvider = customAuthProvider;
+        this.reCaptchaFilter = reCaptchaFilter;
+        this.customSuccessHandler = customSuccessHandler;
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+    }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, @Lazy CustomAuthenticationProvider customAuthProvider, ReCaptchaFilter reCaptchaFilter) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/landing", "/login", "/register", "/css/**", "/js/**", "/images/**").permitAll()
-                .requestMatchers("/admin/**").hasRole("ADMIN")
-                .requestMatchers("/admin/**").hasRole("TECHNICAL")
+                .requestMatchers("/admin/**").hasAnyRole("ADMIN", "TECHNICAL") // Đã gộp Role ở đây
                 .requestMatchers("/teacher/**").hasRole("TEACHER")
-                .requestMatchers("/user/**").hasAnyRole("STUDENT")
+                .requestMatchers("/user/**").hasRole("STUDENT") // Đổi hasAnyRole thành hasRole vì chỉ có 1
                 .anyRequest().authenticated()
             )
             .authenticationProvider(customAuthProvider)
             .formLogin(form -> form
                 .loginPage("/login")
                 .loginProcessingUrl("/process-login")
-                .successHandler(successHandler())
+                .successHandler(customSuccessHandler) // Sử dụng Handler chuẩn của bạn
                 .failureUrl("/login?error=true")
                 .permitAll()
             )
             .logout(logout -> logout
                 .logoutUrl("/logout")
                 .logoutSuccessUrl("/landing")
+                // Xóa cookie khi đăng xuất để bảo mật hơn
+                .deleteCookies("accessToken", "refreshToken", "JSESSIONID") 
                 .permitAll()
             )
-
-
-            .addFilterBefore(reCaptchaFilter, UsernamePasswordAuthenticationFilter.class);
+            // Thêm JWT Filter và ReCaptcha Filter vào đúng chuỗi
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(reCaptchaFilter, JwtAuthenticationFilter.class);
 
         return http.build();
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    @Bean
-    public AuthenticationSuccessHandler successHandler() {
-        return (request, response, authentication) -> {
-            var authorities = authentication.getAuthorities();
-            String redirectUrl = "user/home";
-            for (var auth : authorities) {
-                if (auth.getAuthority().equals("ROLE_ADMIN")) {
-                    redirectUrl = "/admin/dashboard";
-                    break;
-                }
-                else if(auth.getAuthority().equals("ROLE_TEACHER")){
-                    redirectUrl = "/teacher/course-management";
-                    break;
-                }
-            }
-            response.sendRedirect(redirectUrl);
-        };
     }
 }

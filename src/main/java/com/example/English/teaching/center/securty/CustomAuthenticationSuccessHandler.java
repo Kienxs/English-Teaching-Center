@@ -57,6 +57,16 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         response.addCookie(rtCookie);
 
         // 5. Redirect to the homepage
-        response.sendRedirect("/user/home");
+        String redirectUrl = "/user/home"; // Nhớ thêm dấu / ở đầu nhé
+        for (var auth : authentication.getAuthorities()) {
+            if (auth.getAuthority().equals("ROLE_ADMIN")) {
+                redirectUrl = "/admin/dashboard";
+                break;
+            } else if (auth.getAuthority().equals("ROLE_TEACHER")) {
+                redirectUrl = "/teacher/course-management";
+                break;
+            }
+        }
+        response.sendRedirect(redirectUrl);
     }
 }
