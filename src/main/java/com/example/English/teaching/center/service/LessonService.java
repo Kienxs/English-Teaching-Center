@@ -2,11 +2,15 @@ package com.example.English.teaching.center.service;
 
 import org.springframework.stereotype.Service;
 
+import com.example.English.teaching.center.dto.LessonSaveDTO;
+import com.example.English.teaching.center.dto.MaterialDTO;
 import com.example.English.teaching.center.entity.Lesson;
 import com.example.English.teaching.center.entity.Material;
 import com.example.English.teaching.center.repository.CourseRepository;
 import com.example.English.teaching.center.repository.LessonRepository;
 import com.example.English.teaching.center.repository.MaterialRepository;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class LessonService {
@@ -22,42 +26,46 @@ public class LessonService {
         this.materialRepository = materialRepository;
     }
 
-    public void saveOrUpdateLesson(Long id, Long courseId, String title, Integer order, String description){
+    @Transactional
+    public void saveOrUpdateLesson(LessonSaveDTO dto){
         Lesson lesson;
-        if (id != null) {
-            lesson = lessonRepository.findById(id)
+        if (dto.getId() != null) {
+            lesson = lessonRepository.findById(dto.getId())
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy bài học"));
         } else {
             lesson = new Lesson();
-            lesson.setCourse(courseRepository.findById(courseId)
+            lesson.setCourse(courseRepository.findById(dto.getCourseId())
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy khóa học")));
         }
         
-        lesson.setTitle(title);
-        lesson.setLessonOrder(order);
-        lesson.setDescription(description);
+        lesson.setTitle(dto.getTitle());
+        lesson.setLessonOrder(dto.getLessonOrder());
+        lesson.setDescription(dto.getDescription());
         lessonRepository.save(lesson);
     }
 
+    @Transactional
     public void deleteLesson(Long lessonId){
         lessonRepository.deleteById(lessonId);
     }
 
-    public Long saveOrUpdateMaterial(Long id, Long lessonId, String title, String fileUrl, String type) {
-        Lesson lesson = lessonRepository.findById(lessonId).orElseThrow();
+    @Transactional
+    public Long saveOrUpdateMaterial(MaterialDTO dto) {
+        Lesson lesson = lessonRepository.findById(dto.getLessonId())
+            .orElseThrow(() -> new RuntimeException("Không tìm thấy bài học"));
         Material material;
         
-        if (id != null) {
-            material = materialRepository.findById(id)
+        if (dto.getId() != null) {
+            material = materialRepository.findById(dto.getId())
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy tài liệu"));
         } else {
             material = new Material();
             material.setLesson(lesson);
         }
 
-        material.setTitle(title);
-        material.setFileUrl(fileUrl);
-        material.setType(Material.FileType.valueOf(type));
+        material.setTitle(dto.getTitle());
+        material.setFileUrl(dto.getFileUrl());
+        material.setType(Material.FileType.valueOf(dto.getType()));
         materialRepository.save(material);
 
         return lesson.getCourse().getId();

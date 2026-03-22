@@ -1,6 +1,10 @@
 package com.example.English.teaching.center.controller;
 
+import com.example.English.teaching.center.dto.LessonSaveDTO;
+import com.example.English.teaching.center.dto.MaterialDTO;
+import com.example.English.teaching.center.dto.QuestionSaveDTO;
 import com.example.English.teaching.center.dto.TeacherDashboardDTO;
+import com.example.English.teaching.center.dto.TestSaveDTO;
 import com.example.English.teaching.center.entity.BlogPost;
 import com.example.English.teaching.center.entity.Course;
 import com.example.English.teaching.center.entity.Test;
@@ -115,12 +119,13 @@ public class TeacherController {
     }
 
     @PostMapping("/lesson/save")
-    public String saveLesson(@RequestParam(required = false) Long id,
-                             @RequestParam Long courseId, @RequestParam String title,
-                             @RequestParam Integer lessonOrder,@RequestParam String description){
-        lessonService.saveOrUpdateLesson(id, courseId, title, lessonOrder, description);
-        // Lấy slug để redirect
-        String slug = courseService.findCourseById(courseId).get().getSlug();
+    public String saveLesson(@ModelAttribute("LessonSaveDTO") LessonSaveDTO dto){
+        lessonService.saveOrUpdateLesson(dto);
+
+        String slug = courseService.findCourseById(dto.getCourseId())
+                        .orElseThrow(() -> new RuntimeException("Không tìm thấy khóa học"))
+                        .getSlug();
+
         return "redirect:/teacher/course/edit/" + slug;
     }
 
@@ -132,26 +137,28 @@ public class TeacherController {
     }
 
     @PostMapping("/material/save")
-    public String saveMaterial(@RequestParam(required = false) Long id,
-                            @RequestParam Long lessonId, @RequestParam String title,
-                            @RequestParam String fileUrl, @RequestParam String type){
-        Long courseId = lessonService.saveOrUpdateMaterial(id, lessonId, title, fileUrl, type);
-        return "redirect:/teacher/course/edit/" + courseId;
+    public String saveMaterial(@ModelAttribute MaterialDTO dto){
+        Long courseId = lessonService.saveOrUpdateMaterial(dto);
+
+        String slug = courseService.findCourseById(courseId)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy khóa học"))
+                    .getSlug();
+
+        return "redirect:/teacher/course/edit/" + slug;
     }
 
     @PostMapping("/material/delete/{id}")
     public String deleteMaterial(@PathVariable Long id){
         Long courseId = lessonService.deleteMaterial(id);
-        return "redirect:/teacher/course/edit/" + courseId;
+        String slug = courseService.findCourseById(courseId)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy khóa học"))
+                    .getSlug();
+        return "redirect:/teacher/course/edit/" + slug;
     }
 
     @PostMapping("/test/save")
-    public String saveTest(@RequestParam(required = false) Long id, 
-                           @RequestParam Long lessonId,
-                           @RequestParam String title,
-                           @RequestParam Integer durationMinutes) {
-        Test saved = testService.saveTest(id, lessonId, title, durationMinutes);
-        String slug = saved.getLesson().getCourse().getSlug();
+    public String saveTest(@ModelAttribute TestSaveDTO dto){ 
+        String slug = testService.saveTest(dto);
         return "redirect:/teacher/course/edit/" + slug;
     }
 
@@ -172,13 +179,9 @@ public class TeacherController {
     }
 
     @PostMapping("/question/save")
-    public String saveQuestion(@RequestParam(required = false) Long id,
-                            @RequestParam Long testId, @RequestParam String questionText,
-                            @RequestParam String optionA, @RequestParam String optionB,
-                            @RequestParam String optionC, @RequestParam String optionD,
-                            @RequestParam String correctAnswer, @RequestParam Double points){
-        testService.saveQuestion(id, testId, questionText, optionA, optionB, optionC, optionD, correctAnswer, points);
-        return "redirect:/teacher/test/edit/" + testId;
+    public String saveQuestion(@ModelAttribute QuestionSaveDTO dto) {
+        testService.saveQuestion(dto);
+        return "redirect:/teacher/test/edit/" + dto.getTestId();
     }
 
     @GetMapping("/question/delete/{id}")

@@ -1,6 +1,5 @@
 package com.example.English.teaching.center.service;
 
-import java.beans.Transient;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
@@ -10,7 +9,9 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import com.example.English.teaching.center.dto.QuestionSaveDTO;
 import com.example.English.teaching.center.dto.TestDTO;
+import com.example.English.teaching.center.dto.TestSaveDTO;
 import com.example.English.teaching.center.entity.Lesson;
 import com.example.English.teaching.center.entity.Question;
 import com.example.English.teaching.center.entity.Test;
@@ -136,12 +137,12 @@ public class TestService {
 
     // For Teachers
     @Transactional
-    public Test saveTest(Long id, Long lessonId, String title, Integer duration) {
-        Lesson lesson = lessonRepository.findById(lessonId).orElseThrow(() -> new RuntimeException("Không tìm thấy bài học"));
-        Test test = (id != null) ? testRepository.findById(id).orElse(new Test()) : new Test();
-        test.setId(id);
+    public String saveTest(TestSaveDTO dto) {
+        Lesson lesson = lessonRepository.findById(dto.getLessonId()).orElseThrow(() -> new RuntimeException("Không tìm thấy bài học"));
+        Test test = (dto.getId() != null) ? testRepository.findById(dto.getId()).orElse(new Test()) : new Test();
+        test.setId(dto.getId());
         test.setLesson(lesson);
-        test.setTitle(title);
+        test.setTitle(dto.getTitle());
 
         String baseSlug = SlugUtils.makeSlug(test.getTitle());
         String finalSlug = baseSlug;
@@ -154,8 +155,10 @@ public class TestService {
         }
 
         test.setSlug(finalSlug);
-        test.setDurationMinutes(duration);
-        return testRepository.save(test);
+        test.setDurationMinutes(dto.getDurationMinutes());
+        testRepository.save(test);
+
+        return lesson.getCourse().getSlug();
     }
 
     @Transactional
@@ -164,17 +167,17 @@ public class TestService {
     }
 
     @Transactional
-    public void saveQuestion(Long id, Long testId, String text, String a, String b, String c, String d, String correct, Double points) {
-        Test test = testRepository.findById(testId).orElseThrow();
-        Question q = (id != null) ? questionRepository.findById(id).orElse(new Question()) : new Question();
+    public void saveQuestion(QuestionSaveDTO dto) {
+        Test test = testRepository.findById(dto.getTestId()).orElseThrow();
+        Question q = (dto.getId() != null) ? questionRepository.findById(dto.getId()).orElse(new Question()) : new Question();
         q.setTest(test);
-        q.setQuestionText(text);
-        q.setOptionA(a); 
-        q.setOptionB(b); 
-        q.setOptionC(c); 
-        q.setOptionD(d);
-        q.setCorrectAnswer(correct);
-        q.setPoints(BigDecimal.valueOf(points));
+        q.setQuestionText(dto.getText());
+        q.setOptionA(dto.getOptionA());
+        q.setOptionB(dto.getOptionB());
+        q.setOptionC(dto.getOptionC());
+        q.setOptionD(dto.getOptionD());
+        q.setCorrectAnswer(dto.getCorrectAnswer());
+        q.setPoints(dto.getPoints());
         questionRepository.save(q);
     }
 

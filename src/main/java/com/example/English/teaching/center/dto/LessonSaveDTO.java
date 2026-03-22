@@ -1,15 +1,12 @@
 package com.example.English.teaching.center.dto;
 
-import java.util.List;
-
 import lombok.Data;
 
 @Data
-public class LessonDTO {
+public class LessonSaveDTO {
     private Long id;
+    private Long courseId;
     private String title;
-    private String description;
     private Integer lessonOrder;
-    private List<MaterialDTO> materials; 
-    private List<TestDTO> tests;
+    private String description;
 }

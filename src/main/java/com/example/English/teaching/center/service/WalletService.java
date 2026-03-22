@@ -49,4 +49,30 @@ public class WalletService {
         tx.setDescription("Nạp tiền vào ví qua hệ thống!");
         transactionRepository.save(tx);
     }
+
+    @Transactional
+    public void payment(User user, BigDecimal amount, String description){
+        if(amount == null || amount.compareTo(BigDecimal.ZERO) <= 0){
+            throw new IllegalArgumentException("Số tiền thanh toán phải lớn hơn 0!");
+        }
+
+        // 1. Check balance
+        BigDecimal currentBalance = user.getBalance() == null ? BigDecimal.ZERO : user.getBalance();
+        if(currentBalance.compareTo(amount) < 0){
+            throw new RuntimeException("Số dư không đủ để thực hiện giao dịch!");
+        }
+
+        // 2. Deduct balance
+        BigDecimal newBalance = currentBalance.subtract(amount);
+        user.setBalance(newBalance);
+
+        // 3. Record transaction log
+        Transaction tx = new Transaction();
+        tx.setUser(user);
+        tx.setAmount(amount.negate()); // Giao dịch thanh toán nên là số âm
+        tx.setBalanceAfter(newBalance);
+        tx.setType(Transaction.TransactionType.PAYMENT);
+        tx.setDescription(description);
+        transactionRepository.save(tx);
+    }
 }

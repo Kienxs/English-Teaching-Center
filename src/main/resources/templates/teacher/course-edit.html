@@ -96,9 +96,85 @@
                                     </div>
                                 </div>
                                 <div class="lesson-body" style="display: none;">
-                                    <div style="padding: 10px;">
-                                        Nội dung bài học... (Phần này giữ nguyên code cũ của bạn)
-                                        <div th:if="${lesson.materials}" >...</div>
+                                    <div style="padding: 15px; background-color: #fdfdfd; border-top: 1px solid #eee;">
+                                        
+                                        <div style="margin-bottom: 15px; display: flex; gap: 10px;">
+                                            <button type="button" class="btn btn-outline" style="font-size: 12px; border-color: #3498db; color: #3498db;" 
+                                                    th:data-lesson-id="${lesson.id}" 
+                                                    onclick="openMaterialModal(this.getAttribute('data-lesson-id')); event.stopPropagation();">
+                                                <i class="fa-solid fa-file-circle-plus"></i> Thêm tài liệu
+                                            </button>
+                                            <button type="button" class="btn btn-outline" style="font-size: 12px; border-color: #9b59b6; color: #9b59b6;" 
+                                                    th:data-lesson-id="${lesson.id}" 
+                                                    onclick="openTestModal(this.getAttribute('data-lesson-id')); event.stopPropagation();">
+                                                <i class="fa-solid fa-file-signature"></i> Thêm bài Test
+                                            </button>
+                                        </div>
+
+                                        <div th:if="${lesson.materials != null and !lesson.materials.isEmpty()}">
+                                            <h5 style="margin-bottom: 10px; font-size: 13px; color: #555;"><i class="fa-solid fa-folder-open"></i> Tài liệu đính kèm:</h5>
+                                            <ul style="list-style: none; padding-left: 0;">
+                                                <li th:each="mat : ${lesson.materials}" style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: white; margin-bottom: 5px; border-radius: 4px; border: 1px solid #e0e0e0;">
+                                                    <div>
+                                                        <i class="fa-solid fa-file-lines" style="color: #7f8c8d; margin-right: 5px;"></i>
+                                                        <span th:text="${mat.title}" style="font-size: 13px;">Tên tài liệu</span>
+                                                        <span style="font-size: 11px; color: gray; margin-left: 5px; background: #eee; padding: 2px 5px; border-radius: 3px;" th:text="${mat.type}">PDF</span>
+                                                    </div>
+                                                    <div class="lesson-actions">
+                                                        <button type="button" class="btn btn-outline btn-edit" style="padding: 3px 6px; font-size: 11px;"
+                                                                th:data-id="${mat.id}"
+                                                                th:data-lesson-id="${lesson.id}"
+                                                                th:data-title="${mat.title}"
+                                                                th:data-url="${mat.fileUrl}"
+                                                                th:data-type="${mat.type}"
+                                                                onclick="openEditMaterialModal(this); event.stopPropagation();">
+                                                            <i class="fa-solid fa-pen"></i>
+                                                        </button>
+                                                        <button type="submit" class="btn btn-outline btn-delete" style="padding: 3px 6px; font-size: 11px;"
+                                                                th:formaction="@{/teacher/material/delete/{mId}/{cSlug}(mId=${mat.id}, cSlug=${course.slug})}"
+                                                                onclick="event.stopPropagation(); return confirm('Bạn có chắc muốn xóa tài liệu này?');">
+                                                            <i class="fa-solid fa-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </li>
+                                            </ul>
+                                        </div>
+
+                                        <div th:if="${lesson.tests != null and !lesson.tests.isEmpty()}" style="margin-top: 15px;">
+                                            <h5 style="margin-bottom: 10px; font-size: 13px; color: #555;"><i class="fa-solid fa-stopwatch"></i> Bài kiểm tra:</h5>
+                                            <ul style="list-style: none; padding-left: 0;">
+                                                <li th:each="test : ${lesson.tests}" style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: white; margin-bottom: 5px; border-radius: 4px; border: 1px solid #e0e0e0; border-left: 3px solid #9b59b6;">
+                                                    <div>
+                                                        <i class="fa-solid fa-clipboard-question" style="color: #9b59b6; margin-right: 5px;"></i>
+                                                        <span th:text="${test.title}" style="font-size: 13px; font-weight: bold;">Tên test</span>
+                                                        <span style="font-size: 11px; color: gray; margin-left: 5px;" th:text="'(' + ${test.durationMinutes} + ' phút)'"></span>
+                                                    </div>
+                                                    <div class="lesson-actions">
+                                                        <a th:href="@{'/teacher/test/edit/' + ${test.id}}" class="btn btn-outline btn-edit" title="Quản lý câu hỏi" style="padding: 3px 6px; font-size: 11px; color: #2ecc71; border-color: #2ecc71;" onclick="event.stopPropagation();">
+                                                            <i class="fa-solid fa-list-check"></i> Câu hỏi
+                                                        </a>
+                                                        <button type="button" class="btn btn-outline btn-edit" style="padding: 3px 6px; font-size: 11px;"
+                                                                th:data-id="${test.id}"
+                                                                th:data-lesson-id="${lesson.id}"
+                                                                th:data-title="${test.title}"
+                                                                th:data-duration="${test.durationMinutes}"
+                                                                onclick="openEditTestModal(this); event.stopPropagation();">
+                                                            <i class="fa-solid fa-pen"></i>
+                                                        </button>
+                                                        <button type="submit" class="btn btn-outline btn-delete" style="padding: 3px 6px; font-size: 11px;"
+                                                                th:formaction="@{/teacher/test/delete/{tId}/{cSlug}(tId=${test.id}, cSlug=${course.slug})}"
+                                                                onclick="event.stopPropagation(); return confirm('Xóa bài kiểm tra này sẽ xóa luôn tất cả câu hỏi. Bạn chắc chứ?');">
+                                                            <i class="fa-solid fa-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        
+                                        <div th:if="${(lesson.materials == null or lesson.materials.isEmpty()) and (lesson.tests == null or lesson.tests.isEmpty())}" style="font-size: 12px; color: gray; font-style: italic; text-align: center; padding: 10px 0;">
+                                            Chưa có tài liệu hay bài kiểm tra nào trong bài học này.
+                                        </div>
+                                        
                                     </div>
                                 </div>
                             </div>
@@ -155,8 +231,69 @@
         </div>
     </div>
     
-    <div id="modalMaterial" class="modal-overlay"> ... (Giữ nguyên) ... </div>
-    <div id="modalTest" class="modal-overlay"> ... (Giữ nguyên) ... </div>
+    <div id="modalMaterial" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span id="modalMaterialTitle">Thêm Tài Liệu</span>
+                <span class="close-btn" onclick="closeModal('modalMaterial')">&times;</span>
+            </div>
+            
+            <form th:action="@{/teacher/material/save}" method="post">
+                <input type="hidden" name="id" id="materialId">
+                <input type="hidden" name="lessonId" id="materialLessonId">
+                
+                <div class="form-group">
+                    <label>Tên tài liệu</label>
+                    <input type="text" name="title" id="materialTitle" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Đường dẫn file (URL)</label>
+                    <input type="text" name="fileUrl" id="materialUrl" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Loại file</label>
+                    <select name="type" id="materialType" class="form-control">
+                        <option value="PDF">PDF</option>
+                        <option value="VIDEO">Video</option>
+                        <option value="DOC">Word</option>
+                        <option value="PPT">PowerPoint</option>
+                        <option value="SCORM">SCORM</option>
+                        <option value="OTHER">Khác</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Lưu Tài Liệu</button>
+            </form>
+        </div>
+    </div>
+    
+    <div id="modalTest" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span id="modalTestHeaderTitle">Thêm Bài Test</span>
+                <span class="close-btn" onclick="closeModal('modalTest')">&times;</span>
+            </div>
+            
+            <form th:action="@{/teacher/test/save}" method="post">
+                <input type="hidden" name="id" id="testId">
+                <input type="hidden" name="lessonId" id="testLessonId">
+                
+                <div class="form-group">
+                    <label>Tên bài kiểm tra</label>
+                    <input type="text" name="title" id="testTitle" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Thời gian làm bài (Phút)</label>
+                    <input type="number" name="durationMinutes" id="testDuration" class="form-control" required min="1">
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Lưu Bài Test</button>
+            </form>
+        </div>
+    </div>
 
     <script>
         let isSaving = false;
