@@ -1,5 +1,7 @@
 package com.example.English.teaching.center.controller;
 
+import com.example.English.teaching.center.dto.CourseDTO;
+import com.example.English.teaching.center.dto.CourseSaveDTO;
 import com.example.English.teaching.center.dto.LessonSaveDTO;
 import com.example.English.teaching.center.dto.MaterialDTO;
 import com.example.English.teaching.center.dto.QuestionSaveDTO;
@@ -67,12 +69,12 @@ public class TeacherController {
 // Process flow for course administrators --------------------------------------------------------------------
     @GetMapping("/course-management")
     public String courseManagement(Model model, Principal principal,
-                                   @RequestParam(defaultValue = "0") int page, // Trang mặc định 0
-                                   @RequestParam(defaultValue = "5") int size) { // 5 khóa học/trang
+                                   @RequestParam(defaultValue = "0") int page, 
+                                   @RequestParam(defaultValue = "5") int size) { 
         if(principal == null) return "redirect:/login";
 
         User teacher = userService.findByEmail(principal.getName());
-        Page<Course> coursePage = courseService.getCoursesByTeacher(teacher.getId(), page, size);
+        Page<CourseDTO> coursePage = courseService.getCoursesByTeacher(teacher.getId(), page, size);
         
         model.addAttribute("coursePage", coursePage); 
         model.addAttribute("currentPage", page);
@@ -112,9 +114,9 @@ public class TeacherController {
     }
 
     @PostMapping("/course/save")
-    public String saveCourse(@ModelAttribute("course") Course course, Principal principal) {
+    public String saveCourse(@ModelAttribute("course") CourseSaveDTO dto, Principal principal) {
         User currentUser = userService.findByEmail(principal.getName());
-        Course savedCourse = courseService.saveOrUpdateCourse(course, currentUser.getId());
+        Course savedCourse = courseService.saveOrUpdateCourse(dto, currentUser.getId());
         return "redirect:/teacher/course/edit/" + savedCourse.getSlug();
     }
 
@@ -147,13 +149,12 @@ public class TeacherController {
         return "redirect:/teacher/course/edit/" + slug;
     }
 
-    @PostMapping("/material/delete/{id}")
-    public String deleteMaterial(@PathVariable Long id){
-        Long courseId = lessonService.deleteMaterial(id);
-        String slug = courseService.findCourseById(courseId)
-                    .orElseThrow(() -> new RuntimeException("Không tìm thấy khóa học"))
-                    .getSlug();
-        return "redirect:/teacher/course/edit/" + slug;
+    @PostMapping("/material/delete/{id}/{courseSlug}")
+    public String deleteMaterial(@PathVariable Long id, 
+                                @PathVariable String courseSlug){
+        lessonService.deleteMaterial(id);
+
+        return "redirect:/teacher/course/edit/" + courseSlug;
     }
 
     @PostMapping("/test/save")
@@ -170,24 +171,28 @@ public class TeacherController {
         return "teacher/test-questions";
     }
 
-    @PostMapping("/test/delete/{id}")
-    public String deleteTest(@PathVariable Long id, 
-                            @RequestParam Long courseId, 
-                            RedirectAttributes ra){
+    @PostMapping("/test/delete/{id}/{courseSlug}")
+    public String deleteTest(@PathVariable("id") Long id, 
+                             @PathVariable("courseSlug") String courseSlug, 
+                             RedirectAttributes ra){
         testService.deleteTest(id);
-        return "redirect:/teacher/course/edit/" + courseId;
+        return "redirect:/teacher/course/edit/" + courseSlug;
     }
 
     @PostMapping("/question/save")
     public String saveQuestion(@ModelAttribute QuestionSaveDTO dto) {
         testService.saveQuestion(dto);
-        return "redirect:/teacher/test/edit/" + dto.getTestId();
+        
+        Test test = testService.findTestById(dto.getTestId());
+        return "redirect:/teacher/test/edit/" + test.getSlug();
     }
 
     @GetMapping("/question/delete/{id}")
     public String deleteQuestion(@PathVariable Long id){
         Long testId = testService.deleteQuestionAndGetTestId(id);
-        return "redirect:/teacher/test/edit/" + testId;
+        
+        Test test = testService.findTestById(testId);
+        return "redirect:/teacher/test/edit/" + test.getSlug();
     }
 
 // Process flow for teachers managing blog posts ---------------------------------------------------------------------------------------------------------------

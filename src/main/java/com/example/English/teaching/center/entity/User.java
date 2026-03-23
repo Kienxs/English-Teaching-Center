@@ -3,10 +3,10 @@ package com.example.English.teaching.center.entity;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Collection;
-import java.util.List; // Import cho List
+import java.util.List;
 
-import org.hibernate.annotations.CreationTimestamp; // Thay thế @PrePersist
-import org.hibernate.annotations.UpdateTimestamp; // Bổ sung cho updated_at
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.core.GrantedAuthority;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -14,9 +14,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
-import lombok.Data; // Thêm Lombok Data
-import lombok.NoArgsConstructor; // Thêm Lombok NoArgsConstructor
-import lombok.ToString; // Để quản lý việc in ra (loại trừ các mối quan hệ LAZY)
+import lombok.Data; 
+import lombok.NoArgsConstructor; 
+import lombok.ToString; 
 
 @Entity
 @Table(name = "users")

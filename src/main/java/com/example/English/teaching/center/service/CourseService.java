@@ -1,5 +1,7 @@
 package com.example.English.teaching.center.service;
 
+import com.example.English.teaching.center.dto.CourseDTO;
+import com.example.English.teaching.center.dto.CourseSaveDTO;
 import com.example.English.teaching.center.entity.Course;
 import com.example.English.teaching.center.entity.Lesson;
 import com.example.English.teaching.center.entity.StudentCourse;
@@ -7,6 +9,7 @@ import com.example.English.teaching.center.entity.Teacher;
 import com.example.English.teaching.center.entity.Test;
 import com.example.English.teaching.center.entity.TestResult;
 import com.example.English.teaching.center.entity.User;
+import com.example.English.teaching.center.mapper.CourseMapper;
 import com.example.English.teaching.center.repository.CourseRepository;
 import com.example.English.teaching.center.repository.LessonRepository;
 import com.example.English.teaching.center.repository.StudentCourseRepository;
@@ -41,24 +44,29 @@ public class CourseService {
     private final UserRepository userRepository;
     private final LessonRepository lessonRepository;
     private final StudentCourseRepository studentCourseRepository;
+    private final CourseMapper courseMapper;
 
     public CourseService(CourseRepository courseRepository, 
                         TeacherRepository teacherRepository,
                         TestResultRepository testResultRepository,
                         UserRepository userRepository,
                         LessonRepository lessonRepository,
-                        StudentCourseRepository studentCourseRepository) {
+                        StudentCourseRepository studentCourseRepository,
+                        CourseMapper courseMapper) {
         this.courseRepository = courseRepository;
         this.teacherRepository = teacherRepository;
         this.testResultRepository = testResultRepository;
         this.userRepository = userRepository;
         this.lessonRepository = lessonRepository;
         this.studentCourseRepository = studentCourseRepository;
+        this.courseMapper = courseMapper;
     }
 
 // Process for student --------------------------------------------------------------------
-    public List<Course> getAllCourses() {
-        return courseRepository.findAll();
+    public List<CourseDTO> getAllCourses() {
+        return courseRepository.findAll().stream()
+            .map(courseMapper::toDTO)
+            .toList();
     }
 
     public Optional<Course> findCourseById(Long id) {
@@ -182,9 +190,10 @@ public class CourseService {
     }
 
     //Process for teacher ---------------------------------------------------------------------
-    public Page<Course> getCoursesByTeacher(Long teacherId, int pageNo, int pageSize) {
+    public Page<CourseDTO> getCoursesByTeacher(Long teacherId, int pageNo, int pageSize) {
         Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by("createdAt").descending());
-        return courseRepository.findByTeacherIdOrderByCreatedAtDesc(teacherId, pageable);
+        Page<Course> coursePage = courseRepository.findByTeacherIdOrderByCreatedAtDesc(teacherId, pageable);
+        return coursePage.map(courseMapper::toDTO);
     }
 
     public Optional<Course> findBySlug(String slug) {
@@ -198,32 +207,37 @@ public class CourseService {
         return course;
     }
 
-    public Course saveOrUpdateCourse(Course course, Long teacherId) {
-        String baseSlug = SlugUtils.makeSlug(course.getName());
+    @Transactional 
+    public Course saveOrUpdateCourse(CourseSaveDTO dto, Long teacherId) {
+        String baseSlug = SlugUtils.makeSlug(dto.getName());
         String finalSlug = baseSlug;
         int count = 1;
-        Long currentId = (course.getId() != null) ? course.getId() : -1L;
+        Long currentId = (dto.getId() != null) ? dto.getId() : -1L;
+        
         while (courseRepository.existsBySlugAndIdNot(finalSlug, currentId)) {
             finalSlug = baseSlug + "-" + count;
             count++;
         }
-        course.setSlug(finalSlug);
 
-        if(course.getId() == null){
-            Teacher teacher = teacherRepository.findById(teacherId).orElseThrow(() -> new RuntimeException("Không tìm thấy giáo viên"));
+        Course course;
+        if (dto.getId() == null) {
+            Teacher teacher = teacherRepository.findById(teacherId)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy giáo viên"));
+            course = new Course();
             course.setTeacher(teacher);
             course.setStatus(Course.Status.DRAFT);
-            return courseRepository.save(course);
+        } else {
+            course = courseRepository.findById(dto.getId())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy khóa học"));
         }
-        else{
-            Course existing = courseRepository.findById(course.getId()).orElseThrow(() -> new RuntimeException("Không tìm thấy khóa học"));
-            existing.setName(course.getName());
-            existing.setSlug(finalSlug);
-            existing.setDescription(course.getDescription());
-            existing.setFee(course.getFee());
-            existing.setCategory(course.getCategory());
-            return courseRepository.save(existing);
-        }
+
+        course.setName(dto.getName());
+        course.setSlug(finalSlug);
+        course.setDescription(dto.getDescription());
+        course.setFee(dto.getFee());
+        course.setCategory(Course.Category.valueOf(dto.getCategory())); 
+        
+        return courseRepository.save(course);
     }
 
     public void deleteDraftCourse(Long id){

@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List; // Cần thiết cho @OneToMany
-
+ 
 @Entity
 @Table(name = "courses")
 @Data // Tự động tạo getters, setters, toString, equals, hashCode

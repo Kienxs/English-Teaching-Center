@@ -32,7 +32,7 @@ public class TestMapper {
         QuestionSaveDTO dto = new QuestionSaveDTO();
         dto.setId(entity.getId());
         dto.setTestId(entity.getTest() != null ? entity.getTest().getId() : null);
-        dto.setText(entity.getQuestionText());
+        dto.setQuestionText(entity.getQuestionText());
         dto.setOptionA(entity.getOptionA());
         dto.setOptionB(entity.getOptionB());
         dto.setOptionC(entity.getOptionC());

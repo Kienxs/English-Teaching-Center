@@ -171,7 +171,7 @@ public class TestService {
         Test test = testRepository.findById(dto.getTestId()).orElseThrow();
         Question q = (dto.getId() != null) ? questionRepository.findById(dto.getId()).orElse(new Question()) : new Question();
         q.setTest(test);
-        q.setQuestionText(dto.getText());
+        q.setQuestionText(dto.getQuestionText());
         q.setOptionA(dto.getOptionA());
         q.setOptionB(dto.getOptionB());
         q.setOptionC(dto.getOptionC());

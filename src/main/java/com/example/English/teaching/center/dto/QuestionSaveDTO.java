@@ -8,7 +8,7 @@ import lombok.Data;
 public class QuestionSaveDTO {
     private Long id;
     private Long testId;
-    private String text; // Hoặc questionText tùy bạn đặt ở HTML
+    private String questionText; // Hoặc questionText tùy bạn đặt ở HTML
     private String optionA;
     private String optionB;
     private String optionC;
