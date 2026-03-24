@@ -3,8 +3,6 @@ package com.example.English.teaching.center.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -37,10 +35,11 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/landing", "/login", "/register", "/css/**", "/js/**", "/images/**").permitAll()
-                .requestMatchers("/admin/**").hasAnyRole("ADMIN", "TECHNICAL") // Đã gộp Role ở đây
+                .requestMatchers("/", "/landing", "/login", "/register", "/css/**", "/js/**", "/images/**", "/fonts/**", "/favicon.ico", "/error").permitAll()
+                .requestMatchers("/admin/**").hasAnyRole("ADMIN", "TECHNICAL")
                 .requestMatchers("/teacher/**").hasRole("TEACHER")
-                .requestMatchers("/user/**").hasRole("STUDENT") // Đổi hasAnyRole thành hasRole vì chỉ có 1
+                .requestMatchers("/user/**").hasAnyRole("STUDENT", "TEACHER", "ADMIN")
+                .requestMatchers("/api/courses/**").permitAll()
                 .anyRequest().authenticated()
             )
             .authenticationProvider(customAuthProvider)

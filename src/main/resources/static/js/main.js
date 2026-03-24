@@ -1,9 +1,11 @@
 window.addEventListener("scroll", function() {
   const navbar = document.querySelector(".navbar");
-  if (window.scrollY > 50) { // khi cuộn xuống hơn 50px
-    navbar.classList.add("shrink");
-  } else {
-    navbar.classList.remove("shrink");
+  if (navbar) { // Thêm check null cho an toàn
+      if (window.scrollY > 50) { 
+        navbar.classList.add("shrink");
+      } else {
+        navbar.classList.remove("shrink");
+      }
   }
 });
 
@@ -13,7 +15,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     if (menuButton && navLinks) {
         menuButton.addEventListener("click", function() {
-            navLinks.classList.toggle("active");
+            navLinks.classList.toggle("active"); 
         });
     }
 });

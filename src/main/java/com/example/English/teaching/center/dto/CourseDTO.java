@@ -14,6 +14,9 @@ public class CourseDTO {
     private String description;
     private BigDecimal fee;
     private String category;
+    private String mode;
+    private String imageUrl;
+    private String duration;
     private String status;
     private Integer viewCount;
     private LocalDateTime createdAt;

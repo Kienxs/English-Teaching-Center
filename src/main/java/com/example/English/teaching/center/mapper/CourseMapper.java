@@ -30,6 +30,12 @@ public class CourseMapper {
         if(entity.getCategory() != null) 
             dto.setCategory(entity.getCategory().name());
 
+        if(entity.getMode() != null)
+            dto.setMode(entity.getMode().name());
+
+        dto.setImageUrl(entity.getImageUrl());
+        dto.setDuration(entity.getDuration());
+
         if(entity.getStatus() != null)
             dto.setStatus(entity.getStatus().name());
 

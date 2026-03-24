@@ -515,6 +515,20 @@ main {
     display: inline-block;
 }
 
+.btn-see-more {
+    background: none;
+    border: none;
+    color: #0084ff;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 10px;
+}
+.btn-see-more:hover {
+    text-decoration: underline;
+    background-color: #f0f2f5;
+    border-radius: 5px;
+}
+
 @keyframes fadeIn {
     from {opacity: 0;}
     to {opacity: 1;}

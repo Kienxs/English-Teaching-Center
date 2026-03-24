@@ -8,7 +8,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -78,6 +77,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        String path = request.getRequestURI();
+        // Liệt kê các thư mục chứa file tĩnh không cần xác thực JWT
+        return path.startsWith("/css/") || 
+               path.startsWith("/js/") || 
+               path.startsWith("/images/") || 
+               path.startsWith("/fonts/") ||
+               path.equals("/favicon.ico");
+    }
+    
     // Hàm phụ để nạp thông tin User vào context của Spring Security
     private void authenticateUser(String token, HttpServletRequest request) {
         String username = jwtUtils.getUsernameFromJwtToken(token);

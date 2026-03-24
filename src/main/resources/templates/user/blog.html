@@ -1,42 +1,10 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sự kiện - ECE English</title>
-    
-    <link rel="stylesheet" href="/css/layout.css"> 
-    <link rel="stylesheet" href="/css/user/news.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-
-    <script src="/js/main.js"></script>
+<head th:replace="~{fragments :: headInfo('Blog - ECE English', ~{:: .custom-css})}">
+    <link class="custom-css" rel="stylesheet" href="/css/user/news.css"/>
 </head>
 <body>
-    <nav class="navbar m-r m-l">
-        <div class="row">
-            <a th:href="@{/user/home}"><img src="/images/landing/logo.png" alt="logo" class="logo-img"></a>
-
-            <button class="menu-toggle" id="menu-toggle-button">
-                <i class="fas fa-bars"></i> </button>
-
-            <ul id="nav-links">
-                <li><a th:href="@{/user/home}">Giới thiệu</a></li>
-                <li><a th:href="@{/user/courseList}">Khóa học</a></li>
-                <li><a th:href="@{/user/teacher}">Giảng viên</a></li>
-                <li><a th:href="@{/user/my-course}">Học tập</a></li>
-                <li><a th:href="@{/user/news}">Tin tức sự kiện</a></li>
-                <li><a th:href="@{/user/blog}" style="color:#00c8ff; text-decoration: underline;">Blog</a></li>
-                <li><a th:href="@{/user/advisory}">Tư vấn</a></li>
-                <li class="user-info">
-                    <img src="/images/home/avatar_clone.png" alt="avatar" class="navbar-avatar">
-                    <ul class="user-category">
-                        <li><a th:href="@{/user/userInfor}">Thông tin tài khoản</a></li>
-                        <li><a th:href="@{/logout}">Đăng Xuất</a></li>
-                    </ul>
-                </li>
-            </ul>
-        </div>
-    </nav>
+    <div th:replace="~{fragments :: navbar('blog')}"></div>
 
     <main>
         <section class="event-hero">
@@ -104,52 +72,7 @@
         </section>
     </main>
 
-    <footer id="footer">
-        <div class="container footer-container">
-            <div class="footer-col">
-                <img src="/images/landing/logo.png" alt="Logo ECE" class="footer-logo">
-                <p>Trung tâm ngoại ngữ ECE do cô Đoàn Nương sáng lập là địa chỉ học tiếng Anh uy tín tại Hà Nội. Với phương châm English Center for Everyone, ECE hướng tới việc tổ chức các lớp học Tiếng Anh phù hợp với tất cả mọi người.</p>
-
-                <div class="footer-socials">
-                    <a href="https://www.facebook.com/profile.php?id=100055880165513"><i class="fab fa-facebook"></i></a>
-                    <a href="#"><i class="fab fa-tiktok"></i></a>
-                    <a href="#"><i class="fab fa-youtube"></i></a>
-                </div>
-
-                <p class="footer-note">
-                    Công ty TNHH tư vấn và dịch vụ ECE. <br>
-                    Mã số doanh nghiệp: 0109483355 <br>
-                    GPKD số 0109483355 cấp bởi Sở KH & ĐT Hà Nội. <br>
-                    Đại diện pháp luật: Đoàn Thị Nương.
-                </p>
-                </div>
-
-                <div class="footer-col">
-                <h3>Thông tin liên hệ</h3>
-                <ul class="contact-list">
-                    <li><i class="fas fa-home"></i> Tầng 1, tòa nhà VIP, Cầu giấy, Hà Nội</li>
-                    <li><i class="fas fa-phone"></i> 0967739047</li>
-                    <li><i class="fas fa-envelope"></i> kienxs292005@gmail.com</li>
-                    <li><i class="fas fa-map-marker-alt"></i> Cơ sở 1: số 36, Cầu Diễn, Nam Từ Niêm, Hà Nội</li>
-                </ul>
-                </div>
-
-                <div class="footer-col">
-                <h3>Khóa Học Tại ECE</h3>
-                <ul class="course-list">
-                    <li><a href="#">Khóa học tiếng Anh IELTS</a></li>
-                    <li><a href="#">Khóa học SAT</a></li>
-                    <li><a href="#">Lớp Tiếng Anh học thuật</a></li>
-                    <li><a href="#">Khóa ngữ pháp tiếng Anh</a></li>
-                    <li><a href="#">Khóa phát âm tiếng Anh</a></li>
-                    <li><a href="#">Khóa IELTS cấp tốc</a></li>
-                </ul>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2025 ECE - English Center for Everyone. All rights reserved.</p>
-        </div>
-    </footer>
+    <div th:replace="~{fragments :: footer}"></div>
 
 </body>
 </html>

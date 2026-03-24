@@ -19,6 +19,8 @@ import com.example.English.teaching.center.service.CourseCommentService;
 import com.example.English.teaching.center.service.CourseService;
 import com.example.English.teaching.center.service.TestService;
 import com.example.English.teaching.center.service.UserService;
+import com.example.English.teaching.center.dto.CommentDTO;
+import com.example.English.teaching.center.dto.CourseDTO;
 import com.example.English.teaching.center.dto.PasswordChangeDTO;
 import com.example.English.teaching.center.dto.TestDTO;
 import com.example.English.teaching.center.dto.UserProfileDTO;
@@ -254,7 +256,7 @@ public class UserController {
         Map<String, Object> data = courseService.getCourseDetailData(slug, email, session);
 
         Course course = (Course) data.get("course");
-        Page<CourseComments> pageComments = courseCommentService.getCommentsByCourseId(course.getId(), 0, 5);
+        Page<CommentDTO> pageComments = courseCommentService.getCommentsByCourseId(course.getId(), 0, 5);
         
         model.addAttribute("courseComments", pageComments.getContent());
         model.addAttribute("totalComments", pageComments.getTotalElements());
