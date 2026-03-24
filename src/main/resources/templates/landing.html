@@ -1,13 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trang chủ</title>
-    <link rel="stylesheet" href="/css/landing.css">
-    <link rel="stylesheet" href="/css/layout.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <script src="/js/main.js"></script>
+<head th:replace="~{fragments :: headInfo('Thông tin cá nhân', ~{:: .custom-css})}">
+    <link class="custom-css" rel="stylesheet" href="/css/landing.css"/>
 </head>
 <body>
     <section id="lanterns"></section>
@@ -261,49 +255,7 @@
         </div>
     </section>
 
-    <footer id="footer">
-        <div class="footer-container">
-            <div class="footer-col">
-                <img src="/images/landing/logo.png" alt="Logo ECE" class="footer-logo">
-                <p>Trung tâm ngoại ngữ ECE do cô Đoàn Nương sáng lập là địa chỉ học tiếng Anh uy tín tại Hà Nội. Với phương châm English Center for Everyone, ECE hướng tới việc tổ chức các lớp học Tiếng Anh phù hợp với tất cả mọi người.</p>
-
-                <div class="footer-socials">
-                    <a href="https://www.facebook.com/profile.php?id=100055880165513"><i class="fab fa-facebook"></i></a>
-                    <a href="#"><i class="fab fa-tiktok"></i></a>
-                    <a href="#"><i class="fab fa-youtube"></i></a>
-                </div>
-
-                <p class="footer-note">
-                    Công ty TNHH tư vấn và dịch vụ ECE. <br>
-                    Mã số doanh nghiệp: 0109483355 <br>
-                    GPKD số 0109483355 cấp bởi Sở KH & ĐT Hà Nội. <br>
-                    Đại diện pháp luật: Đoàn Thị Nương.
-                </p>
-                </div>
-
-                <div class="footer-col">
-                <h3>Thông tin liên hệ</h3>
-                <ul>
-                    <li><i class="fas fa-home"></i> Tầng 1, tòa nhà VIP, Cầu giấy, Hà Nội</li>
-                    <li><i class="fas fa-phone"></i> 0967739047</li>
-                    <li><i class="fas fa-envelope"></i> kienxs292005@gmail.com</li>
-                    <li><i class="fas fa-map-marker-alt"></i> Cơ sở 1: số 36, Cầu Diễn, Nam Từ Niêm, Hà Nội</li>
-                </ul>
-            </div>
-
-            <div class="footer-col">
-                <h3>Khóa Học Tại ECE</h3>
-                <ul>
-                    <li><a href="#">Khóa học tiếng Anh IELTS</a></li>
-                    <li><a href="#">Khóa học SAT</a></li>
-                    <li><a href="#">Lớp Tiếng Anh học thuật</a></li>
-                    <li><a href="#">Khóa ngữ pháp tiếng Anh</a></li>
-                    <li><a href="#">Khóa phát âm tiếng Anh</a></li>
-                    <li><a href="#">Khóa IELTS cấp tốc</a></li>
-                </ul>
-            </div>
-        </div>
-    </footer>
+    <div th:replace="~{fragments :: footer}"></div>
 </body>
 
 <script>
@@ -362,5 +314,4 @@ const lanternContainer = document.getElementById('lanterns');
 }
 
 </script>
-
 </html>
