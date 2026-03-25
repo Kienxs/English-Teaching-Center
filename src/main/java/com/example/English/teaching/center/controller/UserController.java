@@ -20,15 +20,12 @@ import com.example.English.teaching.center.service.CourseService;
 import com.example.English.teaching.center.service.TestService;
 import com.example.English.teaching.center.service.UserService;
 import com.example.English.teaching.center.dto.CommentDTO;
-import com.example.English.teaching.center.dto.CourseDTO;
 import com.example.English.teaching.center.dto.PasswordChangeDTO;
 import com.example.English.teaching.center.dto.TestDTO;
 import com.example.English.teaching.center.dto.UserProfileDTO;
 import com.example.English.teaching.center.dto.UserRegisterDTO;
 import com.example.English.teaching.center.entity.Course;
-import com.example.English.teaching.center.entity.CourseComments;
 import com.example.English.teaching.center.entity.StudentCourse;
-import com.example.English.teaching.center.entity.Test;
 import com.example.English.teaching.center.entity.TestResult;
 import com.example.English.teaching.center.entity.User;
 import com.example.English.teaching.center.exception.InvalidFileException;
@@ -212,22 +209,29 @@ public class UserController {
         model.addAttribute("user", userService.findByEmail(email));
         model.addAttribute("userProfileDTO", userService.getUserProfile(email));
         model.addAttribute("passwordChangeDTO", new PasswordChangeDTO());
+        model.addAttribute("recaptchaSiteKey", recaptchaSiteKey);
+
         return "user/userInfor";
     }
 
     @PostMapping("/user/userInfor/update")
     public String updateProfile(@ModelAttribute UserProfileDTO dto,
                                 @RequestParam(value = "avatarFile", required = false) MultipartFile avatarFile,
+                                @RequestParam(value = "g-recaptcha-response", required = false) String recaptchaResponse,
                                 Principal principal,
                                 RedirectAttributes redirectAttributes) {
         try {
+            boolean isHuman = reCaptchaService.verify(recaptchaResponse);
+
+            if(!isHuman)
+                throw new RuntimeException("Mã xác thực Captcha không hợp lệ hoặc đã hết hạn!");
+
             userService.updateUserProfile(principal.getName(), dto, avatarFile);
             redirectAttributes.addFlashAttribute("successMessage", "Cập nhật thành công!");
         } catch (RateLimitException | InvalidFileException e) {
-            // Bắt các lỗi nghiệp vụ từ Service và hiển thị ra View
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Có lỗi hệ thống xảy ra!");
+            redirectAttributes.addFlashAttribute("errorMessage", "Cập nhật thất bại: " + e.getMessage());
         }
 
         return "redirect:/user/userInfor";
@@ -235,15 +239,37 @@ public class UserController {
 
     @PostMapping("/user/userInfor/changePassword")
     public String changePassword(Principal principal,
-                                 @ModelAttribute("passwordChangeDTO") PasswordChangeDTO dto,
-                                 RedirectAttributes redirectAttributes) {
+                        @ModelAttribute("passwordChangeDTO") PasswordChangeDTO dto,
+                        @RequestParam(value="g-recaptcha-response", required = false) String recaptchaResponse,
+                        RedirectAttributes redirectAttributes) {
         try {
+            reCaptchaService.verify(recaptchaResponse);
+
             userService.changePassword(principal.getName(), dto);
             redirectAttributes.addFlashAttribute("successMessage", "Đổi mật khẩu thành công!");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Đổi mật khẩu thất bại: " + e.getMessage());
         }
         return "redirect:/user/userInfor?tab=password";
+    }
+
+    @PostMapping("/user/userInfor/changeUsername")
+    public String changeUsername(Principal principal,
+                    @RequestParam("newUsername") String newUsername,
+                    @RequestParam("passwordConfirm") String passwordConfirm,
+                    @RequestParam(value="g-recaptcha-response", required = false) String recaptchaResponse,
+                    RedirectAttributes redirectAttributes){
+
+        try{
+            reCaptchaService.verify(recaptchaResponse);
+            
+            userService.changeUsername(principal.getName(), newUsername, passwordConfirm);
+            redirectAttributes.addFlashAttribute("successMessage", "Đổi tên tài khoản thành công");
+        }catch(Exception e){
+            redirectAttributes.addFlashAttribute("errorMessage", "Đổi tên thấy bại: " + e.getMessage());
+        }
+
+        return "redirect:/user/userInfor?tab=username";
     }
 
 //--------------------------- Process download details for my course and courses-------------------------
@@ -356,6 +382,6 @@ public class UserController {
 
         return "redirect:/user/my-course-detail/" + courseSlug 
                 + "?lessonId=" + lessonId 
-                + "&testId=" + testSlug;
+                + "&testSlug=" + testSlug;
     }
 }

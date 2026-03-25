@@ -158,17 +158,26 @@ public class UserService {
     public void changePassword(String email, PasswordChangeDTO dto) {
         User user = findByEmail(email);
 
-        // 1. Kiểm tra mật khẩu hiện tại
-        if (!passwordEncoder.matches(dto.getCurrentPassword(), user.getPassword())) {
+        if (!passwordEncoder.matches(dto.getCurrentPassword(), user.getPassword())) 
             throw new IllegalArgumentException("Mật khẩu hiện tại không đúng");
-        }
 
-        // 2. Kiểm tra mật khẩu mới và xác nhận
-        if (!dto.getNewPassword().equals(dto.getConfirmPassword())) {
+        if (!dto.getNewPassword().equals(dto.getConfirmPassword())) 
             throw new RuntimeException("Mật khẩu mới và mật khẩu xác nhận không khớp");
-        }
 
-        // 3. Cập nhật mật khẩu mới (đã mã hóa)
         user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
+    }
+
+    public void changeUsername(String email, String newUsername, String passwordConfirm){
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+
+        if(!passwordEncoder.matches(passwordConfirm, user.getPassword()))
+            throw new RuntimeException("Mật khẩu xác nhận không chính xác");
+
+        if(newUsername == null || newUsername.trim().isEmpty())
+            throw new RuntimeException("Tên hiển thị không được để trống");
+
+        user.setFullName(newUsername.trim());
+        userRepository.save(user);
     }
 }

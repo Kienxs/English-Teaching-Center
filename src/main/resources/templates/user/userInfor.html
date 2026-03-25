@@ -2,6 +2,7 @@
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments :: headInfo('Thông tin cá nhân', ~{:: .custom-css})}">
     <link class="custom-css" rel="stylesheet" href="/css/user/userInfor.css"/>
+    <script class="custom-css" src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body>
     <div th:replace="~{fragments :: navbar('userInfor')}"></div>
@@ -22,9 +23,6 @@
                 <li>
                     <a href="#" class="sidebar-link" data-target="tab-password">Thay đổi mật khẩu</a>
                 </li>
-                <li>
-                    <a href="#" class="sidebar-link" data-target="tab-team">Quản lý đội</a>
-                </li>
             </ul>
         </aside>
 
@@ -37,10 +35,7 @@
                     
                     <div class="card">
                         <div class="card-header">
-                            <h2>THÔNG TIN</h2>
-                            <div class="button-group">
-                                <button type="submit" id="btnUpdate" class="btn btn-secondary">Cập nhật</button>
-                            </div>
+                            <h2>THÔNG TIN CÁ NHÂN</h2>
                         </div>
     
                         <div class="profile-details">
@@ -59,28 +54,34 @@
                                 <div class="form-row">
                                     <div class="form-group">
                                         <label for="full-name">Họ tên<span class="required">*</span></label>
-                                        <input type="text" id="full-name" th:field="*{fullName}">
+                                        <input type="text" id="full-name" th:field="*{fullName}" required>
                                     </div>
                                 </div>
                                 
                                 <div class="form-group">
-                                    <label for="email">Địa chỉ Email<span class="required">*</span></label>
-                                    <input type="email" id="email" th:value="${user.email}" readonly>
+                                    <label for="email">Địa chỉ Email (Không thể thay đổi)<span class="required">*</span></label>
+                                    <input type="email" id="email" th:value="${user.email}" readonly style="background-color: #f8f9fa; cursor: not-allowed;">
                                 </div>
                                 
                                 <div class="form-row">
                                     <div class="form-group">
                                         <label for="dob">Ngày sinh<span class="required">*</span></label>
-                                        <input type="text" id="dob" value="06/10/2023">
+                                        <input type="date" id="dob" value="2003-10-06" required>
                                     </div>
                                     <div class="form-group">
-                                        <div class="form-group">
-                                            <label for="phone">Số điện thoại<span class="required">*</span></label>
-                                            <input type="tel" id="phone" th:field="*{phone}">
-                                        </div>
+                                        <label for="phone">Số điện thoại<span class="required">*</span></label>
+                                        <input type="tel" id="phone" th:field="*{phone}" pattern="\d{10,12}" title="Vui lòng nhập từ 10 đến 12 chữ số" required>
                                     </div>
                                 </div>
-                            </div>
+
+                                <br>
+                                <hr style="border: 0; border-top: 1px solid #eee; margin-bottom: 20px;">
+
+                                <div class="form-group" style="display: flex; justify-content: space-between; align-items: center; padding: 0 20px 20px;">
+                                    <div class="g-recaptcha" th:data-sitekey="${recaptchaSiteKey}"></div>
+                                    <button type="submit" id="btnUpdate" class="btn btn-secondary">Cập nhật thông tin</button>
+                                </div>
+                            </div>        
                         </div>
                     </div>
                  </form>
@@ -90,46 +91,50 @@
                 <div class="card">
                     <h2>Thay đổi mật khẩu</h2>
                     <br>
-                    <form th:action="@{/user/userInfor/changePassword}" th:object="${passwordChangeDTO}" method="post">
+                    <form id="passwordForm" th:action="@{/user/userInfor/changePassword}" th:object="${passwordChangeDTO}" method="post">
                         <div class="form-group">
-                            <label for="current-password">Mật khẩu<span class="required">*</span></label>
+                            <label for="current-password">Mật khẩu hiện tại<span class="required">*</span></label>
                             <div class="input-icon-wrapper">
-                                <input type="password" id="current-password" th:field="*{currentPassword}">
+                                <input type="password" id="current-password" th:field="*{currentPassword}" required>
                                 <i class="fas fa-eye-slash"></i>
                             </div>
                         </div>
                         
                         <div class="forgot-password">
-                            <a href="#">Quên mật khẩu?</a>
+                            <a th:href="@{/forgot-password}">Quên mật khẩu?</a>
                         </div>
 
                         <div class="form-group">
-                            <label for="new-password">Mật khẩu mới<span class="required">*</span></label>
+                            <label for="new-password">Mật khẩu mới<span class="required">*</span>
+                            <p id="passwordHint" style="font-size: 0.85em; color: #666; margin-top: 5px;">(Tối thiểu 8 ký tự, có chữ hoa, thường, số và ký tự đặc biệt)</p></label>
                             <div class="input-icon-wrapper">
-                                <input type="password" id="new-password" th:field="*{newPassword}">
+                                <input type="password" id="new-password" th:field="*{newPassword}" required>
                                 <i class="fas fa-eye-slash"></i>
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <label for="confirm-password">Mật khẩu xác nhận<span class="required">*</span></label>
+                            <label for="confirm-password">Xác nhận mật khẩu mới<span class="required">*</span></label>
                             <div class="input-icon-wrapper">
-                                <input type="password" id="confirm-password" th:field="*{confirmPassword}">
+                                <input type="password" id="confirm-password" th:field="*{confirmPassword}" required>
                                 <i class="fas fa-eye-slash"></i>
                             </div>
                         </div>
                         
                         <br>
                         
+                        <div class="form-group">
+                            <div class="g-recaptcha" th:data-sitekey="${recaptchaSiteKey}"></div>
+                        </div>
+                        
                         <div style="text-align: right;">
-                             <button type="submit" class="btn btn-primary">Lưu</button>
+                             <button type="submit" class="btn btn-primary">Cập nhật mật khẩu</button>
                         </div>
                     </form>
                 </div>
             </div>
             
-            <div id="tab-wallet" class="content-tab" 
-     th:classappend="${param.tab == 'wallet'} ? 'active' : ''">
+            <div id="tab-wallet" class="content-tab" th:classappend="${param.tab == 'wallet'} ? 'active' : ''">
                 <div class="card">
                     <div class="wallet-header">
                         <h2>Ví cá nhân</h2>
@@ -145,7 +150,7 @@
 
                     <div class="deposit-section">
                         <h3>Nạp tiền vào tài khoản</h3>
-                        <p style="color: #666; font-size: 0.9em; margin-bottom: 15px;">Nhập số tiền bạn muốn nạp (Tối thiểu 10.000đ). Đây là nạp tiền giả lập.</p>
+                        <p style="color: #666; font-size: 0.9em; margin-bottom: 15px;">Nhập số tiền bạn muốn nạp (Tối thiểu 10.000đ). Đây là hệ thống nạp tiền giả lập.</p>
                         
                         <form th:action="@{/user/deposit}" method="POST" class="deposit-form">
                             <div class="input-group-deposit">
@@ -159,16 +164,41 @@
                             </button>
                         </form>
                     </div>
-
-                    </div>
-            </div>
-            <div id="tab-username" class="content-tab">
-                <div class="card"><h2>Đổi tên tài khoản</h2><p>Coming Soon</p></div>
-            </div>
-            <div id="tab-team" class="content-tab">
-                <div class="card"><h2>Quản lý đội</h2><p>Coming Soon</p></div>
+                </div>
             </div>
 
+            <div id="tab-username" class="content-tab" th:classappend="${param.tab == 'username'} ? 'active' : ''">
+                <div class="card">
+                    <h2>Đổi tên tài khoản</h2>
+                    <p style="color: #666; font-size: 0.9em; margin-bottom: 15px;">Thay đổi tên hiển thị của bạn trên hệ thống. Yêu cầu nhập mật khẩu để xác thực.</p>
+                    <br>
+                    <form id="usernameForm" th:action="@{/user/userInfor/changeUsername}" method="post">
+                        <div class="form-group">
+                            <label for="new-username">Tên hiển thị mới<span class="required">*</span></label>
+                            <input type="text" id="new-username" name="newUsername" placeholder="Nhập tên tài khoản mới" required class="form-control">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="username-password">Mật khẩu xác nhận<span class="required">*</span></label>
+                            <div class="input-icon-wrapper">
+                                <input type="password" id="username-password" name="passwordConfirm" placeholder="Nhập mật khẩu hiện tại" required>
+                                <i class="fas fa-eye-slash"></i>
+                            </div>
+                        </div>
+
+                        <br>
+                        
+                        <div class="form-group">
+                            <div class="g-recaptcha" th:data-sitekey="${recaptchaSiteKey}"></div>
+                        </div>
+
+                        <div style="text-align: right;">
+                            <button type="submit" class="btn btn-primary">Xác nhận đổi tên</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
         </main>
     </div>
 
@@ -181,7 +211,6 @@
         const links = document.querySelectorAll('.sidebar-link');
         const tabs = document.querySelectorAll('.content-tab');
         
-        // Dòng này vẫn trả về null, nhưng không sao
         const breadcrumbCurrent = document.getElementById('breadcrumb-current'); 
         
         const urlParams = new URLSearchParams(window.location.search);
@@ -193,11 +222,12 @@
         const tabToActivate = document.getElementById(activeTabId) || document.getElementById('tab-profile');
         const linkToActivate = document.querySelector(`a[data-target="${tabToActivate.id}"]`) || document.querySelector('a[data-target="tab-profile"]');
         
-        tabToActivate.classList.add('active');
-        linkToActivate.classList.add('active');
+        if(tabToActivate && linkToActivate) {
+            tabToActivate.classList.add('active');
+            linkToActivate.classList.add('active');
+        }
         
-        // THÊM KIỂM TRA "if" Ở ĐÂY
-        if (breadcrumbCurrent) {
+        if (breadcrumbCurrent && linkToActivate) {
             updateBreadcrumb(linkToActivate.textContent.trim());
         }
 
@@ -207,14 +237,15 @@
                 window.history.pushState({}, '', window.location.pathname); 
                 const targetId = this.getAttribute('data-target');
                 const targetTab = document.getElementById(targetId);
+                
                 links.forEach(l => l.classList.remove('active'));
                 this.classList.add('active');
+                
                 tabs.forEach(tab => tab.classList.remove('active'));
                 if (targetTab) {
                     targetTab.classList.add('active');
                 }
                 
-                // THÊM KIỂM TRA "if" Ở ĐÂY
                 if (breadcrumbCurrent) {
                     updateBreadcrumb(this.textContent.trim());
                 }
@@ -222,10 +253,7 @@
         });
 
         function updateBreadcrumb(linkText) {
-            // THÊM KIỂM TRA "if" Ở ĐÂY NỮA
-            if (!breadcrumbCurrent) {
-                return; // Thoát nếu không tìm thấy element
-            }
+            if (!breadcrumbCurrent) return; 
             if (linkText === "Thông tin & liên hệ") {
                 breadcrumbCurrent.textContent = "Thông tin tài khoản";
             } else {
@@ -233,30 +261,24 @@
             }
         }
 
+        // Xem trước Avatar
         const avatarInput = document.getElementById('avatar-input');
         const avatarPreview = document.getElementById('avatar-preview');
 
         if (avatarInput && avatarPreview) {
-            // Lắng nghe sự kiện "change" trên input file
             avatarInput.addEventListener('change', function() {
-                const file = this.files[0]; // Lấy file đầu tiên người dùng chọn
-                
+                const file = this.files[0]; 
                 if (file) {
-                    // Tạo một đối tượng FileReader
                     const reader = new FileReader();
-                    
-                    // Khi file đã được đọc xong
                     reader.onload = function(e) {
-                        // Cập nhật thuộc tính 'src' của thẻ <img>
                         avatarPreview.src = e.target.result;
                     }
-                    
-                    // Đọc file dưới dạng Data URL (để hiển thị ảnh)
                     reader.readAsDataURL(file);
                 }
             });
         }
 
+        // Ẩn/Hiện Mật Khẩu
         document.querySelectorAll('.input-icon-wrapper i').forEach(icon => {
             icon.addEventListener('click', function() {
                 const input = this.previousElementSibling;
@@ -272,48 +294,100 @@
             });
         });
 
+        // Xác thực độ mạnh Mật khẩu mới
+        const newPasswordInput = document.getElementById('new-password');
+        const hint = document.getElementById('passwordHint');
+        const strongRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&._-])[A-Za-z\d@$!%*?&._-]{8,}$/;
 
-        /* --- Xử lý Thông báo bằng SweetAlert2 --- */
-        // Lấy giá trị từ Spring Boot thông qua Thymeleaf
+        if (newPasswordInput && hint) {
+            newPasswordInput.addEventListener('input', () => {
+                if (strongRegex.test(newPasswordInput.value)) {
+                    hint.style.color = '#28a745'; 
+                    hint.innerHTML = '<i class="fas fa-check"></i> Mật khẩu hợp lệ';
+                    newPasswordInput.setCustomValidity(""); 
+                } else {
+                    hint.style.color = '#dc3545'; 
+                    hint.innerHTML = '(Tối thiểu 8 ký tự, có chữ hoa, thường, số và ký tự đặc biệt)';
+                    newPasswordInput.setCustomValidity("Mật khẩu chưa đủ mạnh"); 
+                }
+            });
+        }
+
+        // KHÓA NGÀY SINH (KHÔNG CHO CHỌN TƯƠNG LAI)
+        const dobInput = document.getElementById('dob');
+        if (dobInput) {
+            const today = new Date().toISOString().split("T")[0];
+            dobInput.setAttribute('max', today);
+            
+            dobInput.addEventListener('change', function() {
+                if (this.value > today) {
+                    this.setCustomValidity("Ngày sinh không thể lớn hơn ngày hiện tại!");
+                } else {
+                    this.setCustomValidity("");
+                }
+            });
+        }
+
+        // Xử lý Thông báo bằng SweetAlert2
         const successMsg = "[[${successMessage}]]";
         const errorMsg = "[[${errorMessage}]]";
 
-        // Kiểm tra và hiển thị nếu có tin nhắn thành công (không phải chuỗi rỗng)
         if (successMsg && successMsg !== "null" && successMsg.trim() !== "") {
-            Swal.fire({
-                title: 'Thành công!',
-                text: successMsg,
-                icon: 'success',
-                confirmButtonText: 'OK',
-                confirmButtonColor: '#28a745'
-            });
+            if(typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: 'Thành công!',
+                    text: successMsg,
+                    icon: 'success',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#28a745'
+                });
+            } else {
+                alert("Thành công: " + successMsg);
+            }
         }
 
-        // Kiểm tra và hiển thị nếu có lỗi
         if (errorMsg && errorMsg !== "null" && errorMsg.trim() !== "") {
-            Swal.fire({
-                title: 'Thất bại!',
-                text: errorMsg,
-                icon: 'error',
-                confirmButtonText: 'Đã rõ',
-                confirmButtonColor: '#dc3545'
-            });
+            if(typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: 'Thất bại!',
+                    text: errorMsg,
+                    icon: 'error',
+                    confirmButtonText: 'Đã rõ',
+                    confirmButtonColor: '#dc3545'
+                });
+            } else {
+                alert("Lỗi: " + errorMsg);
+            }
         }
 
+        // Kiểm tra ReCaptcha và hiệu ứng Loading cho các Form
+        const forms = [
+            { formElement: document.getElementById('profileForm'), btnElement: document.getElementById('btnUpdate') },
+            { formElement: document.getElementById('passwordForm'), btnElement: document.querySelector('#passwordForm button[type="submit"]') },
+            { formElement: document.getElementById('usernameForm'), btnElement: document.querySelector('#usernameForm button[type="submit"]') }
+        ];
 
-        const profileForm = document.getElementById('profileForm');
-        const btnUpdate = document.getElementById('btnUpdate');
+        forms.forEach(item => {
+            if (item.formElement && item.btnElement) {
+                item.formElement.addEventListener('submit', function(e) {
+                    const captchaResponse = item.formElement.querySelector('[name="g-recaptcha-response"]');
 
-        if (profileForm && btnUpdate) {
-            profileForm.addEventListener('submit', function() {
-                btnUpdate.disabled = true;
+                    if (captchaResponse && !captchaResponse.value) {
+                        e.preventDefault(); 
+                        if(typeof Swal !== 'undefined') {
+                            Swal.fire('Cảnh báo', 'Vui lòng xác nhận bạn không phải người máy!', 'warning');
+                        } else {
+                            alert('Vui lòng xác nhận bạn không phải người máy!');
+                        }
+                        return; 
+                    }
 
-                btnUpdate.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
-
-                document.body.style.cursor = 'wait';
-                
-            });
-        }
+                    item.btnElement.disabled = true;
+                    item.btnElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+                    document.body.style.cursor = 'wait';
+                });
+            }
+        });
     });
 </script>
 </html>
