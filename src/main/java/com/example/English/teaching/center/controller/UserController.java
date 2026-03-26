@@ -14,11 +14,12 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.security.core.Authentication;
 
-import com.example.English.teaching.center.securty.ReCaptchaService;
-import com.example.English.teaching.center.service.CourseCommentService;
-import com.example.English.teaching.center.service.CourseService;
-import com.example.English.teaching.center.service.TestService;
-import com.example.English.teaching.center.service.UserService;
+import com.example.English.teaching.center.service.auth.AuthService;
+import com.example.English.teaching.center.service.course.CourseCommentService;
+import com.example.English.teaching.center.service.course.CourseService;
+import com.example.English.teaching.center.service.course.TestService;
+import com.example.English.teaching.center.service.infra.ReCaptchaService;
+import com.example.English.teaching.center.service.user.UserService;
 import com.example.English.teaching.center.dto.CommentDTO;
 import com.example.English.teaching.center.dto.PasswordChangeDTO;
 import com.example.English.teaching.center.dto.ResetPasswordDTO;
@@ -43,6 +44,7 @@ import java.util.Map;
 @Controller
 public class UserController {
     private final UserService userService;
+    private final AuthService authService;
     private final CourseCommentService courseCommentService;
     private final CourseService courseService;
     private final TestService testService;
@@ -53,6 +55,7 @@ public class UserController {
 
     @Autowired
     public UserController(UserService userService,
+                          AuthService authService,
                           CourseCommentService courseCommentService,
                           CourseService courseService,
                           TestService testService,
@@ -62,6 +65,7 @@ public class UserController {
         this.courseService = courseService;
         this.testService = testService;
         this.reCaptchaService = reCaptchaService;
+        this.authService = authService;
     }
 
     // Landing page
@@ -103,7 +107,7 @@ public class UserController {
         }
 
         try{
-            userService.registerNewUser(dto, recaptchaResponse);
+            authService.registerNewUser(dto, recaptchaResponse);
             redirectAttributes.addFlashAttribute("successMessage", "Đăng ký thành công! Chúng tôi đã gửi một link kích hoạt đến email của bạn. Vui lòng kiểm tra hộp thư (kể cả mục Thư rác/Spam) nhé!");
             return "redirect:/login";
         }catch(RateLimitException | IllegalArgumentException e){
@@ -119,7 +123,7 @@ public class UserController {
     @GetMapping("/verify")
     public String verifyAccount(@RequestParam("code") String code, RedirectAttributes redirectAttributes) {
         // Gọi hàm xác thực từ UserService mà chúng ta đã viết hôm trước
-        boolean isVerified = userService.verifyEmail(code);
+        boolean isVerified = authService.verifyEmail(code);
         
         if (isVerified) {
             redirectAttributes.addFlashAttribute("successMessage", "Kích hoạt tài khoản thành công! Chào mừng bạn gia nhập ECE, vui lòng đăng nhập.");
@@ -189,16 +193,19 @@ public class UserController {
     public String processForgotPassword(@RequestParam("email") String email,
                 @RequestParam(name = "g-recaptcha-response", required = false) String recaptchaResponse,                
                 RedirectAttributes ra){
+        
         if(!reCaptchaService.verify(recaptchaResponse)){
             ra.addFlashAttribute("errorMessage", "Vui lòng xác nhận bạn không phải robot!");
             return "redirect:/forgot-password";
         }
 
-        try{
-            userService.generatePasswordResetToken(email);
+        try {
+            authService.generatePasswordResetToken(email);
+            ra.addFlashAttribute("successMessage", "Chúng tôi đã gửi đường link đặt lại mật khẩu vào email của bạn. Vui lòng kiểm tra!"); 
+        } catch (RateLimitException e) {
+            ra.addFlashAttribute("errorMessage", e.getMessage());
+        } catch (Exception e) {
             ra.addFlashAttribute("successMessage", "Chúng tôi đã gửi đường link đặt lại mật khẩu vào email của bạn. Vui lòng kiểm tra!");
-        }catch(Exception e){
-           ra.addFlashAttribute("successMessage", "Chúng tôi đã gửi đường link đặt lại mật khẩu vào email của bạn. Vui lòng kiểm tra!");
         }
 
         return "redirect:/forgot-password";
@@ -206,7 +213,7 @@ public class UserController {
 
     @GetMapping("/reset-password")
     public String showResetPasswordForm(@RequestParam(value = "token") String token, Model model, RedirectAttributes ra) {
-        User user = userService.getByResetPasswordToken(token);
+        User user = authService.getByResetPasswordToken(token);
         if (user == null) {
             ra.addFlashAttribute("errorMessage", "Đường dẫn không hợp lệ hoặc đã hết hạn!");
             return "redirect:/login";
@@ -225,13 +232,13 @@ public class UserController {
             return "redirect:/reset-password?token=" + dto.getToken();
         }             
 
-        User user = userService.getByResetPasswordToken(dto.getToken());
+        User user = authService.getByResetPasswordToken(dto.getToken());
         if (user == null) {
             ra.addFlashAttribute("errorMessage", "Đường dẫn không hợp lệ hoặc đã hết hạn!");
             return "redirect:/login";
         }
 
-        userService.updatePasswordByToken(user, dto.getPassword());
+        authService.updatePasswordByToken(user, dto.getPassword());
         ra.addFlashAttribute("successMessage", "Bạn đã đặt lại mật khẩu thành công. Vui lòng đăng nhập!");
         return "redirect:/login";
     }

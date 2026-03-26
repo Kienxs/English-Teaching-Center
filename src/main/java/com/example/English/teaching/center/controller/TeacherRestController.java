@@ -2,7 +2,8 @@ package com.example.English.teaching.center.controller;
 
 import com.example.English.teaching.center.entity.User;
 import com.example.English.teaching.center.repository.StudentCourseRepository;
-import com.example.English.teaching.center.service.UserService;
+import com.example.English.teaching.center.service.user.UserService;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;

@@ -13,15 +13,15 @@ import org.springframework.stereotype.Component;
 
 import com.example.English.teaching.center.dto.UserLoginResponseDTO;
 import com.example.English.teaching.center.exception.RateLimitException;
-import com.example.English.teaching.center.service.UserService;
+import com.example.English.teaching.center.service.auth.AuthService;
 
 @Component
 public class CustomAuthenticationProvider implements AuthenticationProvider {
 
-    private final UserService userService;
+    private final AuthService authService;
 
-    public CustomAuthenticationProvider(UserService userService) {
-        this.userService = userService;
+    public CustomAuthenticationProvider(AuthService authService) {
+        this.authService = authService;
     }
 
     @Override
@@ -30,7 +30,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         String password = authentication.getCredentials().toString();
 
         try {
-            UserLoginResponseDTO loginDTO = userService.login(email, password);
+            UserLoginResponseDTO loginDTO = authService.login(email, password);
 
             List<SimpleGrantedAuthority> authorities = Collections.singletonList(
                 new SimpleGrantedAuthority("ROLE_" + loginDTO.getRole())

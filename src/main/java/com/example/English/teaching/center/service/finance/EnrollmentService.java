@@ -1,9 +1,10 @@
-package com.example.English.teaching.center.service;
+package com.example.English.teaching.center.service.finance;
 
 import com.example.English.teaching.center.entity.Course;
 import com.example.English.teaching.center.entity.StudentCourse;
 import com.example.English.teaching.center.entity.User;
 import com.example.English.teaching.center.repository.*;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

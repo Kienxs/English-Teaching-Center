@@ -1,4 +1,4 @@
-package com.example.English.teaching.center.service;
+package com.example.English.teaching.center.controller;
 
 import java.security.Principal;
 
@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
 import com.example.English.teaching.center.dto.UserNavbarDTO;
+import com.example.English.teaching.center.service.user.UserService;
 
 @ControllerAdvice
 public class GlobalControllerAdvice {

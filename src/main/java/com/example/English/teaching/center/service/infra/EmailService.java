@@ -1,4 +1,4 @@
-package com.example.English.teaching.center.service;
+package com.example.English.teaching.center.service.infra;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;

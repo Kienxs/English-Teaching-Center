@@ -1,7 +1,7 @@
 package com.example.English.teaching.center.securty;
 
 import com.example.English.teaching.center.entity.RefreshToken;
-import com.example.English.teaching.center.service.RefreshTokenService;
+import com.example.English.teaching.center.service.auth.RefreshTokenService;
 import com.example.English.teaching.center.utils.JwtUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.example.English.teaching.center.service.AdminService;
-import com.example.English.teaching.center.service.CourseService;
+import com.example.English.teaching.center.service.course.CourseService;
+import com.example.English.teaching.center.service.user.AdminService;
 import com.example.English.teaching.center.entity.BlogPost;
 import com.example.English.teaching.center.entity.Course;
 

@@ -1,4 +1,4 @@
-package com.example.English.teaching.center.service;
+package com.example.English.teaching.center.service.auth;
 
 import java.util.Collections;
 
@@ -25,7 +25,6 @@ public class CustomUserDetailsService implements UserDetailsService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy tài khoản với email: " + email));
 
-        // Bọc User của bạn vào UserDetails của Spring Security
         return new org.springframework.security.core.userdetails.User(
                 user.getEmail(),
                 user.getPassword(),

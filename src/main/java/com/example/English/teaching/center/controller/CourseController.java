@@ -16,7 +16,7 @@ import com.example.English.teaching.center.dto.CourseDTO;
 import com.example.English.teaching.center.entity.Course;
 import com.example.English.teaching.center.entity.Course.Status;
 import com.example.English.teaching.center.repository.CourseRepository;
-import com.example.English.teaching.center.service.CourseCommentService;
+import com.example.English.teaching.center.service.course.CourseCommentService;
 import com.example.English.teaching.center.mapper.CourseMapper;
 
 import java.util.List;

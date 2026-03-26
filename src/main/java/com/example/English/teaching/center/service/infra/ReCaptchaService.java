@@ -1,4 +1,4 @@
-package com.example.English.teaching.center.securty;
+package com.example.English.teaching.center.service.infra;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

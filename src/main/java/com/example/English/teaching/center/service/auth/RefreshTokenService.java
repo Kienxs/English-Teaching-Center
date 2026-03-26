@@ -1,4 +1,4 @@
-package com.example.English.teaching.center.service;
+package com.example.English.teaching.center.service.auth;
 
 import java.time.Instant;
 import java.util.Optional;
