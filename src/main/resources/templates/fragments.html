@@ -32,7 +32,10 @@
                 <li><a th:href="@{/user/advisory}" th:style="${activeMenu == 'advisory' ? 'color:#00c8ff; text-decoration: underline;' : ''}">Tư vấn</a></li>
                 
                 <li class="user-info">
-                    <img src="/images/home/avatar_clone.png" alt="avatar" class="navbar-avatar">
+                    <img th:src="${currentUser != null && currentUser.avatarUrl != null ? currentUser.avatarUrl : '/images/home/avatar_clone.png'}" 
+                        alt="avatar" 
+                        class="navbar-avatar">
+                        
                     <ul class="user-category">
                         <li>
                             <a th:href="@{/user/userInfor}" 

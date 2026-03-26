@@ -24,6 +24,7 @@ import com.example.English.teaching.center.dto.PasswordChangeDTO;
 import com.example.English.teaching.center.dto.TestDTO;
 import com.example.English.teaching.center.dto.UserProfileDTO;
 import com.example.English.teaching.center.dto.UserRegisterDTO;
+import com.example.English.teaching.center.dto.UsernameChangeDTO;
 import com.example.English.teaching.center.entity.Course;
 import com.example.English.teaching.center.entity.StudentCourse;
 import com.example.English.teaching.center.entity.TestResult;
@@ -102,7 +103,7 @@ public class UserController {
 
         try{
             userService.registerNewUser(dto, recaptchaResponse);
-            redirectAttributes.addFlashAttribute("successMessage", "Đăng ký thành công!");
+            redirectAttributes.addFlashAttribute("successMessage", "Đăng ký thành công! Chúng tôi đã gửi một link kích hoạt đến email của bạn. Vui lòng kiểm tra hộp thư (kể cả mục Thư rác/Spam) nhé!");
             return "redirect:/login";
         }catch(RateLimitException | IllegalArgumentException e){
             model.addAttribute("errorMessage", e.getMessage());
@@ -114,6 +115,19 @@ public class UserController {
         return "register";
     }
 
+    @GetMapping("/verify")
+    public String verifyAccount(@RequestParam("code") String code, RedirectAttributes redirectAttributes) {
+        // Gọi hàm xác thực từ UserService mà chúng ta đã viết hôm trước
+        boolean isVerified = userService.verifyEmail(code);
+        
+        if (isVerified) {
+            redirectAttributes.addFlashAttribute("successMessage", "Kích hoạt tài khoản thành công! Chào mừng bạn gia nhập ECE, vui lòng đăng nhập.");
+        } else {
+            redirectAttributes.addFlashAttribute("errorMessage", "Đường dẫn kích hoạt không hợp lệ, hoặc tài khoản đã được kích hoạt từ trước.");
+        }
+        
+        return "redirect:/login"; // Đẩy về trang đăng nhập kèm theo câu thông báo
+    }
 
     // Spring Security sẽ xử lý POST /process-login
     @GetMapping("/login")
@@ -255,15 +269,14 @@ public class UserController {
 
     @PostMapping("/user/userInfor/changeUsername")
     public String changeUsername(Principal principal,
-                    @RequestParam("newUsername") String newUsername,
-                    @RequestParam("passwordConfirm") String passwordConfirm,
+                    @Valid @ModelAttribute("usernameChangeDTO") UsernameChangeDTO dto,
                     @RequestParam(value="g-recaptcha-response", required = false) String recaptchaResponse,
                     RedirectAttributes redirectAttributes){
 
         try{
             reCaptchaService.verify(recaptchaResponse);
             
-            userService.changeUsername(principal.getName(), newUsername, passwordConfirm);
+            userService.changeUsername(principal.getName(), dto);
             redirectAttributes.addFlashAttribute("successMessage", "Đổi tên tài khoản thành công");
         }catch(Exception e){
             redirectAttributes.addFlashAttribute("errorMessage", "Đổi tên thấy bại: " + e.getMessage());

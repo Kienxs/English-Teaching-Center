@@ -41,18 +41,19 @@ public class User {
 
     @NotNull
     @Column(nullable = false, length = 255)
-    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&._-])[A-Za-z\\d@$!%*?&._-]{8,}$",
-             message = "Mật khẩu phải có ít nhất 8 ký tự, chứa chữ hoa, chữ thường, số và ký tự đặc biệt!")
     private String password;
 
     @Column(length = 12)
     private String phone;
 
     @Column(name="avatar_url", length = 255)
-    private String avatarUrl = "/images/.png";
+    private String avatarUrl = "/images/home/avatar_clone.png";
 
     @Column(name="balance")
     private BigDecimal balance = BigDecimal.ZERO;
+
+    @Column(name = "verification_code", length = 64)
+    private String verificationCode;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 7)

@@ -11,21 +11,61 @@ function initAuthFeatures(successMsg, errorMsg, captchaError) {
         });
     }
 
-    // 2. Hàm hiển thị SweetAlert2
-    const showModal = (title, text, icon) => {
-        if (text && text !== "null" && text.trim() !== "" && text !== "[[${successMessage}]]") {
-            Swal.fire({
-                title: title,
-                text: text,
-                icon: icon,
-                confirmButtonText: 'OK',
-                confirmButtonColor: icon === 'success' ? '#28a745' : '#dc3545'
-            });
-        }
+    // kiểm tra xem chuỗi message có thật sự chứa nội dung không
+    const isValidMsg = (msg) => {
+        return msg && msg !== "null" && msg.trim() !== "" && !msg.includes("[[${");
     };
 
-    // Gọi hiển thị
-    if (successMsg) showModal('Thành công!', successMsg, 'success');
-    if (errorMsg) showModal('Lỗi!', errorMsg, 'error');
-    if (captchaError) showModal('Xác thực!', captchaError, 'warning');
+    // 2. Xử lý hiển thị SweetAlert2
+    
+    // Xử lý thông báo thành công (Có rẽ nhánh cho trường hợp Check Mail)
+    if (isValidMsg(successMsg)) {
+        const msgLower = successMsg.toLowerCase();
+        
+        if (msgLower.includes("kiểm tra") && (msgLower.includes("email") || msgLower.includes("hộp thư"))) {
+            Swal.fire({
+                title: 'Gần xong rồi! 🚀',
+                text: successMsg,
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonText: 'Đi tới Gmail ngay',
+                cancelButtonText: 'Đóng',
+                confirmButtonColor: '#00c8ff'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.open('https://mail.google.com', '_blank'); // Mở tab Gmail
+                }
+            });
+        } else {
+            Swal.fire({
+                title: 'Thành công!',
+                text: successMsg,
+                icon: 'success',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#28a745'
+            });
+        }
+    }
+
+    // Xử lý thông báo lỗi
+    if (isValidMsg(errorMsg)) {
+        Swal.fire({
+            title: 'Lỗi!',
+            text: errorMsg,
+            icon: 'error',
+            confirmButtonText: 'Đã rõ',
+            confirmButtonColor: '#dc3545'
+        });
+    }
+
+    // Xử lý thông báo lỗi Captcha
+    if (isValidMsg(captchaError)) {
+        Swal.fire({
+            title: 'Xác thực!',
+            text: captchaError,
+            icon: 'warning',
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#f39c12' 
+        });
+    }
 }

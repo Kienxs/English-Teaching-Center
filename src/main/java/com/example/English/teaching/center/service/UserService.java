@@ -1,6 +1,7 @@
 package com.example.English.teaching.center.service;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -9,8 +10,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.English.teaching.center.dto.PasswordChangeDTO;
 import com.example.English.teaching.center.dto.UserLoginResponseDTO;
+import com.example.English.teaching.center.dto.UserNavbarDTO;
 import com.example.English.teaching.center.dto.UserProfileDTO;
 import com.example.English.teaching.center.dto.UserRegisterDTO;
+import com.example.English.teaching.center.dto.UsernameChangeDTO;
 import com.example.English.teaching.center.entity.User;
 import com.example.English.teaching.center.exception.InvalidFileException;
 import com.example.English.teaching.center.exception.RateLimitException;
@@ -29,19 +32,22 @@ public class UserService {
     private final CloudinaryService cloudinaryService;
     private final RateLimitingService rateLimitingService;
     private final ReCaptchaService reCaptchaService;
+    private final EmailService emailService;
 
     public UserService(UserRepository userRepository, 
             PasswordEncoder passwordEncoder, 
             UserMapper userMapper,
             CloudinaryService cloudinaryService,
             RateLimitingService rateLimitingService,
-            ReCaptchaService reCaptchaService) {
+            ReCaptchaService reCaptchaService,
+            EmailService emailService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.userMapper = userMapper;
         this.cloudinaryService = cloudinaryService;
         this.rateLimitingService = rateLimitingService;
         this.reCaptchaService = reCaptchaService;
+        this.emailService = emailService;
     }
 
     @Transactional
@@ -70,7 +76,32 @@ public class UserService {
         user.setStatus(User.Status.PENDING);
         user.setBalance(BigDecimal.ZERO);
 
+        // 5. Create code verify Email 
+        String verificationCode = UUID.randomUUID().toString();
+        user.setVerificationCode(verificationCode);
+
         userRepository.save(user);
+
+        try{
+            emailService.sendVerificationEmail(user.getEmail(), user.getFullName(), user.getVerificationCode());
+        }catch(Exception e){
+            System.err.println(("Lỗi khi gửi email xác nhận cho: " + user.getEmail()));
+            e.printStackTrace();
+        }
+    }
+
+    @Transactional
+    public boolean verifyEmail(String verificationCode){
+        User user = userRepository.findByVerificationCode(verificationCode).orElse(null);
+
+        if(user == null || user.getStatus() == User.Status.ACTIVE) 
+            return false;
+
+        user.setVerificationCode(null);
+        user.setStatus(User.Status.ACTIVE);
+        userRepository.save(user);
+
+        return true;
     }
 
     public UserLoginResponseDTO login(String email, String rawPassword) throws IllegalAccessException {
@@ -82,21 +113,30 @@ public class UserService {
 
         // 2. Find user
         User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new IllegalAccessException("Email không tồn tại"));
+            .orElseThrow(() -> new IllegalAccessException("Email không tồn tại!"));
 
-        // 3. Check password
+        // 3. Check if the account has been activated
+        if(user.getStatus() == User.Status.PENDING){
+            throw new IllegalAccessException("Tài khoản chưa được kích hoạt. Vui lòng kiểm tra email của bạn!");
+        }
+
+        // 4. Check password
         if(!passwordEncoder.matches(rawPassword, user.getPassword())){
-            throw new IllegalAccessException("Mật khẩu không đúng");
+            throw new IllegalAccessException("Mật khẩu không đúng!");
         }
         
         return userMapper.toLoginResponseDTO(user, null);
     }
 
-
-
     public User findByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng với email: " + email));
+    }
+
+    public UserNavbarDTO getUserNavbarInfo(String email){
+        User user = userRepository.findByEmail(email).orElse(null);
+
+        return userMapper.toNavbarDTO(user);
     }
 
     public UserProfileDTO getUserProfile(String email){
@@ -167,17 +207,15 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
     }
 
-    public void changeUsername(String email, String newUsername, String passwordConfirm){
+    @Transactional
+    public void changeUsername(String email, UsernameChangeDTO dto){
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
 
-        if(!passwordEncoder.matches(passwordConfirm, user.getPassword()))
+        if(!passwordEncoder.matches(dto.getPasswordConfirm(), user.getPassword()))
             throw new RuntimeException("Mật khẩu xác nhận không chính xác");
 
-        if(newUsername == null || newUsername.trim().isEmpty())
-            throw new RuntimeException("Tên hiển thị không được để trống");
-
-        user.setFullName(newUsername.trim());
+        user.setFullName(dto.getNewUsername().trim());
         userRepository.save(user);
     }
 }
