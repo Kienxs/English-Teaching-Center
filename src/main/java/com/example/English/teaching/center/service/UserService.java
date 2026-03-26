@@ -128,6 +128,33 @@ public class UserService {
         return userMapper.toLoginResponseDTO(user, null);
     }
 
+// Process forgot password -------------------------------------
+    @Transactional
+    public void generatePasswordResetToken(String email) throws Exception{
+        User user = userRepository.findByEmail(email).orElse(null);
+        if(user != null){
+            String token = UUID.randomUUID().toString();
+            user.setResetPasswordToken(token);
+            userRepository.save(user);
+
+            String resetPasswordLink = "http://localhost:8080/reset-password?token=" + token;
+            emailService.sendPasswordResetEmail(email, resetPasswordLink);
+        }else{
+            throw new Exception("Nếu email hợp lệ, một đường link khôi phục đã được gửi đi.");
+        }
+    }
+
+    public User getByResetPasswordToken(String token){
+        return userRepository.findByResetPasswordToken(token).orElse(null);
+    }
+
+    @Transactional
+    public void updatePasswordByToken(User user, String newPassword){
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setResetPasswordToken(null);
+        userRepository.save(user);
+    }
+
     public User findByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng với email: " + email));

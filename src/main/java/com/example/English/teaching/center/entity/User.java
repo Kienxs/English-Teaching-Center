@@ -28,7 +28,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Version // Xử lý lỗi 1 click mua được 2 lần (Optimistic Locking)
+    @Version // Fix click 2 lần
     private Long version = 0L;
 
     @NotNull
@@ -54,6 +54,9 @@ public class User {
 
     @Column(name = "verification_code", length = 64)
     private String verificationCode;
+
+    @Column(name = "reset_password_token", length = 40)
+    private String resetPasswordToken;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 7)

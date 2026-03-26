@@ -21,6 +21,7 @@ import com.example.English.teaching.center.service.TestService;
 import com.example.English.teaching.center.service.UserService;
 import com.example.English.teaching.center.dto.CommentDTO;
 import com.example.English.teaching.center.dto.PasswordChangeDTO;
+import com.example.English.teaching.center.dto.ResetPasswordDTO;
 import com.example.English.teaching.center.dto.TestDTO;
 import com.example.English.teaching.center.dto.UserProfileDTO;
 import com.example.English.teaching.center.dto.UserRegisterDTO;
@@ -126,10 +127,9 @@ public class UserController {
             redirectAttributes.addFlashAttribute("errorMessage", "Đường dẫn kích hoạt không hợp lệ, hoặc tài khoản đã được kích hoạt từ trước.");
         }
         
-        return "redirect:/login"; // Đẩy về trang đăng nhập kèm theo câu thông báo
+        return "redirect:/login"; 
     }
 
-    // Spring Security sẽ xử lý POST /process-login
     @GetMapping("/login")
     public String showLoginForm( @RequestParam(value = "error", required = false) String error,
                             @RequestParam(value = "logout", required = false) String logout,
@@ -177,6 +177,63 @@ public class UserController {
         } else {
             return "redirect:/user/home";
         }
+    }
+
+    @GetMapping("/forgot-password")
+    public String showForgotPasswordForm(Model model){
+        model.addAttribute("recaptchaSiteKey", recaptchaSiteKey);
+        return "forgot-password";
+    }
+
+    @PostMapping("/forgot-password")
+    public String processForgotPassword(@RequestParam("email") String email,
+                @RequestParam(name = "g-recaptcha-response", required = false) String recaptchaResponse,                
+                RedirectAttributes ra){
+        if(!reCaptchaService.verify(recaptchaResponse)){
+            ra.addFlashAttribute("errorMessage", "Vui lòng xác nhận bạn không phải robot!");
+            return "redirect:/forgot-password";
+        }
+
+        try{
+            userService.generatePasswordResetToken(email);
+            ra.addFlashAttribute("successMessage", "Chúng tôi đã gửi đường link đặt lại mật khẩu vào email của bạn. Vui lòng kiểm tra!");
+        }catch(Exception e){
+           ra.addFlashAttribute("successMessage", "Chúng tôi đã gửi đường link đặt lại mật khẩu vào email của bạn. Vui lòng kiểm tra!");
+        }
+
+        return "redirect:/forgot-password";
+    }
+
+    @GetMapping("/reset-password")
+    public String showResetPasswordForm(@RequestParam(value = "token") String token, Model model, RedirectAttributes ra) {
+        User user = userService.getByResetPasswordToken(token);
+        if (user == null) {
+            ra.addFlashAttribute("errorMessage", "Đường dẫn không hợp lệ hoặc đã hết hạn!");
+            return "redirect:/login";
+        }
+        model.addAttribute("token", token);
+        return "reset-password"; 
+    }
+
+    @PostMapping("/reset-password")
+    public String processResetPassword(@Valid @ModelAttribute ResetPasswordDTO dto,
+                                       BindingResult bindingResult,
+                                       RedirectAttributes ra) {
+                                    
+        if(bindingResult.hasErrors()){
+            ra.addFlashAttribute("errorMessage", bindingResult.getFieldError().getDefaultMessage());
+            return "redirect:/reset-password?token=" + dto.getToken();
+        }             
+
+        User user = userService.getByResetPasswordToken(dto.getToken());
+        if (user == null) {
+            ra.addFlashAttribute("errorMessage", "Đường dẫn không hợp lệ hoặc đã hết hạn!");
+            return "redirect:/login";
+        }
+
+        userService.updatePasswordByToken(user, dto.getPassword());
+        ra.addFlashAttribute("successMessage", "Bạn đã đặt lại mật khẩu thành công. Vui lòng đăng nhập!");
+        return "redirect:/login";
     }
 
     // User Dashboard------------------------------------------------------------
