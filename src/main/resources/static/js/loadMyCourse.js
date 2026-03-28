@@ -1,3 +1,4 @@
+// loadMyCourse.js
 document.addEventListener("DOMContentLoaded", function() {
     
     // 1. Lấy các phần tử
@@ -7,25 +8,18 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // 2. Gán sự kiện click cho tab "Đang học"
     tabActive.addEventListener('click', function(e) {
-        e.preventDefault(); // Ngăn link nhảy trang
-
-        // Cập nhật class active
+        e.preventDefault(); 
+        if (this.classList.contains('active-category')) return;
         tabActive.classList.add('active-category');
         tabExpired.classList.remove('active-category');
-
-        // Tải danh sách khóa học đang học
         fetchMyCourses('ENROLLED'); 
     });
 
-    // 3. Gán sự kiện click cho tab "Hết hạn"
     tabExpired.addEventListener('click', function(e) {
-        e.preventDefault(); // Ngăn link nhảy trang
-
-        // Cập nhật class active
+        e.preventDefault(); 
+        if (this.classList.contains('active-category')) return;
         tabExpired.classList.add('active-category');
         tabActive.classList.remove('active-category');
-
-        // Tải danh sách khóa học hết hạn
         fetchMyCourses('EXPIRED');
     });
 
@@ -38,35 +32,14 @@ document.addEventListener("DOMContentLoaded", function() {
  * @param {string} status - ("ENROLLED" hoặc "EXPIRED")
  */
 function fetchMyCourses(status) {
-    
-    // Hiển thị thông báo đang tải...
     const grid = document.getElementById('course-grid-container');
-    grid.innerHTML = '<p>Đang tải khóa học...</p>';
+    grid.innerHTML = '<p><i class="fas fa-spinner fa-spin"></i> Đang tải khóa học...</p>';
 
-    // 1. Tạo URL động với tham số status
     const apiUrl = `/user/my-courses?status=${status}`;
 
-    // 2. Gọi API
-    fetch(apiUrl, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json'
-            // Cookie (JSESSIONID) sẽ được trình duyệt tự động gửi
-        }
-    })
-    .then(response => {
-        if (response.status === 401 || response.status === 403) {
-            console.error("Xác thực thất bại. Vui lòng đăng nhập lại.");
-            window.location.href = '/login'; 
-            throw new Error('Unauthorized');
-        }
-        if (!response.ok) {
-            throw new Error('Lỗi mạng hoặc server');
-        }
-        return response.json();
-    })
+    // 🚀 Dùng Wrapper MỚI: Rất ngắn gọn và mạnh mẽ!
+    fetchAPI(apiUrl)
     .then(courses => {
-        // Xóa thông báo "Đang tải..."
         grid.innerHTML = ''; 
 
         // 3. Hiển thị nếu không có khóa học
@@ -83,19 +56,17 @@ function fetchMyCourses(status) {
         courses.forEach(course => {
             const link = document.createElement('a');
             
-            // Nếu khóa học đang học, link tới trang học.
-            // Nếu hết hạn, link về trang chi tiết (để mua lại)
             if (status === 'ENROLLED') {
-                link.href = `/user/my-course-detail/${course.slug}`; // Link đến trang HỌC
+                link.href = `/user/my-course-detail/${course.slug}`;
                 link.className = 'course-card-link';
             } else {
-                link.href = `/user/course-detail/${course.slug}`; // Link đến trang CHI TIẾT
-                link.className = 'course-card-link expired-link'; // Thêm class để CSS nếu muốn
+                link.href = `/user/course-detail/${course.slug}`;
+                link.className = 'course-card-link expired-link'; 
             }
             
             const cardHtml = `
                 <div class="course-card">
-                    <img src="${course.imageUrl || 'default-image.jpg'}" alt="${course.name}" class="card-thumbnail">
+                    <img src="${course.imageUrl || '/images/default-course.jpg'}" alt="${course.name}" class="card-thumbnail">
                     <div class="card-content">
                         <h3>${course.name}</h3>
                         <p>Trạng thái: ${status === 'ENROLLED' ? 'Đã đăng ký' : 'Đã hết hạn'}</p>
@@ -108,7 +79,9 @@ function fetchMyCourses(status) {
         });
     })
     .catch(error => {
-        if (error.message !== 'Unauthorized') {
+        // Lỗi 401 (văng do Netflix) đã bị api-client chặn lại và báo SweetAlert rồi. 
+        // Ở đây ta chỉ cần lo các lỗi mạng bình thường khác!
+        if (error !== 'Unauthorized') {
             console.error('Lỗi khi tải khóa học:', error);
             grid.innerHTML = '<p>Không thể tải danh sách khóa học của bạn.</p>';
         }

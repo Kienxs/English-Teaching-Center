@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.English.teaching.center.dto.UserLoginResponseDTO;
 import com.example.English.teaching.center.dto.UserRegisterDTO;
+import com.example.English.teaching.center.entity.RefreshToken;
 import com.example.English.teaching.center.entity.User;
 import com.example.English.teaching.center.exception.RateLimitException;
 import com.example.English.teaching.center.mapper.UserMapper;
@@ -15,6 +16,7 @@ import com.example.English.teaching.center.repository.UserRepository;
 import com.example.English.teaching.center.service.infra.EmailService;
 import com.example.English.teaching.center.service.infra.RateLimitingService;
 import com.example.English.teaching.center.service.infra.ReCaptchaService;
+import com.example.English.teaching.center.utils.JwtUtils;
 
 import io.github.bucket4j.Bucket;
 import jakarta.transaction.Transactional;
@@ -27,19 +29,25 @@ public class AuthService {
     private final RateLimitingService rateLimitingService;
     private final ReCaptchaService reCaptchaService;
     private final EmailService emailService;
+    private final JwtUtils jwtUtils;
+    private final RefreshTokenService refreshTokenService;
 
     public AuthService(UserRepository userRepository, 
                        PasswordEncoder passwordEncoder, 
                        UserMapper userMapper,
                        RateLimitingService rateLimitingService,
                        ReCaptchaService reCaptchaService,
-                       EmailService emailService) {
+                       EmailService emailService,
+                       JwtUtils jwtUtils,
+                       RefreshTokenService refreshTokenService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.userMapper = userMapper;
         this.rateLimitingService = rateLimitingService;
         this.reCaptchaService = reCaptchaService;
         this.emailService = emailService;
+        this.jwtUtils = jwtUtils;
+        this.refreshTokenService = refreshTokenService;
     }
 // Register -------------------------------
     @Transactional
@@ -97,29 +105,29 @@ public class AuthService {
     }
 
 // login -----------------------------------
-    public UserLoginResponseDTO login(String email, String rawPassword) throws IllegalAccessException {
-        // 1. Rate Limit
-        Bucket bucket = rateLimitingService.resolveBucket("login_" + email); 
-        if (!bucket.tryConsume(1)) {
-            throw new RateLimitException("Bạn đã nhập sai quá nhiều lần. Vui lòng thử lại sau 10 phút.");
-        }
-
-        // 2. Find user
-        User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new IllegalAccessException("Email không tồn tại!"));
-
-        // 3. Check if the account has been activated
-        if(user.getStatus() == User.Status.PENDING){
-            throw new IllegalAccessException("Tài khoản chưa được kích hoạt. Vui lòng kiểm tra email của bạn!");
-        }
-
-        // 4. Check password
-        if(!passwordEncoder.matches(rawPassword, user.getPassword())){
-            throw new IllegalAccessException("Mật khẩu không đúng!");
-        }
-        
-        return userMapper.toLoginResponseDTO(user, null);
+    public User authenticateOnly(String email, String rawPassword) throws IllegalAccessException {
+    // 1. Rate Limit 
+    Bucket bucket = rateLimitingService.resolveBucket("login_" + email); 
+    if (!bucket.tryConsume(1)) {
+        throw new RateLimitException("Bạn đã nhập sai quá nhiều lần. Vui lòng thử lại sau 10 phút.");
     }
+
+    // 2. Tìm user
+    User user = userRepository.findByEmail(email)
+        .orElseThrow(() -> new IllegalAccessException("Email không tồn tại!"));
+
+    // 3. Check if the account has been activated
+    if(user.getStatus() == User.Status.PENDING){
+        throw new IllegalAccessException("Tài khoản chưa được kích hoạt. Vui lòng kiểm tra email của bạn!");
+    }
+
+    // 4. Check password
+    if(!passwordEncoder.matches(rawPassword, user.getPassword())){
+        throw new IllegalAccessException("Mật khẩu không đúng!");
+    }
+    
+    return user; 
+}
 
 // Process forgot password -------------------------------------
     @Transactional

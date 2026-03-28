@@ -104,6 +104,10 @@ public class User {
     @JsonIgnore
     private List<ConsultationRequest> consultationRequestsHandled;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    @JsonIgnore
+    private List<RefreshToken> refreshTokens;
 
     public enum Role {
         ADMIN, TECHNICAL, TEACHER, STUDENT;

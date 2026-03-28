@@ -1,6 +1,7 @@
 package com.example.English.teaching.center.service.auth;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -8,25 +9,36 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.example.English.teaching.center.entity.RefreshToken;
+import com.example.English.teaching.center.entity.User;
 import com.example.English.teaching.center.repository.RefreshTokenRepository;
-import com.example.English.teaching.center.repository.UserRepository;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class RefreshTokenService {
-    @Value("${ece.jwt.refreshExpirationMs: 604800000}") //7 ngày
+    @Value("${ece.jwt.refreshExpirationMs:604800000}") //7 ngày
     private Long refreshExpirationMs;
 
+    private final int MAX_ACTIVE_DEVICES = 2;
+
     private final RefreshTokenRepository refreshTokenRepository;
-    private final UserRepository userRepository;
     
-    public RefreshTokenService(RefreshTokenRepository refreshTokenRepository, UserRepository userRepository) {
+    public RefreshTokenService(RefreshTokenRepository refreshTokenRepository) {
         this.refreshTokenRepository = refreshTokenRepository;
-        this.userRepository = userRepository;
     }
 
-    public RefreshToken createRefreshToken(Long userId) {
+    @Transactional
+    public RefreshToken createRefreshToken(User user) {
+        List<RefreshToken> activeTokens = refreshTokenRepository.findAllByUserOrderByExpiryDateAsc(user);
+
+        while(activeTokens.size() >= MAX_ACTIVE_DEVICES){
+            RefreshToken oldestToken = activeTokens.get(0);
+            refreshTokenRepository.delete(oldestToken);
+            activeTokens.remove(0);
+        }
+ 
         RefreshToken refreshToken = new RefreshToken();
-        refreshToken.setUser(userRepository.findById(userId).get());
+        refreshToken.setUser(user); // Gán thẳng object user vào đây! Cực kỳ nhẹ.
         refreshToken.setExpiryDate(Instant.now().plusMillis(refreshExpirationMs));
         refreshToken.setToken(UUID.randomUUID().toString());
 

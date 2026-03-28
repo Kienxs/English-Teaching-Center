@@ -15,4 +15,5 @@ public class UserLoginResponseDTO {
     private String fullName;
     private String role;
     private String accessToken;
+    private String refreshToken;
 }

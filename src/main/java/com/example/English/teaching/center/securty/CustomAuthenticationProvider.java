@@ -11,7 +11,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
-import com.example.English.teaching.center.dto.UserLoginResponseDTO;
+import com.example.English.teaching.center.entity.User;
 import com.example.English.teaching.center.exception.RateLimitException;
 import com.example.English.teaching.center.service.auth.AuthService;
 
@@ -30,17 +30,15 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         String password = authentication.getCredentials().toString();
 
         try {
-            UserLoginResponseDTO loginDTO = authService.login(email, password);
+            User user = authService.authenticateOnly(email, password);
 
             List<SimpleGrantedAuthority> authorities = Collections.singletonList(
-                new SimpleGrantedAuthority("ROLE_" + loginDTO.getRole())
+                new SimpleGrantedAuthority("ROLE_" + user.getRole().name())
             );
 
-            return new UsernamePasswordAuthenticationToken(loginDTO.getEmail(), null, authorities);
-        } catch (RateLimitException e) {
+            return new UsernamePasswordAuthenticationToken(user, null, authorities);
+        } catch (RateLimitException | IllegalAccessException e) {
             throw new BadCredentialsException(e.getMessage()); 
-        } catch (IllegalAccessException e) {
-            throw new BadCredentialsException(e.getMessage());
         }
     }
 

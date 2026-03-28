@@ -33,14 +33,14 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
                             HttpServletResponse response,
                             Authentication authentication) throws IOException, ServletException {
 
-        String email = authentication.getName();
-        User user = userService.findByEmail(email);
+        User user = (User) authentication.getPrincipal(); 
+        String email = user.getEmail();
 
         // 1. Create Access Token
         String accessToken = jwtUtils.generateTokenFromUsername(email);
 
         // 2. Create Refresh Token and Save
-        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getId());
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
 
         // 3. Create HttpOnly Cookie for Access Token
         Cookie atCookie = new Cookie("accessToken", accessToken);

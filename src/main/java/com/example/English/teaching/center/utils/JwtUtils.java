@@ -6,11 +6,14 @@ import org.springframework.stereotype.Component;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 
 @Component
 public class JwtUtils {
     private String jwtSecret = "ECE_Teaching_Center_Super_Secret_Key_123456789";
-    private int jwtExpirationMs = 15 * 60 * 1000; // 15 phút
+
+    @Value("${ece.jwt.expirationMs:10000}")
+    private int jwtExpirationMs;
 
     public String generateTokenFromUsername(String username){
         return Jwts.builder()

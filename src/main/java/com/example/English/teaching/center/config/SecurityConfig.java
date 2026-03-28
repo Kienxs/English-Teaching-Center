@@ -46,14 +46,13 @@ public class SecurityConfig {
             .formLogin(form -> form
                 .loginPage("/login")
                 .loginProcessingUrl("/process-login")
-                .successHandler(customSuccessHandler) // Sử dụng Handler chuẩn của bạn
+                .successHandler(customSuccessHandler) 
                 .failureUrl("/login?error=true")
                 .permitAll()
             )
             .logout(logout -> logout
                 .logoutUrl("/logout")
                 .logoutSuccessUrl("/landing")
-                // Xóa cookie khi đăng xuất để bảo mật hơn
                 .deleteCookies("accessToken", "refreshToken", "JSESSIONID") 
                 .permitAll()
             )
