@@ -1,4 +1,4 @@
-package com.example.English.teaching.center.controller;
+package com.example.English.teaching.center.controller.payment;
 import org.springframework.stereotype.Controller; 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

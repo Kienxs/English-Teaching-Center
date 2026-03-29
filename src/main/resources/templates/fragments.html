@@ -32,7 +32,6 @@
                 <li><a th:href="@{/user/my-course}" th:style="${activeMenu == 'mycourse' ? 'color:#00c8ff; text-decoration: underline;' : ''}">Học tập</a></li>
                 <li><a th:href="@{/user/news}" th:style="${activeMenu == 'news' ? 'color:#00c8ff; text-decoration: underline;' : ''}">Tin tức sự kiện</a></li>
                 <li><a th:href="@{/user/blog}" th:style="${activeMenu == 'blog' ? 'color:#00c8ff; text-decoration: underline;' : ''}">Blog</a></li>
-                <li><a th:href="@{/user/advisory}" th:style="${activeMenu == 'advisory' ? 'color:#00c8ff; text-decoration: underline;' : ''}">Tư vấn</a></li>
                 
                 <li class="user-info">
                     <img th:src="${currentUser != null && currentUser.avatarUrl != null ? currentUser.avatarUrl : '/images/home/avatar_clone.png'}" 

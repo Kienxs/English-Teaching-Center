@@ -1,4 +1,4 @@
-package com.example.English.teaching.center.controller;
+package com.example.English.teaching.center.controller.teacher;
 
 import com.example.English.teaching.center.dto.CourseDTO;
 import com.example.English.teaching.center.dto.CourseSaveDTO;

@@ -1,4 +1,4 @@
-package com.example.English.teaching.center.controller;
+package com.example.English.teaching.center.controller.payment;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;

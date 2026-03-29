@@ -1,4 +1,4 @@
-package com.example.English.teaching.center.controller;
+package com.example.English.teaching.center.controller.common;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
