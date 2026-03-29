@@ -5,12 +5,15 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import com.example.English.teaching.center.securty.CustomAuthenticationProvider;
 import com.example.English.teaching.center.securty.CustomAuthenticationSuccessHandler;
 import com.example.English.teaching.center.securty.JwtAuthenticationFilter;
 import com.example.English.teaching.center.securty.ReCaptchaFilter;
+
+import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
 public class SecurityConfig {
@@ -34,6 +37,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/", "/landing", "/login", "/register", "/verify", "/forgot-password", "/reset-password", "/css/**", "/js/**", "/images/**", "/fonts/**", "/favicon.ico", "/error").permitAll()
                 .requestMatchers("/admin/**").hasAnyRole("ADMIN", "TECHNICAL")
@@ -56,9 +60,22 @@ public class SecurityConfig {
                 .deleteCookies("accessToken", "refreshToken", "JSESSIONID") 
                 .permitAll()
             )
-            // Thêm JWT Filter và ReCaptcha Filter vào đúng chuỗi
+
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-            .addFilterBefore(reCaptchaFilter, JwtAuthenticationFilter.class);
+            .addFilterBefore(reCaptchaFilter, JwtAuthenticationFilter.class)
+
+            .exceptionHandling(exception -> exception
+                .authenticationEntryPoint((request, response, authException) -> {
+                    String header = request.getHeader("Accept");
+                    boolean isAjax = (header != null && header.contains("application/json"));
+
+                    if (isAjax) {
+                        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+                    } else {
+                        response.sendRedirect("/login?kicked=true");
+                    }
+                })
+            );
 
         return http.build();
     }

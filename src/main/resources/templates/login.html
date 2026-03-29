@@ -71,9 +71,10 @@
         const success = /*[[${successMessage}]]*/ null;
         const error = /*[[${errorMessage}]]*/ null;
         const captcha = /*[[${captchaErrorMessage}]]*/ null;
+        const kickedMsg = /*[[${kickedMessage}]]*/ null;
 
         // 3. Gọi hàm từ auth-logic.js
-        initAuthFeatures(success, error, captcha);
+        initAuthFeatures(success, error, captcha, kickedMsg);
     });
 </script>
 </body>

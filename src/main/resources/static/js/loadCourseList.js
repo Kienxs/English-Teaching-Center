@@ -2,47 +2,59 @@
 let currentPage = 0;
 const pageSize = 9;
 
-// 1. Khai báo biến global để Cache các DOM element
 let courseGridContainer;
 let paginationContainer;
 
-// Chạy hàm này khi trang được tải xong
 document.addEventListener("DOMContentLoaded", function() {
-    // Chỉ query DOM đúng 1 lần duy nhất lúc khởi tạo
     courseGridContainer = document.getElementById('course-grid-container');
     paginationContainer = document.getElementById('pagination-container');
-    
     fetchCourses(currentPage);
 });
 
-// Hàm để lấy và hiển thị các khóa học
 function fetchCourses(page) {
-    // Thêm hiệu ứng loading nhỏ cho xịn xò trong lúc chờ API
     if (courseGridContainer) {
         courseGridContainer.innerHTML = '<p><i class="fas fa-spinner fa-spin"></i> Đang tải khóa học...</p>';
     }
 
-    fetchAPI(`/api/courses?page=${page}&size=${pageSize}`)
+    // Thay thế fetchAPI bằng fetch chuẩn
+    fetch(`/api/courses?page=${page}&size=${pageSize}`)
+        .then(response => {
+            // Kiểm tra nếu bị đá (401)
+            if (response.status === 401) {
+                handleUnauthorized(); 
+                return Promise.reject('Unauthorized');
+            }
+            return response.json();
+        })
         .then(data => {
-            // 1. Render danh sách khóa học
             renderCourses(data.content);
-            
-            // 2. Render các nút phân trang
             renderPagination(data.totalPages, data.number);
-
-            // 3. Cập nhật trang hiện tại
             currentPage = data.number;
         })
         .catch(error => {
-            // Lỗi 401 đã được Global xử lý
             if (error !== 'Unauthorized') {
                 console.error('Lỗi khi tải khóa học:', error);
                 if (courseGridContainer) {
-                    courseGridContainer.innerHTML = '<p>Không thể tải danh sách khóa học. Vui lòng thử lại sau.</p>';
+                    courseGridContainer.innerHTML = '<p>Không thể tải danh sách khóa học.</p>';
                 }
             }
         });
 }
+
+// Hàm dùng chung để thông báo khi bị đá thiết bị
+function handleUnauthorized() {
+    Swal.fire({
+        icon: 'error',
+        title: 'Phiên đăng nhập hết hạn!',
+        text: 'Tài khoản của bạn đã được đăng nhập ở nơi khác. Vui lòng đăng nhập lại.',
+        confirmButtonText: 'Đồng ý',
+        allowOutsideClick: false
+    }).then(() => {
+        window.location.href = '/login';
+    });
+}
+
+// (Các hàm renderCourses và renderPagination giữ nguyên như cũ của bạn)
 
 function renderCourses(courses) {
     if (!courseGridContainer) return;

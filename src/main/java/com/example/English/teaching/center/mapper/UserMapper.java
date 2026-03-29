@@ -2,7 +2,6 @@ package com.example.English.teaching.center.mapper;
 
 import org.springframework.stereotype.Component;
 
-import com.example.English.teaching.center.dto.UserLoginResponseDTO;
 import com.example.English.teaching.center.dto.UserNavbarDTO;
 import com.example.English.teaching.center.dto.UserProfileDTO;
 import com.example.English.teaching.center.dto.UserRegisterDTO;
@@ -38,17 +37,6 @@ public class UserMapper {
         user.setPhone(dto.getPhone());
         user.setPassword(dto.getPassword());
         return user;
-    }
-
-    public UserLoginResponseDTO toLoginResponseDTO(User user, String accessToken){
-        if(user == null) return null;
-        return UserLoginResponseDTO.builder()
-            .id(user.getId())
-            .email(user.getEmail())
-            .fullName(user.getFullName())
-            .role(user.getRole().name())
-            .accessToken(accessToken)
-            .build();
     }
 
     public UserNavbarDTO toNavbarDTO(User user){

@@ -138,6 +138,7 @@ public class UserController {
     public String showLoginForm( @RequestParam(value = "error", required = false) String error,
                             @RequestParam(value = "logout", required = false) String logout,
                             @RequestParam(value = "captcha", required = false) String captchaError,
+                            @RequestParam(value = "kicked", required = false) String kicked,
                             HttpSession session,
                             Model model,
                             Authentication authentication) {
@@ -153,6 +154,10 @@ public class UserController {
             Exception lastException = (Exception) session.getAttribute("SPRING_SECURITY_LAST_EXCEPTION");
             String errorMsg = (lastException != null) ? lastException.getMessage() : "Email hoặc mật khẩu không đúng!";
             model.addAttribute("errorMessage", errorMsg);
+        }
+        
+        if (kicked != null) {
+            model.addAttribute("kickedMessage", "Tài khoản đã được đăng nhập ở nơi khác hoặc phiên làm việc hết hạn.");
         }
 
         // 2. Xử lý thông báo lỗi Captcha 

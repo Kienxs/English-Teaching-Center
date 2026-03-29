@@ -1,16 +1,21 @@
-function initAuthFeatures(successMsg, errorMsg, captchaError) {
+function initAuthFeatures(successMsg, errorMsg, captchaError, kickedMsg) {
     // 1. Xử lý Loading khi submit form
-    const form = document.getElementById('registerForm') || document.getElementById('loginForm');
-    const btn = document.getElementById('btnRegister') || document.getElementById('btnLogin');
+    const form = document.getElementById('registerForm') || 
+                document.getElementById('loginForm') ||
+                document.getElementById('resetPasswordForm');
+    const btn = document.getElementById('btnRegister') || 
+                document.getElementById('btnLogin') || 
+                document.getElementById('btnReset');
 
     if (form && btn) {
-        form.addEventListener('submit', function() {
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
-            document.body.style.cursor = 'wait';
+        form.addEventListener('submit', function(e) {
+            if (!btn.disabled) { 
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+                document.body.style.cursor = 'wait';
+            }
         });
     }
-
     // kiểm tra xem chuỗi message có thật sự chứa nội dung không
     const isValidMsg = (msg) => {
         return msg && msg !== "null" && msg.trim() !== "" && !msg.includes("[[${");
@@ -66,6 +71,16 @@ function initAuthFeatures(successMsg, errorMsg, captchaError) {
             icon: 'warning',
             confirmButtonText: 'OK',
             confirmButtonColor: '#f39c12' 
+        });
+    }
+
+    if (kickedMsg && kickedMsg !== "null") {
+        Swal.fire({
+            title: 'Thông báo',
+            text: kickedMsg,
+            icon: 'warning',
+            confirmButtonText: 'Đã rõ',
+            confirmButtonColor: '#f39c12'
         });
     }
 }

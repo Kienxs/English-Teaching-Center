@@ -89,10 +89,10 @@
         // 3. Xử lý Pop-up & Loading (Gọi từ file auth-logic.js)
         const success = /*[[${successMessage}]]*/ null;
         const error = /*[[${errorMessage}]]*/ null;
-        const captcha = /*[[${captchaErrorMessage}]]*/ null;
+        const captcha = /*[[${captchaErrorMessage}]]*/ null;;
         
         // Hàm này nằm trong static/js/auth-logic.js
-        initAuthFeatures(success, error, captcha);
+        initAuthFeatures(success, error, captcha, null);
     });
 </script>
 

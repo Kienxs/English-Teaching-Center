@@ -6,9 +6,7 @@ import java.util.UUID;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.example.English.teaching.center.dto.UserLoginResponseDTO;
 import com.example.English.teaching.center.dto.UserRegisterDTO;
-import com.example.English.teaching.center.entity.RefreshToken;
 import com.example.English.teaching.center.entity.User;
 import com.example.English.teaching.center.exception.RateLimitException;
 import com.example.English.teaching.center.mapper.UserMapper;
@@ -16,7 +14,6 @@ import com.example.English.teaching.center.repository.UserRepository;
 import com.example.English.teaching.center.service.infra.EmailService;
 import com.example.English.teaching.center.service.infra.RateLimitingService;
 import com.example.English.teaching.center.service.infra.ReCaptchaService;
-import com.example.English.teaching.center.utils.JwtUtils;
 
 import io.github.bucket4j.Bucket;
 import jakarta.transaction.Transactional;
@@ -29,30 +26,24 @@ public class AuthService {
     private final RateLimitingService rateLimitingService;
     private final ReCaptchaService reCaptchaService;
     private final EmailService emailService;
-    private final JwtUtils jwtUtils;
-    private final RefreshTokenService refreshTokenService;
 
     public AuthService(UserRepository userRepository, 
                        PasswordEncoder passwordEncoder, 
                        UserMapper userMapper,
                        RateLimitingService rateLimitingService,
                        ReCaptchaService reCaptchaService,
-                       EmailService emailService,
-                       JwtUtils jwtUtils,
-                       RefreshTokenService refreshTokenService) {
+                       EmailService emailService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.userMapper = userMapper;
         this.rateLimitingService = rateLimitingService;
         this.reCaptchaService = reCaptchaService;
         this.emailService = emailService;
-        this.jwtUtils = jwtUtils;
-        this.refreshTokenService = refreshTokenService;
     }
 // Register -------------------------------
     @Transactional
     public void registerNewUser(UserRegisterDTO dto, String recaptchaResponse) {
-        // 1. Kiểm tra Rate Limit (Chống spam đăng ký)
+        // 1. Rate Limit
         Bucket bucket = rateLimitingService.resolveBucket(dto.getEmail());
         if (!bucket.tryConsume(1)) {
             throw new RateLimitException("Bạn thao tác quá nhanh! Vui lòng thử lại sau 10 phút.");

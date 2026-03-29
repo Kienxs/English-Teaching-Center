@@ -19,7 +19,7 @@ public class RefreshTokenService {
     @Value("${ece.jwt.refreshExpirationMs:604800000}") //7 ngày
     private Long refreshExpirationMs;
 
-    private final int MAX_ACTIVE_DEVICES = 2;
+    private final int MAX_ACTIVE_DEVICES = 3;
 
     private final RefreshTokenRepository refreshTokenRepository;
     

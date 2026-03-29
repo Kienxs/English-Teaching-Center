@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 public class JwtUtils {
     private String jwtSecret = "ECE_Teaching_Center_Super_Secret_Key_123456789";
 
-    @Value("${ece.jwt.expirationMs:10000}")
+    @Value("${ece.jwt.expirationMs:90000}")
     private int jwtExpirationMs;
 
     public String generateTokenFromUsername(String username){
