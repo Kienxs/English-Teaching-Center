@@ -1,6 +1,5 @@
 package com.example.English.teaching.center.securty;
 
-import com.example.English.teaching.center.entity.RefreshToken;
 import com.example.English.teaching.center.service.auth.RefreshTokenService;
 import com.example.English.teaching.center.utils.JwtUtils;
 import jakarta.servlet.FilterChain;
@@ -17,7 +16,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.time.Instant;
+import java.time.LocalDateTime;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -26,43 +25,59 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final UserDetailsService userDetailsService;
     private final RefreshTokenService refreshTokenService;
 
-    public JwtAuthenticationFilter(JwtUtils jwtUtils, UserDetailsService userDetailsService, RefreshTokenService refreshTokenService) {
+    public JwtAuthenticationFilter(JwtUtils jwtUtils, 
+                            UserDetailsService userDetailsService, 
+                            RefreshTokenService refreshTokenService) {
         this.jwtUtils = jwtUtils;
         this.userDetailsService = userDetailsService;
         this.refreshTokenService = refreshTokenService;
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+    protected void doFilterInternal(HttpServletRequest request, 
+                                    HttpServletResponse response, 
+                                    FilterChain filterChain)
             throws ServletException, IOException {
 
         try {
             String accessToken = getJwtFromCookie(request, "accessToken");
+            boolean isAuthenticated = false;
 
-            // 1. Nếu Access Token hợp lệ -> Xác thực ngay
-            if (accessToken != null && jwtUtils.validateJwtToken(accessToken)) {
-                authenticateUser(accessToken, request);
-                filterChain.doFilter(request, response);
-                return;
+            if (accessToken != null) {
+                try {
+                    // Nếu token hết hạn, lệnh này sẽ ném lỗi ExpiredJwtException
+                    if (jwtUtils.validateJwtToken(accessToken)) {
+                        authenticateUser(accessToken, request);
+                        isAuthenticated = true; 
+                    }
+                } catch (Exception e) {
+                    logger.warn("Access Token không hợp lệ hoặc đã hết hạn. Đang chuyển sang Refresh Token...");
+                }
             }
 
             // 2. Nếu Access Token hỏng/hết hạn -> Thử cứu bằng Refresh Token
-            String refreshToken = getJwtFromCookie(request, "refreshToken");
-            if (refreshToken != null) {
-                handleRefreshToken(refreshToken, request, response);
+            if (!isAuthenticated) {
+                String refreshToken = getJwtFromCookie(request, "refreshToken");
+                if (refreshToken != null) {
+                    handleRefreshToken(refreshToken, request, response);
+                }
             }
-
+            
         } catch (Exception e) {
-            throw new RuntimeException("Lỗi xác thực người dùng: " + e.getMessage());
+            logger.error("Lỗi xác thực người dùng nghiêm trọng: " + e.getMessage());
+            // clearCookies(response);
+            SecurityContextHolder.clearContext();
         }
 
         filterChain.doFilter(request, response);
     }
 
-    private void handleRefreshToken(String token, HttpServletRequest request, HttpServletResponse response) {
+    private void handleRefreshToken(String token, 
+                                HttpServletRequest request, 
+                                HttpServletResponse response) {
         refreshTokenService.findByToken(token).ifPresentOrElse(rt -> {
             // Kiểm tra Refresh Token còn hạn trong DB không
-            if (rt.getExpiryDate().isAfter(Instant.now())) {
+            if (rt.getExpiryDate().isAfter(LocalDateTime.now())) {
                 // Cấp Access Token mới
                 String email = rt.getUser().getEmail();
                 String newAccessToken = jwtUtils.generateTokenFromUsername(email);
@@ -116,7 +131,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         setCookie(response, "refreshToken", null, 0);
     }
 
-    private void setCookie(HttpServletResponse response, String name, String value, int maxAge) {
+    private void setCookie(HttpServletResponse response, 
+                            String name, String value, int maxAge) {
         Cookie cookie = new Cookie(name, value);
         cookie.setHttpOnly(true);
         cookie.setPath("/");

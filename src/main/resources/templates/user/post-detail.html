@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: headInfo(${post.title}, ~{:: .custom-css})}">
+    <link class="custom-css" rel="stylesheet" href="/css/user/news.css"/>
+    <style class="custom-css">
+        /* =========================================
+           BỐ CỤC 2 CỘT (MAIN & SIDEBAR)
+           ========================================= */
+        .vnx-container {
+            max-width: 1100px;
+            margin: 30px auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 40px;
+            padding: 0 15px;
+        }
+        .vnx-main {
+            flex: 1 1 65%; /* Chiếm 65% chiều rộng */
+            max-width: 700px;
+        }
+        .vnx-sidebar {
+            flex: 1 1 30%; /* Chiếm 30% chiều rộng */
+            position: sticky;
+            top: 90px; /* Ghim sidebar khi cuộn chuột */
+            align-self: flex-start;
+        }
+
+        /* =========================================
+           PHẦN BÀI VIẾT CHÍNH
+           ========================================= */
+        .post-category { color: #9f224e; font-weight: bold; text-transform: uppercase; font-size: 0.9rem; margin-bottom: 10px; display: block; text-decoration: none;}
+        .post-title { font-size: 2rem; color: #222; line-height: 1.3; margin-bottom: 15px; font-family: Merriweather, serif;}
+        .post-meta { font-size: 0.9rem; color: #757575; border-bottom: 1px solid #e5e5e5; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between;}
+        
+        /* Sapo (Đoạn tóm tắt in đậm đầu bài) */
+        .post-sapo { font-weight: bold; font-size: 1.15rem; color: #222; line-height: 1.6; margin-bottom: 20px;}
+        
+        .post-content { font-size: 1.15rem; line-height: 1.7; color: #222; font-family: Arial, Helvetica, sans-serif;}
+        .post-content img { max-width: 100%; height: auto; display: block; margin: 20px auto; border-radius: 4px; }
+        .post-content p { margin-bottom: 15px; }
+
+        /* =========================================
+           PHẦN BÌNH LUẬN (COMMENTS)
+           ========================================= */
+        .comment-section { margin-top: 40px; border-top: 2px solid #e5e5e5; padding-top: 20px; }
+        .comment-title { font-size: 1.2rem; font-weight: bold; margin-bottom: 20px; }
+        .comment-form { display: flex; flex-direction: column; gap: 10px; margin-bottom: 30px;}
+        .comment-form textarea { width: 100%; padding: 15px; border: 1px solid #ccc; border-radius: 5px; resize: vertical; min-height: 80px; font-family: inherit;}
+        .comment-form button { align-self: flex-end; background-color: #9f224e; color: #fff; border: none; padding: 10px 25px; border-radius: 5px; cursor: pointer; font-weight: bold;}
+        .comment-form button:hover { background-color: #7a183a; }
+        
+        .comment-item { display: flex; gap: 15px; margin-bottom: 20px; border-bottom: 1px solid #f1f1f1; padding-bottom: 15px;}
+        .comment-avatar { width: 40px; height: 40px; background: #e0e0e0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #666;}
+        .comment-info h5 { margin: 0 0 5px 0; font-size: 1rem; color: #333; }
+        .comment-time { font-size: 0.8rem; color: #999; margin-bottom: 8px; display: block; }
+        .comment-text { margin: 0; color: #444; line-height: 1.5; font-size: 1rem;}
+
+        /* =========================================
+           PHẦN SIDEBAR (GỢI Ý TIN)
+           ========================================= */
+        .sidebar-title { font-size: 1.1rem; font-weight: bold; border-bottom: 2px solid #9f224e; padding-bottom: 10px; margin-bottom: 20px; color: #222;}
+        .related-item { display: flex; gap: 15px; margin-bottom: 20px; }
+        .related-thumb { width: 120px; height: 75px; object-fit: cover; border-radius: 4px;}
+        .related-info h4 { margin: 0; font-size: 0.95rem; line-height: 1.4; font-weight: 500;}
+        .related-info a { color: #222; text-decoration: none; transition: color 0.2s;}
+        .related-info a:hover { color: #9f224e; }
+
+        @media (max-width: 768px) {
+            .vnx-main, .vnx-sidebar { flex: 1 1 100%; max-width: 100%; }
+            .vnx-sidebar { position: static; margin-top: 40px; }
+        }
+    </style>
+</head>
+<body>
+    <div th:replace="~{fragments :: navbar(${activeTab})}"></div>
+
+    <main class="vnx-container">
+        
+        <article class="vnx-main">
+            <a th:href="${post.type.name() == 'NEWS' ? '/user/news' : '/user/blog'}" 
+            class="post-category" 
+            th:text="${post.type.name() == 'NEWS' ? 'TIN TỨC' : 'BLOG'}">
+            </a>
+            <h1 class="post-title" th:text="${post.title}">Tiêu đề bài viết phong cách báo chí</h1>
+            
+            <div class="post-meta">
+                <span class="meta-author">
+                    <strong th:text="${post.author.fullName}">Tác giả</strong> - 
+                    <span th:if="${post.createdAt != null}" th:text="${#temporals.format(post.createdAt, 'EEEE, dd/MM/yyyy, HH:mm')}"></span>
+                </span>
+                <span class="meta-views"><i class="far fa-eye"></i> <span th:text="${post.viewCount}">0</span></span>
+            </div>
+
+            <div class="post-sapo" th:text="${post.summary}">
+                Đây là đoạn tóm tắt nội dung bài viết, đóng vai trò dẫn dắt người đọc vào nội dung chi tiết bên dưới.
+            </div>
+
+            <div class="post-content" th:utext="${post.content}">
+                Nội dung chi tiết...
+            </div>
+
+            <section class="comment-section">
+                <h3 class="comment-title">Ý kiến bạn đọc</h3>
+                
+                <form class="comment-form" th:action="@{/user/post-comment}" method="post">
+                    <input type="hidden" name="postSlug" th:value="${post.slug}">
+                    <textarea name="content" placeholder="Chia sẻ ý kiến của bạn về bài viết này..." required></textarea>
+                    <button type="submit">Gửi bình luận</button>
+                </form>
+
+                <div class="comment-list">
+                    <p th:if="${post.comments == null || post.comments.isEmpty()}" style="color: #777; font-style: italic;">
+                        Chưa có bình luận nào. Hãy là người đầu tiên chia sẻ ý kiến!
+                    </p>
+
+                    <div class="comment-item" th:each="comment : ${post.comments}" th:if="${comment.status.name() == 'APPROVED'}">
+                        <div class="comment-avatar" th:text="${#strings.substring(comment.user.fullName, 0, 1)}">A</div>
+                        <div class="comment-info">
+                            <h5 th:text="${comment.user.fullName}">Nguyễn Văn A</h5>
+                            <span class="comment-time" th:text="${#temporals.format(comment.createdAt, 'dd/MM/yyyy HH:mm')}"></span>
+                            <p class="comment-text" th:text="${comment.content}">Nội dung bình luận rất hay và bổ ích.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </article>
+
+        <aside class="vnx-sidebar">
+            <h3 class="sidebar-title">Gợi ý cho bạn</h3>
+            <div class="related-list">
+                <div class="related-item" th:each="related : ${relatedPosts}">
+                    <a th:href="@{/user/post/{slug}(slug=${related.slug})}">
+                        <img th:src="${related.thumbnailUrl != null ? related.thumbnailUrl : '/images/default-post.jpg'}" 
+                            class="related-thumb">
+                    </a>
+                    <div class="related-info">
+                        <h4>
+                            <a th:href="@{/user/post/{slug}(slug=${related.slug})}" th:text="${related.title}"></a>
+                        </h4>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+    </main>
+
+    <div th:replace="~{fragments :: footer}"></div>
+</body>
+</html>

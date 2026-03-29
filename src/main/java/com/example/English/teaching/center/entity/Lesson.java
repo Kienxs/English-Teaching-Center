@@ -2,7 +2,9 @@ package com.example.English.teaching.center.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -11,7 +13,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "lessons")
+@Table(name = "lessons", 
+       uniqueConstraints = @UniqueConstraint(
+               name = "ux_course_lesson_order",
+               columnNames = {"course_id", "lesson_order"}
+       ))
 @Data
 @NoArgsConstructor
 public class Lesson {
@@ -23,12 +29,14 @@ public class Lesson {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id", nullable = false)
     @JsonIgnore
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude 
     private Course course;
 
     @Column(name = "title", nullable = false, length = 255)
     private String title;
 
-    @Lob 
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
     @Column(name = "lesson_order", nullable = false)
@@ -40,13 +48,13 @@ public class Lesson {
 
     @OneToMany(mappedBy = "lesson", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude 
     private List<Material> materials;
 
     @OneToMany(mappedBy = "lesson", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private List<Test> tests;
-
-    public List<Test> getTests() {
-        return tests;
-    }
 }

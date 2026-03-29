@@ -6,6 +6,8 @@ import java.util.Collection;
 import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction; // Dùng @Where(clause = "is_deleted = false") nếu xài Spring Boot 2.x / Hibernate 5
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.core.GrantedAuthority;
 
@@ -13,7 +15,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import lombok.Data; 
 import lombok.NoArgsConstructor; 
 import lombok.ToString; 
@@ -22,6 +23,10 @@ import lombok.ToString;
 @Table(name = "users")
 @Data 
 @NoArgsConstructor
+// TỰ ĐỘNG XÓA MỀM: Khi gọi userRepository.delete(), sẽ tự chuyển thành lệnh UPDATE
+@SQLDelete(sql = "UPDATE users SET is_deleted = true WHERE id=? and version=?")
+// TỰ ĐỘNG LỌC: Các lệnh find() sẽ chỉ lấy user chưa bị xóa
+@SQLRestriction("is_deleted = false") 
 public class User {
 
     @Id
@@ -32,7 +37,7 @@ public class User {
     private Long version = 0L;
 
     @NotNull
-    @Column(name= "full_name", nullable = false, length =100)
+    @Column(name= "full_name", nullable = false, length = 100)
     private String fullName;
 
     @NotNull
@@ -49,7 +54,7 @@ public class User {
     @Column(name="avatar_url", length = 255)
     private String avatarUrl = "/images/home/avatar_clone.png";
 
-    @Column(name="balance")
+    @Column(name="balance", precision = 15, scale = 2)
     private BigDecimal balance = BigDecimal.ZERO;
 
     @Column(name = "verification_code", length = 64)
@@ -59,12 +64,15 @@ public class User {
     private String resetPasswordToken;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 7)
+    @Column(nullable = false, length = 20)
     private Role role = Role.STUDENT;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 8)
+    @Column(nullable = false, length = 10)
     private Status status = Status.ACTIVE;
+
+    @Column(name = "is_deleted")
+    private boolean isDeleted = false;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
@@ -73,41 +81,36 @@ public class User {
     @UpdateTimestamp 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    
+    @OneToMany(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @ToString.Exclude
     @JsonIgnore
     private List<Transaction> transactions; 
 
-    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "student", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @ToString.Exclude
     @JsonIgnore
     private List<StudentCourse> enrolledCourses; 
 
-    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "student", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @ToString.Exclude
     @JsonIgnore
     private List<TestResult> testResults; 
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL) 
     @ToString.Exclude
     @JsonIgnore
     private List<Comment> courseComments; 
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     @ToString.Exclude
     @JsonIgnore
     private List<Comment> blogComments;
-    
-    @OneToMany(mappedBy = "handledBy", fetch = FetchType.LAZY)
-    @ToString.Exclude
-    @JsonIgnore
-    private List<ConsultationRequest> consultationRequestsHandled;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
     @JsonIgnore
-    private List<RefreshToken> refreshTokens;
+    private List<RefreshToken> refreshTokens; 
 
     public enum Role {
         ADMIN, TECHNICAL, TEACHER, STUDENT;
@@ -120,8 +123,7 @@ public class User {
     public enum Status {
         ACTIVE, PENDING, REJECTED
     }
-    
- 
+
     public User(String name, String email, String password) {
         this(name, email, password, Role.STUDENT, Status.PENDING);
     }
@@ -133,5 +135,6 @@ public class User {
         this.role = role;
         this.status = status;
         this.balance = BigDecimal.ZERO; 
+        this.isDeleted = false;
     }
 }

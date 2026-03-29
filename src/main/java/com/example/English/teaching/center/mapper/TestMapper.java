@@ -9,19 +9,24 @@ import com.example.English.teaching.center.dto.TestSaveDTO;
 import com.example.English.teaching.center.entity.Question;
 import com.example.English.teaching.center.entity.Test;
 
+import java.util.stream.Collectors;
+
 @Component
 public class TestMapper {
-    public QuestionDTO toQuestonDTO(Question entity){
+    
+    public QuestionDTO toQuestionDTO(Question entity){
         if(entity == null) return null;
 
         QuestionDTO dto = new QuestionDTO();
         dto.setId(entity.getId());
         dto.setQuestionText(entity.getQuestionText());
-        dto.setOptionA(entity.getOptionA());
-        dto.setOptionB(entity.getOptionB());
-        dto.setOptionC(entity.getOptionC());
-        dto.setOptionD(entity.getOptionD());
         dto.setPoints(entity.getPoints());
+
+        if (entity.getOptions() != null) {
+            dto.setOptions(entity.getOptions().stream()
+                    .map(Question.Option::getText)
+                    .collect(Collectors.toList()));
+        }
 
         return dto;
     }
@@ -33,12 +38,9 @@ public class TestMapper {
         dto.setId(entity.getId());
         dto.setTestId(entity.getTest() != null ? entity.getTest().getId() : null);
         dto.setQuestionText(entity.getQuestionText());
-        dto.setOptionA(entity.getOptionA());
-        dto.setOptionB(entity.getOptionB());
-        dto.setOptionC(entity.getOptionC());
-        dto.setOptionD(entity.getOptionD());
-        dto.setCorrectAnswer(entity.getCorrectAnswer());
         dto.setPoints(entity.getPoints());
+
+        dto.setOptions(entity.getOptions());
 
         return dto;
     }
@@ -54,7 +56,7 @@ public class TestMapper {
 
         if(entity.getQuestions() != null){
             dto.setQuestions(entity.getQuestions().stream()
-                    .map(this::toQuestonDTO)
+                    .map(this::toQuestionDTO) 
                     .toList());
         }
 

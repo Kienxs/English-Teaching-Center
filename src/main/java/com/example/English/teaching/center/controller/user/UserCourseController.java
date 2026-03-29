@@ -134,12 +134,13 @@ public class UserCourseController {
             model.addAttribute("resultId", result.getId());
             return "user/do-test";
         } catch (RuntimeException e) { 
+            e.printStackTrace();
             ra.addFlashAttribute("errorMessage", e.getMessage());
             return "redirect:/user/home";
         }
     }
 
-    @PostMapping("/user/submit-test")
+    @PostMapping("/submit-test")
     public String submitTest(@RequestParam("testSlug") String testSlug, 
                              @RequestParam Map<String, String> allParams, 
                              Principal principal) {  

@@ -93,7 +93,8 @@ public class TestService {
 
     @Transactional
     public TestResult submitTest(String identifier, Map<String, String> answers, String email){
-        User user = userRepository.findByEmail(email).orElseThrow();
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng!"));
         
         Test test = Optional.ofNullable(findTestByIdOrSlug(identifier))
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy bài thi: " + identifier));
@@ -106,28 +107,38 @@ public class TestService {
 
         TestResult result = doingTests.get(0);
 
-        double totalScore = 0;
+        double earnedPoints = 0;
         double totalPoints = 0;
+        List<TestResult.AnswerDetail> detailsList = new java.util.ArrayList<>();
 
         for(Question q : test.getQuestions()){
-            double point = (q.getPoints() != null) ? q.getPoints().doubleValue() : 0;
-            totalPoints += point;
+            double questionWeight = (q.getPoints() != null) ? q.getPoints().doubleValue() : 0;
+            totalPoints += questionWeight;
 
-            String selected = answers.get("answers[" + q.getId() + "]");
+            String selectedAnswerText = answers.get("answers[" + q.getId() + "]");
 
-            if (selected != null && selected.equals(q.getCorrectAnswer())) {
-                totalScore += point;
-            }
+            String correctAnswerText = q.getOptions().stream()
+                .filter(Question.Option::isCorrect)
+                .map(Question.Option::getText)
+                .findFirst()
+                .orElse("");
+
+            boolean isCorrect = (selectedAnswerText != null && selectedAnswerText.equals(correctAnswerText));
+
+            if (isCorrect)  earnedPoints += questionWeight;
+
+            detailsList.add(new TestResult.AnswerDetail(q.getId(), selectedAnswerText, isCorrect));
         }
 
-        double finalScore = (totalPoints > 0) ?  (totalScore / totalPoints) * 10.0 : 0;
+        double finalScore = (totalPoints > 0) ? (earnedPoints / totalPoints) * 10.0 : 0;
         BigDecimal roundedScore = new BigDecimal(finalScore).setScale(2, RoundingMode.HALF_UP);
 
         result.setScore(roundedScore);
         result.setSubmitTime(LocalDateTime.now());
         result.setStatus(TestResult.Status.COMPLETED);
+        result.setDetails(detailsList);
 
-        if(result.getStartTime() != null){
+        if (result.getStartTime() != null) {
             long seconds = java.time.Duration.between(result.getStartTime(), result.getSubmitTime()).getSeconds();
             result.setExecutionTimeSeconds((int) seconds);
         }
@@ -168,15 +179,14 @@ public class TestService {
 
     @Transactional
     public void saveQuestion(QuestionSaveDTO dto) {
-        Test test = testRepository.findById(dto.getTestId()).orElseThrow();
-        Question q = (dto.getId() != null) ? questionRepository.findById(dto.getId()).orElse(new Question()) : new Question();
+        Test test = testRepository.findById(dto.getTestId())
+            .orElseThrow(() -> new RuntimeException("Không tìm thấy bài Test!"));
+        Question q = (dto.getId() != null) 
+            ? questionRepository.findById(dto.getId()).orElse(new Question()) 
+            : new Question();
         q.setTest(test);
         q.setQuestionText(dto.getQuestionText());
-        q.setOptionA(dto.getOptionA());
-        q.setOptionB(dto.getOptionB());
-        q.setOptionC(dto.getOptionC());
-        q.setOptionD(dto.getOptionD());
-        q.setCorrectAnswer(dto.getCorrectAnswer());
+        q.setOptions(dto.getOptions());
         q.setPoints(dto.getPoints());
         questionRepository.save(q);
     }

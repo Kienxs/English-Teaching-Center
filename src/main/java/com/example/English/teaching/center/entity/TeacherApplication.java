@@ -2,8 +2,13 @@ package com.example.English.teaching.center.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.time.LocalDateTime;
 
@@ -19,23 +24,26 @@ public class TeacherApplication {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude 
     private User user;
 
-    @Column(name = "cv_url", nullable = false)
+    @Column(name = "cv_url", nullable = false, length = 255)
     private String cvUrl;
 
-    @Column(name = "license_url", nullable = false)
+    @Column(name = "license_url", nullable = false, length = 255)
     private String licenseUrl;
 
     @Column(length = 200)
     private String specialization;
 
-    @Lob
+    @Column(columnDefinition = "TEXT")
     private String experience;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private ApplicationStatus status = ApplicationStatus.PENDING;
+    @Column(nullable = false, length = 20)
+    private Status status = Status.PENDING; 
 
     @CreationTimestamp
     @Column(name = "submitted_at", updatable = false)
@@ -43,19 +51,18 @@ public class TeacherApplication {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reviewed_by")
-    private User reviewedBy; // Admin duyệt
+    @JsonIgnore
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude 
+    private User reviewedBy;
 
     @Column(name = "reviewed_at")
     private LocalDateTime reviewedAt;
 
-    @Lob
-    @Column(name = "review_note")
+    @Column(name = "review_note", columnDefinition = "TEXT")
     private String reviewNote;
 
-    // Enum cho ApplicationStatus
-    public enum ApplicationStatus {
-        PENDING,
-        APPROVED,
-        REJECTED
+    public enum Status {
+        PENDING, APPROVED, REJECTED
     }
 }

@@ -5,13 +5,13 @@ import java.time.format.DateTimeFormatter;
 import org.springframework.stereotype.Component;
 
 import com.example.English.teaching.center.dto.CommentDTO;
-import com.example.English.teaching.center.entity.CourseComments;
+import com.example.English.teaching.center.entity.CourseComment;
 
 @Component
 public class CommentMapper {
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
-    public CommentDTO toDTO(CourseComments cmt){
+    public CommentDTO toDTO(CourseComment cmt){
         if(cmt == null) return null;
 
         CommentDTO dto = new CommentDTO();

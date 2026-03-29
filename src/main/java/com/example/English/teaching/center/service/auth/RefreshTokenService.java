@@ -1,6 +1,7 @@
 package com.example.English.teaching.center.service.auth;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -16,7 +17,7 @@ import jakarta.transaction.Transactional;
 
 @Service
 public class RefreshTokenService {
-    @Value("${ece.jwt.refreshExpirationMs:604800000}") //7 ngày
+    @Value("${app.jwt.refreshExpirationMs}") //7 ngày
     private Long refreshExpirationMs;
 
     private final int MAX_ACTIVE_DEVICES = 3;
@@ -38,15 +39,15 @@ public class RefreshTokenService {
         }
  
         RefreshToken refreshToken = new RefreshToken();
-        refreshToken.setUser(user); // Gán thẳng object user vào đây! Cực kỳ nhẹ.
-        refreshToken.setExpiryDate(Instant.now().plusMillis(refreshExpirationMs));
+        refreshToken.setUser(user);
+        refreshToken.setExpiryDate(LocalDateTime.now().plus(refreshExpirationMs, ChronoUnit.MILLIS));
         refreshToken.setToken(UUID.randomUUID().toString());
 
         return refreshTokenRepository.save(refreshToken);
     }
 
     public RefreshToken verifyExpiration(RefreshToken token) {
-        if (token.getExpiryDate().compareTo(Instant.now()) < 0) {
+        if (token.getExpiryDate().compareTo(LocalDateTime.now()) < 0) {
             refreshTokenRepository.delete(token);
             throw new RuntimeException("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
         }

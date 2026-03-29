@@ -1,44 +1,49 @@
 package com.example.English.teaching.center.entity;
 
 import jakarta.persistence.*;
-import lombok.Data; // Thêm Lombok Data
-import lombok.NoArgsConstructor; // Thêm Lombok NoArgsConstructor
-import org.hibernate.annotations.CreationTimestamp; // Thay thế @PrePersist thủ công
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction; 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List; // Cần thiết cho @OneToMany
- 
+import java.util.List;
+
 @Entity
 @Table(name = "courses")
-@Data // Tự động tạo getters, setters, toString, equals, hashCode
-@NoArgsConstructor // Tự động tạo constructor không tham số
+@Data 
+@NoArgsConstructor 
+@SQLDelete(sql = "UPDATE courses SET is_deleted = true WHERE id=?")
+@SQLRestriction("is_deleted = false")
 public class Course {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "name", nullable = false, length = 150)
+    @Column(name = "name", nullable = false, length = 255)
     private String name;
     
-    @Column(name = "slug", nullable = false, length = 150)
+    @Column(name = "slug", nullable = false, length = 255)
     private String slug;
 
-    @Lob // Tối ưu cho trường TEXT (description)
-    @Column(name = "description")
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "category")
     @Enumerated(EnumType.STRING)
-    private Category category;
+    @Column(name = "category", length = 20)
+    private Category category = Category.OTHER; 
 
-    @Column(name = "mode")
     @Enumerated(EnumType.STRING)
-    private Mode mode;
+    @Column(name = "mode", length = 20)
+    private Mode mode = Mode.ONLINE; 
 
     @Column(name = "duration", length = 50)
     private String duration;
@@ -47,59 +52,61 @@ public class Course {
     private Integer accessPeriodDays;
 
     @Column(name = "fee", precision = 10, scale = 2)
-    private BigDecimal fee;
+    private BigDecimal fee = BigDecimal.ZERO; 
 
-    @Column(name = "image_url")
+    @Column(name = "image_url", length = 255)
     private String imageUrl;
 
     @Column(name = "view_count")
-    private Integer viewCount;
+    private Integer viewCount = 0; 
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "teacher_id")
-    @JsonIgnore
-    private Teacher teacher;
-
-    @Column(name = "status")
     @Enumerated(EnumType.STRING)
-    private Status status;
+    @Column(name = "status", length = 20)
+    private Status status = Status.DRAFT;
 
-    @Lob 
-    @Column(name = "admin_note")
+    @Column(name = "admin_note", columnDefinition = "TEXT")
     private String adminNote;
-    
-    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Lesson> lessons;
-    
-    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore
-    private List<StudentCourse> studentCourses;
-    
-    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-    private List<CourseComments> courseComments;
+
+    @Column(name = "is_deleted")
+    private boolean isDeleted = false;
 
     @CreationTimestamp 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt; 
 
-    public enum Category{
-        IELTS,
-        TOEIC,
-        KIDS,
-        OTHER;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "teacher_id")
+    @JsonIgnore
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private Teacher teacher;
+
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private List<Lesson> lessons;
+    
+    @OneToMany(mappedBy = "course", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JsonIgnore
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private List<StudentCourse> studentCourses;
+    
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private List<CourseComment> courseComments; 
+
+    public enum Category {
+        IELTS, TOEIC, KIDS, OTHER;
     }
 
-    public enum Mode{
-        ONLINE,
-        OFFLINE;
+    public enum Mode {
+        ONLINE, OFFLINE;
     }
 
-    public enum Status{
-        DRAFT, 
-        PENDING, 
-        APPROVED, 
-        REJECTED, 
-        HIDDEN;
+    public enum Status {
+        DRAFT, PENDING, APPROVED, REJECTED, HIDDEN;
     }
 }

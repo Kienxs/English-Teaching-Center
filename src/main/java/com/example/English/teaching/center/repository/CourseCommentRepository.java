@@ -4,9 +4,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.example.English.teaching.center.entity.CourseComments;
+import com.example.English.teaching.center.entity.CourseComment;
 
-public interface CourseCommentRepository extends JpaRepository<CourseComments, Long>{
+public interface CourseCommentRepository extends JpaRepository<CourseComment, Long>{
     // Page
-    Page<CourseComments> findByCourseId(Long courseId, Pageable pageable);
+    Page<CourseComment> findByCourseId(Long courseId, Pageable pageable);
 }

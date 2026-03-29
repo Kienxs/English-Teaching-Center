@@ -52,10 +52,14 @@
                         <div class="q-content">
                             <div class="q-text" th:text="'Câu ' + ${stat.count} + ': ' + ${question.questionText}"></div>
                             <div class="q-answers">
-                                <label class="answer-option"><input type="radio" th:name="'answers[' + ${question.id} + ']'" value="A" onclick="markAnswered(this)"><span th:text="'a. ' + ${question.optionA}"></span></label>
-                                <label class="answer-option"><input type="radio" th:name="'answers[' + ${question.id} + ']'" value="B" onclick="markAnswered(this)"><span th:text="'b. ' + ${question.optionB}"></span></label>
-                                <label class="answer-option"><input type="radio" th:name="'answers[' + ${question.id} + ']'" value="C" onclick="markAnswered(this)"><span th:text="'c. ' + ${question.optionC}"></span></label>
-                                <label class="answer-option"><input type="radio" th:name="'answers[' + ${question.id} + ']'" value="D" onclick="markAnswered(this)"><span th:text="'d. ' + ${question.optionD}"></span></label>
+                                <label th:each="option, optStat : ${question.options}" class="answer-option">
+                                    <input type="radio" 
+                                        th:name="'answers[' + ${question.id} + ']'" 
+                                        th:value="${option}" 
+                                        onclick="markAnswered(this)">
+                                    
+                                    <span th:text="${#strings.substring('abcdefgh', optStat.index, optStat.index + 1)} + '. ' + ${option}"></span>
+                                </label>
                             </div>
                         </div>
                     </div>

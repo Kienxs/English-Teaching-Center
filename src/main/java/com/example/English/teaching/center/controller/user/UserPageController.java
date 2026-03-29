@@ -26,14 +26,4 @@ public class UserPageController {
     public String learn(){
         return "user/my-course";
     }
-
-    @GetMapping("/news")
-    public String news(){
-        return "user/news";
-    }
-
-    @GetMapping("/blog")
-    public String blog(){
-        return "user/blog";
-    }
 }

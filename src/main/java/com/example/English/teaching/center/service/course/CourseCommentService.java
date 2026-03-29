@@ -10,7 +10,7 @@ import org.springframework.data.domain.Sort;
 
 import com.example.English.teaching.center.dto.CommentDTO;
 import com.example.English.teaching.center.entity.Course;
-import com.example.English.teaching.center.entity.CourseComments;
+import com.example.English.teaching.center.entity.CourseComment;
 import com.example.English.teaching.center.entity.User;
 import com.example.English.teaching.center.mapper.CommentMapper;
 import com.example.English.teaching.center.repository.CourseCommentRepository;
@@ -44,14 +44,14 @@ public class CourseCommentService {
     }
 
     @Transactional
-    public CourseComments saveComment(Long courseId, String userEmail, String text) {
+    public CourseComment saveComment(Long courseId, String userEmail, String text) {
         User user = userRepository.findByEmail(userEmail)
             .orElseThrow(() -> new RuntimeException("User not found"));
 
         Course course = courseRepository.findById(courseId)
             .orElseThrow(() -> new RuntimeException("Course not found"));
 
-        CourseComments courseComment = new CourseComments();
+        CourseComment courseComment = new CourseComment();
         courseComment.setUser(user);
         courseComment.setCourse(course);
         courseComment.setCommentText(text);

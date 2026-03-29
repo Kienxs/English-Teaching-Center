@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: headInfo('Sự kiện - ECE English', ~{:: .custom-css})}">
+<head th:replace="~{fragments :: headInfo('News - ECE English', ~{:: .custom-css})}">
     <link class="custom-css" rel="stylesheet" href="/css/user/news.css"/>
 </head>
 <body>
@@ -9,10 +9,9 @@
     <main>
         <section class="event-hero">
             <div class="container hero-content">
-                <h1>Sự kiện</h1>
-                <p>
-                    Chào mừng bạn đến với chuyên mục Tin tức/Hoạt động của Trung tâm Ngoại ngữ ECE! Đây là nơi tổng hợp mọi thông tin về các sự kiện, tin tức, học thuật đến từ các hoạt động ngoại khóa.
-                </p>
+                <h1>News</h1>
+                <p>Chào mừng bạn đến với chuyên mục News của Trung tâm Ngoại ngữ ECE! 
+                    Đây là nơi tổng hợp mọi thông tin về các bài viết, trải nghiệm, học thuật đến từ các hoạt động ngoại khóa.</p>
             </div>
             <div class="dots-decorator"></div>
         </section>
@@ -21,58 +20,40 @@
             <div class="container">
                 
                 <div class="event-grid">
-
-                    <article class="event-card">
-                        <a href="#" class="card-image-link">
-                            <img src="/images/event-image-1.jpg" alt="Dành cho học sinh THCS" class="card-image">
+                    <article class="event-card" th:each="post : ${postPage.content}">
+                        <a th:href="@{/user/post/{slug}(slug=${post.slug})}" class="card-image-link">
+                            <img th:src="${post.thumbnailUrl != null ? post.thumbnailUrl : '/images/default-post.jpg'}" 
+                                th:alt="${post.title}" class="card-image">
                         </a>
                         <div class="card-content">
-                            <span class="card-date">28/10/2025</span>
+                            <span class="card-date" th:text="${#temporals.format(post.createdAt, 'dd/MM/yyyy')}">28/10/2025</span>
                             <h2 class="card-title">
-                                <a href="#">Đăng ký khóa AEF (Tiếng Anh cấp 2) tại ECE - Nhận ngay ưu đãi 14%</a>
+                                <a th:href="@{/user/post/{slug}(slug=${post.slug})}" th:text="${post.title}">Tiêu đề bài viết</a>
                             </h2>
-                            <p class="card-snippet">
-                                Học Tiếng Anh học thuật là một hành trình dài và cần một nền tảng vững chắc, đặc biệt là ở lứa tuổi THCS (10-14 tuổi). Đây là...
-                            </p>
+                            <p class="card-snippet" th:text="${post.summary}"></p>
                         </div>
                     </article>
+                </div>
 
-                    <article class="event-card">
-                        <a href="#" class="card-image-link">
-                            <img src="/images/event-image-2.jpg" alt="Sự kiện thi thử IELTS" class="card-image">
-                        </a>
-                        <div class="card-content">
-                            <span class="card-date">20/09/2025</span>
-                            <h2 class="card-title">
-                                <a href="#">Sự kiện thi thử IELTS miễn phí trên máy tính tại ECE</a>
-                            </h2>
-                            <p class="card-snippet">
-                                COMEBACK THI THỬ IELTS MIỄN PHÍ TRÊN MÁY TÍNH TẠI ECE chi 42 slot - Đăng ký ngay để không bỏ lỡ! Link đăng ký:...
-                            </p>
-                        </div>
-                    </article>
-                    
-                    <article class="event-card">
-                        <a href="#" class="card-image-link">
-                            <img src="/images/event-image-3.jpg" alt="ECE English Center" class="card-image">
-                        </a>
-                        <div class="card-content">
-                            <span class="card-date">03/07/2025</span>
-                            <h2 class="card-title">
-                                <a href="#">Trung tâm Ngoại ngữ ECE cập nhật địa chỉ cơ sở theo địa giới hành...</a>
-                            </h2>
-                            <p class="card-snippet">
-                                Hà Nội, ngày 03 tháng 7 năm 2025 - Trung tâm Ngoại ngữ ECE trân trọng thông báo về việc cập nhật địa chỉ các cơ sở tại Hà Nội...
-                            </p>
-                        </div>
-                    </article>
+                <div class="pagination-container" th:if="${postPage.totalPages > 1}" style="text-align: center; margin-top: 30px;">
+                    <a th:if="${postPage.hasPrevious()}" 
+                    th:href="@{''(page=${postPage.number})}" class="btn-page"> &laquo; Trước </a>
 
-                    </div>
+                    <span th:each="i : ${#numbers.sequence(1, postPage.totalPages)}">
+                        <a th:href="@{''(page=${i})}" 
+                        th:text="${i}" 
+                        th:style="${i == postPage.number + 1 ? 'font-weight:bold; color:red; margin: 0 10px;' : 'margin: 0 10px;'}">
+                        </a>
+                    </span>
+
+                    <a th:if="${postPage.hasNext()}" 
+                    th:href="@{''(page=${postPage.number + 2})}" class="btn-page"> Sau &raquo; </a>
+                </div>
+
             </div>
         </section>
     </main>
 
     <div th:replace="~{fragments :: footer}"></div>
-
 </body>
 </html>
