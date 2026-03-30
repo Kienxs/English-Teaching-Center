@@ -15,13 +15,13 @@
             padding: 0 15px;
         }
         .vnx-main {
-            flex: 1 1 65%; /* Chiếm 65% chiều rộng */
+            flex: 1 1 65%;
             max-width: 700px;
         }
         .vnx-sidebar {
-            flex: 1 1 30%; /* Chiếm 30% chiều rộng */
+            flex: 1 1 30%;
             position: sticky;
-            top: 90px; /* Ghim sidebar khi cuộn chuột */
+            top: 90px;
             align-self: flex-start;
         }
 
@@ -32,7 +32,6 @@
         .post-title { font-size: 2rem; color: #222; line-height: 1.3; margin-bottom: 15px; font-family: Merriweather, serif;}
         .post-meta { font-size: 0.9rem; color: #757575; border-bottom: 1px solid #e5e5e5; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between;}
         
-        /* Sapo (Đoạn tóm tắt in đậm đầu bài) */
         .post-sapo { font-weight: bold; font-size: 1.15rem; color: #222; line-height: 1.6; margin-bottom: 20px;}
         
         .post-content { font-size: 1.15rem; line-height: 1.7; color: #222; font-family: Arial, Helvetica, sans-serif;}
@@ -48,12 +47,35 @@
         .comment-form textarea { width: 100%; padding: 15px; border: 1px solid #ccc; border-radius: 5px; resize: vertical; min-height: 80px; font-family: inherit;}
         .comment-form button { align-self: flex-end; background-color: #9f224e; color: #fff; border: none; padding: 10px 25px; border-radius: 5px; cursor: pointer; font-weight: bold;}
         .comment-form button:hover { background-color: #7a183a; }
+        .comment-form button:disabled { background-color: #ccc; cursor: not-allowed; } /* Style khi nút đang xử lý */
         
         .comment-item { display: flex; gap: 15px; margin-bottom: 20px; border-bottom: 1px solid #f1f1f1; padding-bottom: 15px;}
-        .comment-avatar { width: 40px; height: 40px; background: #e0e0e0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #666;}
+        .comment-avatar { width: 40px; height: 40px; background: #e0e0e0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #666; flex-shrink: 0;}
+        .comment-info { flex: 1; }
         .comment-info h5 { margin: 0 0 5px 0; font-size: 1rem; color: #333; }
         .comment-time { font-size: 0.8rem; color: #999; margin-bottom: 8px; display: block; }
-        .comment-text { margin: 0; color: #444; line-height: 1.5; font-size: 1rem;}
+        .comment-list { padding-right: 10px; }
+
+        .comment-text { margin: 0; color: #444; line-height: 1.6; font-size: 1rem; word-break: break-word; }
+
+        /* Style cho nút xem thêm bình luận */
+        .btn-load-more {
+            display: none; 
+            width: 100%;
+            padding: 12px;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            color: #555;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 10px;
+        }
+        .btn-load-more:hover {
+            background-color: #e9ecef;
+            color: #222;
+        }
 
         /* =========================================
            PHẦN SIDEBAR (GỢI Ý TIN)
@@ -88,11 +110,14 @@
                     <strong th:text="${post.author.fullName}">Tác giả</strong> - 
                     <span th:if="${post.createdAt != null}" th:text="${#temporals.format(post.createdAt, 'EEEE, dd/MM/yyyy, HH:mm')}"></span>
                 </span>
-                <span class="meta-views"><i class="far fa-eye"></i> <span th:text="${post.viewCount}">0</span></span>
+                <span class="meta-views">
+                    <i class="far fa-eye"></i> 
+                    <span th:text="${post.viewCount > 0 ? post.viewCount : 0} + ' lượt xem'">0 lượt xem</span>
+                </span>
             </div>
 
             <div class="post-sapo" th:text="${post.summary}">
-                Đây là đoạn tóm tắt nội dung bài viết, đóng vai trò dẫn dắt người đọc vào nội dung chi tiết bên dưới.
+                Đây là đoạn tóm tắt nội dung bài viết.
             </div>
 
             <div class="post-content" th:utext="${post.content}">
@@ -102,25 +127,20 @@
             <section class="comment-section">
                 <h3 class="comment-title">Ý kiến bạn đọc</h3>
                 
-                <form class="comment-form" th:action="@{/user/post-comment}" method="post">
+                <form id="commentForm" class="comment-form">
                     <input type="hidden" name="postSlug" th:value="${post.slug}">
                     <textarea name="content" placeholder="Chia sẻ ý kiến của bạn về bài viết này..." required></textarea>
                     <button type="submit">Gửi bình luận</button>
                 </form>
 
                 <div class="comment-list">
-                    <p th:if="${post.comments == null || post.comments.isEmpty()}" style="color: #777; font-style: italic;">
+                    <p id="no-comments-msg" style="color: #777; font-style: italic; display: none;">
                         Chưa có bình luận nào. Hãy là người đầu tiên chia sẻ ý kiến!
                     </p>
 
-                    <div class="comment-item" th:each="comment : ${post.comments}" th:if="${comment.status.name() == 'APPROVED'}">
-                        <div class="comment-avatar" th:text="${#strings.substring(comment.user.fullName, 0, 1)}">A</div>
-                        <div class="comment-info">
-                            <h5 th:text="${comment.user.fullName}">Nguyễn Văn A</h5>
-                            <span class="comment-time" th:text="${#temporals.format(comment.createdAt, 'dd/MM/yyyy HH:mm')}"></span>
-                            <p class="comment-text" th:text="${comment.content}">Nội dung bình luận rất hay và bổ ích.</p>
-                        </div>
-                    </div>
+                    <div id="comment-container"></div>
+                    
+                    <button id="btn-load-more" class="btn-load-more" onclick="loadComments()">Xem thêm bình luận</button>
                 </div>
             </section>
         </article>
@@ -145,5 +165,125 @@
     </main>
 
     <div th:replace="~{fragments :: footer}"></div>
+
+    <script th:inline="javascript">
+        const postId = /*[[${post.id}]]*/ 0;
+        let lastCommentId = null;
+        const limit = 5; 
+        
+        const commentContainer = document.getElementById('comment-container');
+        const btnLoadMore = document.getElementById('btn-load-more');
+        const noCommentsMsg = document.getElementById('no-comments-msg');
+
+        // Hàm lấy danh sách bình luận (Cursor-based pagination)
+        function loadComments() {
+            const originalBtnText = btnLoadMore.innerText;
+            if (lastCommentId !== null) {
+                btnLoadMore.innerText = "Đang tải...";
+            }
+
+            let url = `/api/comments/${postId}?limit=${limit}`;
+            if (lastCommentId !== null) {
+                url += `&lastId=${lastCommentId}`;
+            }
+
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) throw new Error("Lỗi khi tải bình luận");
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.length === 0 && lastCommentId === null) {
+                        noCommentsMsg.style.display = 'block';
+                        btnLoadMore.style.display = 'none';
+                        return;
+                    }
+
+                    data.forEach(comment => {
+                        const avatarLetter = comment.userName ? comment.userName.charAt(0).toUpperCase() : 'U';
+                        
+                        const commentHtml = `
+                            <div class="comment-item">
+                                <div class="comment-avatar">${avatarLetter}</div>
+                                <div class="comment-info">
+                                    <h5>${comment.userName}</h5>
+                                    <span class="comment-time">${comment.createdAt || 'Vừa xong'}</span>
+                                    <p class="comment-text">${comment.content}</p>
+                                </div>
+                            </div>
+                        `;
+                        commentContainer.insertAdjacentHTML('beforeend', commentHtml);
+                        
+                        lastCommentId = comment.id;
+                    });
+
+                    if (data.length < limit) {
+                        btnLoadMore.style.display = 'none';
+                    } else {
+                        btnLoadMore.style.display = 'block';
+                        btnLoadMore.innerText = "Xem thêm bình luận";
+                    }
+                })
+                .catch(error => {
+                    console.error("Lỗi:", error);
+                    btnLoadMore.innerText = "Lỗi tải dữ liệu. Thử lại!";
+                });
+        }
+
+        // Tải bình luận khi mở trang
+        document.addEventListener("DOMContentLoaded", function() {
+            loadComments();
+        });
+
+        // ==========================================
+        // XỬ LÝ GỬI BÌNH LUẬN KHÔNG LOAD TRANG (AJAX)
+        // ==========================================
+        document.getElementById('commentForm').addEventListener('submit', function(event) {
+            // Chặn load lại trang
+            event.preventDefault(); 
+
+            const form = event.target;
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const formData = new FormData(form);
+
+            // Cập nhật giao diện nút bấm
+            const originalBtnText = submitBtn.innerText;
+            submitBtn.innerText = "Đang gửi...";
+            submitBtn.disabled = true;
+
+            fetch('/api/comments/add', {
+                method: 'POST',
+                // Tự động thêm các trường input (kể cả CSRF token nếu Thymeleaf tự sinh ra)
+                body: new URLSearchParams(formData) 
+            })
+            .then(async response => {
+                if (response.ok) {
+                    // Thành công: Xóa ô nhập
+                    form.querySelector('textarea').value = '';
+                    
+                    // Xóa danh sách bình luận hiện tại và tải lại từ đầu
+                    commentContainer.innerHTML = '';
+                    lastCommentId = null; 
+                    noCommentsMsg.style.display = 'none';
+                    
+                    // Gọi lại hàm lấy danh sách
+                    loadComments(); 
+                } else {
+                    // Lỗi từ server (ví dụ: chưa đăng nhập)
+                    const errorMsg = await response.text();
+                    alert(errorMsg); 
+                }
+            })
+            .catch(error => {
+                console.error("Lỗi gửi bình luận:", error);
+                alert("Có lỗi xảy ra, vui lòng thử lại sau!");
+            })
+            .finally(() => {
+                // Phục hồi lại nút bấm
+                submitBtn.innerText = originalBtnText;
+                submitBtn.disabled = false;
+            });
+        });
+    </script>
 </body>
 </html>

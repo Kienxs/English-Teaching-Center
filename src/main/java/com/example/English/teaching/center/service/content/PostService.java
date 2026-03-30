@@ -7,10 +7,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Pageable;
 
+import com.example.English.teaching.center.dto.CommentDTO;
 import com.example.English.teaching.center.dto.PostListDTO;
 import com.example.English.teaching.center.entity.Comment;
 import com.example.English.teaching.center.entity.Post;
 import com.example.English.teaching.center.entity.User;
+import com.example.English.teaching.center.mapper.CommentMapper;
 import com.example.English.teaching.center.mapper.PostMapper;
 import com.example.English.teaching.center.repository.CommentRepository;
 import com.example.English.teaching.center.repository.PostRepository;
@@ -21,6 +23,7 @@ import jakarta.transaction.Transactional;
 @Service
 public class PostService {
     private final PostMapper postMapper;
+    private final CommentMapper commentMapper;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
@@ -28,8 +31,10 @@ public class PostService {
     public PostService(PostMapper postMapper, 
                         PostRepository postRepository,
                         CommentRepository commentRepository,
-                        UserRepository userRepository) {
+                        UserRepository userRepository,
+                        CommentMapper commentMapper) {
         this.postMapper = postMapper;
+        this.commentMapper = commentMapper;
         this.postRepository = postRepository;
         this.commentRepository = commentRepository;
         this.userRepository = userRepository;
@@ -76,5 +81,19 @@ public class PostService {
         return posts.stream()
                     .map(postMapper::toListDTO) 
                     .toList();
+    }
+
+    public List<CommentDTO> getCommentsByCursor(Long postId, Long lastId, int limit){
+        Pageable pageable = PageRequest.of(0, limit);
+        List<Comment> comments = commentRepository.findCommentsByCursor(postId, lastId, pageable);
+
+        return comments.stream()
+                        .map(commentMapper::toDTO)
+                        .toList();
+    }
+
+    @Transactional
+    public void incrementViewCount(String slug) {
+        postRepository.incrementViewCount(slug);
     }
 }

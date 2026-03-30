@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.example.English.teaching.center.dto.CommentDTO;
+import com.example.English.teaching.center.dto.CourseCommentDTO;
 import com.example.English.teaching.center.dto.TestDTO;
 import com.example.English.teaching.center.entity.Course;
 import com.example.English.teaching.center.entity.StudentCourse;
@@ -56,7 +56,7 @@ public class UserCourseController {
         Map<String, Object> data = courseService.getCourseDetailData(slug, email, session);
 
         Course course = (Course) data.get("course");
-        Page<CommentDTO> pageComments = courseCommentService.getCommentsByCourseId(course.getId(), 0, 5);
+        Page<CourseCommentDTO> pageComments = courseCommentService.getCommentsByCourseId(course.getId(), 0, 5);
         
         model.addAttribute("courseComments", pageComments.getContent());
         model.addAttribute("totalComments", pageComments.getTotalElements());

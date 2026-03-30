@@ -1,32 +1,26 @@
 package com.example.English.teaching.center.mapper;
 
-import java.time.format.DateTimeFormatter;
-
 import org.springframework.stereotype.Component;
 
 import com.example.English.teaching.center.dto.CommentDTO;
-import com.example.English.teaching.center.entity.CourseComment;
+import com.example.English.teaching.center.entity.Comment;
 
 @Component
 public class CommentMapper {
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-
-    public CommentDTO toDTO(CourseComment cmt){
-        if(cmt == null) return null;
+    public CommentDTO toDTO(Comment comment){
+        if(comment == null) return null;
 
         CommentDTO dto = new CommentDTO();
+        dto.setId(comment.getId());
+        dto.setContent(comment.getContent());
 
-        String userName = (cmt.getUser() != null) ? cmt.getUser().getFullName() : "Người dùng ẩn danh";
-        String avatarUrl = (cmt.getUser() != null) ? cmt.getUser().getAvatarUrl() : "/images/default-avatar.png";
-
-        dto.setUserName(userName);
-        dto.setUserAvatar(avatarUrl);
-        dto.setContent(cmt.getCommentText());
-
-        if(cmt.getCreatedAt() != null)
-            dto.setTimeAgo(cmt.getCreatedAt().format(FORMATTER));
-        else
-            dto.setTimeAgo("");
+        if (comment.getUser() != null) {
+            dto.setUserName(comment.getUser().getEmail()); // Hoặc getFullName() tuỳ bạn
+        }
+        
+        if (comment.getCreatedAt() != null) {
+            dto.setCreatedAt(comment.getCreatedAt().toString());
+        }
 
         return dto;
     }

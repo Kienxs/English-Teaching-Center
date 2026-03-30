@@ -1,21 +1,23 @@
-package com.example.English.teaching.center.controller.user;
+package com.example.English.teaching.center.controller.common;
 
 import org.springframework.ui.Model;
 
-import java.security.Principal;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.example.English.teaching.center.dto.PostListDTO;
 import com.example.English.teaching.center.entity.Post;
 import com.example.English.teaching.center.service.content.PostService;
+
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Controller
 @RequestMapping("/user")
@@ -43,7 +45,34 @@ public class PostController {
     }
 
     @GetMapping("/post/{slug}")
-    public String postDetail(@PathVariable String slug, Model model) {
+    public String postDetail(@PathVariable String slug, 
+                             Model model,
+                             HttpServletRequest request, 
+                             HttpServletResponse response) { 
+        boolean hasViewed = false;
+        Cookie[] cookies = request.getCookies();
+        String cookieName = "viewed_post_" + slug;
+
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookieName.equals(cookie.getName())) {
+                    hasViewed = true;
+                    break;
+                }
+            }
+        }
+
+        if (!hasViewed) {
+            postService.incrementViewCount(slug); 
+
+            Cookie viewCookie = new Cookie(cookieName, "true");
+            viewCookie.setMaxAge(24 * 60 * 60); //  24 giờ 
+            viewCookie.setPath("/"); 
+            viewCookie.setHttpOnly(true); 
+            
+            response.addCookie(viewCookie); 
+        }
+
         Post post = postService.getPostBySlug(slug);
         model.addAttribute("post", post);
 
@@ -54,16 +83,5 @@ public class PostController {
         model.addAttribute("activeTab", activeTab);
 
         return "user/post-detail";
-    }
-
-    @PostMapping("/post-comment")
-    public String postComment(@RequestParam String postSlug,
-                              @RequestParam String content,
-                              Principal principal) {
-        if(principal != null && content != null && !content.trim().isEmpty()){
-            postService.saveComment(postSlug, principal.getName(), content.trim());
-        }
-
-        return "redirect:/user/post/" + postSlug;
     }
 }

@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.English.teaching.center.dto.CommentDTO;
+import com.example.English.teaching.center.dto.CourseCommentDTO;
 import com.example.English.teaching.center.dto.CourseDTO;
 import com.example.English.teaching.center.entity.Course;
 import com.example.English.teaching.center.entity.Course.Status;
@@ -67,11 +67,11 @@ public class CourseController {
     }
 
     @GetMapping("/comments/{courseId}")
-    public ResponseEntity<List<CommentDTO>> loadMoreComments(
+    public ResponseEntity<List<CourseCommentDTO>> loadMoreComments(
             @PathVariable Long courseId,
             @RequestParam(defaultValue = "0") int page) {
 
-        Page<CommentDTO> commentPage = courseCommentService.getCommentsByCourseId(courseId, page, 5);
+        Page<CourseCommentDTO> commentPage = courseCommentService.getCommentsByCourseId(courseId, page, 5);
         
         return ResponseEntity.ok(commentPage.getContent());
     }

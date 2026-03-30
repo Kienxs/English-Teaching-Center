@@ -1,13 +1,11 @@
 package com.example.English.teaching.center.dto;
 
-import lombok.*;
+import lombok.Data;
 
-@Getter
-@Setter
-@NoArgsConstructor
+@Data
 public class CommentDTO {
-    private String userAvatar;
-    private String userName;
+    private Long id;
     private String content;
-    private String timeAgo;
+    private String userName;
+    private String createdAt;
 }
