@@ -12,23 +12,31 @@
 
         <section class="filter-controls">
             <nav class="category-nav">
-                <ul>
-                    <li><a href="#" class="active-category">Tất cả khóa học</a></li>
-                    <li><a href="#">Khóa học IELTS</a></li>
-                    <li><a href="#">Khóa học TOEIC</a></li>
-                    <li><a href="#">Khóa học cho trẻ em</a></li>
-                    <li><a href="#">Khác</a></li>
-                    </ul>
+                <ul id="category-list">
+                    <li><a href="#" data-category="" class="active-category">Tất cả khóa học</a></li>
+                    <li><a href="#" data-category="IELTS">Khóa học IELTS</a></li>
+                    <li><a href="#" data-category="TOEIC">Khóa học TOEIC</a></li>
+                    <li><a href="#" data-category="CHILDREN">Khóa học cho trẻ em</a></li>
+                    <li><a href="#" data-category="OTHER">Khác</a></li>
+                </ul>
             </nav>
             <div class="search-bar">
-                <input type="text" placeholder="Nhập nội dung tìm kiếm">
-                <button class="search-btn"><i class="fas fa-search"></i></button>
-                <select name="filter1">
-                    <option value="all">Tất cả</option>
+                <input type="text" id="search-input" placeholder="Nhập nội dung tìm kiếm">
+                
+                <button id="search-btn" class="search-btn btn"><i class="fas fa-search"></i></button>
+                
+                <select id="mode-select">
+                    <option value="">Tất cả hình thức</option>
+                    <option value="ONLINE">Trực tuyến (Online)</option>
+                    <option value="OFFLINE">Tại trung tâm (Offline)</option>
                 </select>
-                <select name="filter2">
-                    <option value="all">Tất cả</option>
+                
+                <select id="sort-select">
+                    <option value="newest">Mới nhất</option>
+                    <option value="price_asc">Giá: Thấp đến cao</option>
+                    <option value="price_desc">Giá: Cao đến thấp</option>
                 </select>
+                
                 <button class="primary-btn">Chọn nơi quan tâm</button>
             </div>
         </section>

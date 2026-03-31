@@ -97,28 +97,28 @@ public class AuthService {
 
 // login -----------------------------------
     public User authenticateOnly(String email, String rawPassword) throws IllegalAccessException {
-    // 1. Rate Limit 
-    Bucket bucket = rateLimitingService.resolveBucket("login_" + email); 
-    if (!bucket.tryConsume(1)) {
-        throw new RateLimitException("Bạn đã nhập sai quá nhiều lần. Vui lòng thử lại sau 10 phút.");
-    }
+        // 1. Rate Limit 
+        Bucket bucket = rateLimitingService.resolveBucket("login_" + email); 
+        if (!bucket.tryConsume(1)) {
+            throw new RateLimitException("Bạn đã nhập sai quá nhiều lần. Vui lòng thử lại sau 10 phút.");
+        }
 
-    // 2. Tìm user
-    User user = userRepository.findByEmail(email)
-        .orElseThrow(() -> new IllegalAccessException("Email không tồn tại!"));
+        // 2. Tìm user
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new IllegalAccessException("Email không tồn tại!"));
 
-    // 3. Check if the account has been activated
-    if(user.getStatus() == User.Status.PENDING){
-        throw new IllegalAccessException("Tài khoản chưa được kích hoạt. Vui lòng kiểm tra email của bạn!");
-    }
+        // 3. Check if the account has been activated
+        if(user.getStatus() == User.Status.PENDING){
+            throw new IllegalAccessException("Tài khoản chưa được kích hoạt. Vui lòng kiểm tra email của bạn!");
+        }
 
-    // 4. Check password
-    if(!passwordEncoder.matches(rawPassword, user.getPassword())){
-        throw new IllegalAccessException("Mật khẩu không đúng!");
+        // 4. Check password
+        if(!passwordEncoder.matches(rawPassword, user.getPassword())){
+            throw new IllegalAccessException("Mật khẩu không đúng!");
+        }
+        
+        return user; 
     }
-    
-    return user; 
-}
 
 // Process forgot password -------------------------------------
     @Transactional

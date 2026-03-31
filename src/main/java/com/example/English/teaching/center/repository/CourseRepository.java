@@ -41,6 +41,14 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     @Query("UPDATE Course c SET c.viewCount = c.viewCount + 1 WHERE c.id = :id")
     void incrementViewCount(@Param("id") Long id);
 
+    @Query("SELECT c FROM Course c WHERE c.status = 'APPROVED' " +
+           "AND (:category IS NULL OR c.category = :category) " +
+           "AND (:mode IS NULL OR c.mode = :mode) " +
+           "AND (:keyword IS NULL OR LOWER(c.name) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+    Page<Course> findCoursesWithFilters(@Param("category") Course.Category category,
+                                        @Param("mode") Course.Mode mode,
+                                        @Param("keyword") String keyword,
+                                        Pageable pageable);
 
 // Process display for teacher -----------------------------------------------------------------------------------
     Page<Course> findByTeacherIdOrderByCreatedAtDesc(Long teacherId, Pageable pageable);

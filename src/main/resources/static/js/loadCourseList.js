@@ -1,6 +1,11 @@
-// loadCourseList.js
 let currentPage = 0;
 const pageSize = 9;
+
+// Store filter state
+let currentCategory = '';
+let currentKeyword = '';
+let currentMode = '';
+let currentSort = 'newest';
 
 let courseGridContainer;
 let paginationContainer;
@@ -8,18 +13,73 @@ let paginationContainer;
 document.addEventListener("DOMContentLoaded", function() {
     courseGridContainer = document.getElementById('course-grid-container');
     paginationContainer = document.getElementById('pagination-container');
+
+    setupEventListeners();
     fetchCourses(currentPage);
 });
+
+function setupEventListeners() {
+    // 1. Bắt sự kiện click chọn Danh mục
+    const categoryLinks = document.querySelectorAll('#category-list a');
+    categoryLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Đổi class active
+            categoryLinks.forEach(l => l.classList.remove('active-category'));
+            this.classList.add('active-category');
+            
+            // Cập nhật giá trị lọc và gọi API từ trang 0
+            currentCategory = this.getAttribute('data-category');
+            currentPage = 0;
+            fetchCourses(currentPage);
+        });
+    });
+
+    // 2. Bắt sự kiện Tìm kiếm
+    const searchBtn = document.getElementById('search-btn');
+    const searchInput = document.getElementById('search-input');
+    
+    const executeSearch = () => {
+        currentKeyword = searchInput.value.trim();
+        currentPage = 0;
+        fetchCourses(currentPage);
+    };
+
+    searchBtn.addEventListener('click', executeSearch);
+    searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') executeSearch();
+    });
+
+    // 3. Bắt sự kiện thay đổi Select Box
+    document.getElementById('mode-select').addEventListener('change', function() {
+        currentMode = this.value;
+        currentPage = 0;
+        fetchCourses(currentPage);
+    });
+
+    document.getElementById('sort-select').addEventListener('change', function() {
+        currentSort = this.value;
+        currentPage = 0;
+        fetchCourses(currentPage);
+    });
+}
+
 
 function fetchCourses(page) {
     if (courseGridContainer) {
         courseGridContainer.innerHTML = '<p><i class="fas fa-spinner fa-spin"></i> Đang tải khóa học...</p>';
     }
 
-    // Thay thế fetchAPI bằng fetch chuẩn
-    fetch(`/api/courses?page=${page}&size=${pageSize}`)
+    // Xây dựng URL động dựa trên các bộ lọc
+    let url = `/api/courses?page=${page}&size=${pageSize}`;
+    if (currentCategory) url += `&category=${currentCategory}`;
+    if (currentKeyword) url += `&keyword=${encodeURIComponent(currentKeyword)}`;
+    if (currentMode) url += `&mode=${currentMode}`;
+    if (currentSort) url += `&sort=${currentSort}`;
+
+    fetch(url)
         .then(response => {
-            // Kiểm tra nếu bị đá (401)
             if (response.status === 401) {
                 handleUnauthorized(); 
                 return Promise.reject('Unauthorized');
