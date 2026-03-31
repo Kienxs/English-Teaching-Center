@@ -34,7 +34,7 @@ public class Course {
     @Column(name = "slug", nullable = false, length = 255)
     private String slug;
 
-    @Column(name = "description", columnDefinition = "TEXT")
+    @Column(name = "description", columnDefinition = "LONGTEXT")
     private String description;
 
     @Enumerated(EnumType.STRING)

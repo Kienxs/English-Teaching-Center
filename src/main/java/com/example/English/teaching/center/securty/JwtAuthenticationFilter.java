@@ -45,9 +45,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             if (accessToken != null) {
                 try {
-                    // Kiểm tra xem Access Token còn hiệu lực không
                     if (jwtUtils.validateJwtToken(accessToken)) {
-                        // Token còn sống -> Set user vào SecurityContext ngay lập tức
                         authenticateUser(accessToken, request);
                         isAccessTokenValid = true; 
                     }
@@ -56,13 +54,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
 
-            // 2. Nếu Access Token không có, hỏng hoặc hết hạn
             if (!isAccessTokenValid) {
                 String refreshToken = getJwtFromCookie(request, "refreshToken");
-                if (refreshToken != null) {
-                    // Gọi hàm cứu tinh
+                if (refreshToken != null) 
                     handleRefreshToken(refreshToken, request, response);
-                }
             }
             
         } catch (Exception e) {
@@ -76,33 +71,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private void handleRefreshToken(String refreshToken, 
                                     HttpServletRequest request, 
                                     HttpServletResponse response) {
-        refreshTokenService.findByToken(refreshToken).ifPresentOrElse(rt -> {
-            // Kiểm tra Refresh Token còn hạn trong Database không
-            if (rt.getExpiryDate().isAfter(LocalDateTime.now())) {
-                
-                // 1. Cấp Access Token mới
-                String email = rt.getUser().getEmail();
-                String newAccessToken = jwtUtils.generateTokenFromUsername(email);
+        try{
+            String newAccessToken = refreshTokenService.processRefreshToken(refreshToken, jwtUtils);
+            
+            Cookie newAtCookie = new Cookie("accessToken", newAccessToken);
+            newAtCookie.setHttpOnly(true);
+            newAtCookie.setPath("/");
+            newAtCookie.setMaxAge(15 * 60);
+            response.addCookie(newAtCookie);
 
-                // 2. Gắn token mới vào Cookie để gửi về trình duyệt
-                Cookie newAtCookie = new Cookie("accessToken", newAccessToken);
-                newAtCookie.setHttpOnly(true);
-                newAtCookie.setPath("/");
-                newAtCookie.setMaxAge(15 * 60); // 15 phút
-                response.addCookie(newAtCookie);
-
-                // 3.Cập nhật ngay Security Context cho Request HIỆN TẠI
-                authenticateUser(newAccessToken, request);
-                logger.info("Đã gia hạn thành công Access Token cho user: " + email);
-
-            } else {
-                logger.warn("Refresh Token đã hết hạn trong DB");
-                clearCookies(response); 
-            }
-        }, () -> {
-            logger.warn("Không tìm thấy Refresh Token trong DB");
-            clearCookies(response); 
-        });
+            authenticateUser(newAccessToken, request);
+            logger.info("Đã gia hạn thành công Access Token!");
+        } catch (Exception e) {
+            logger.warn("Refresh Token không hợp lệ hoặc đã hết hạn: " + e.getMessage());
+            clearCookies(response);
+        }
     }
 
     @Override
@@ -137,8 +120,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private void clearCookies(HttpServletResponse response) {
-        setCookie(response, "accessToken", null, 0);
-        setCookie(response, "refreshToken", null, 0);
+        setCookie(response, "accessToken", "", 0);
+        setCookie(response, "refreshToken", "", 0);
     }
 
     private void setCookie(HttpServletResponse response, 

@@ -243,4 +243,39 @@ public class CourseService {
     public void deleteDraftCourse(Long id){
         courseRepository.deleteById(id);
     }
+
+    public Page<CourseDTO> getCoursesWithFilters(String categoryStr,
+                                                String modeStr,
+                                                String keyword,
+                                                String sortStr,
+                                                int page,
+                                                int size){
+        Sort sort = Sort.by(Sort.Direction.DESC, "createdAt");
+        if("price_asc".equals(sortStr))
+            sort = Sort.by(Sort.Direction.ASC, "fee");
+        else if("price_desc".equals(sortStr))
+            sort = Sort.by(Sort.Direction.DESC, "fee");
+        
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Course.Category categoryEnum = null;
+        if(categoryStr != null && !categoryStr.trim().isEmpty()){
+            try{
+                categoryEnum = Course.Category.valueOf(categoryStr);
+            }catch(IllegalArgumentException ignored){}
+        }
+
+        Course.Mode modeEnum = null;
+        if(modeStr != null && !modeStr.trim().isEmpty()){
+            try{
+                modeEnum = Course.Mode.valueOf(modeStr);
+            }catch(IllegalArgumentException ignored){}
+        }
+
+        String validKeyword = (keyword != null && !keyword.trim().isEmpty() ? keyword.trim() : null);
+
+        Page<Course> courses = courseRepository.findCoursesWithFilters(categoryEnum, modeEnum, validKeyword, pageable);
+
+        return courses.map(courseMapper::toDTO);
+    }
 }

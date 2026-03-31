@@ -199,7 +199,10 @@ main {
     padding: 1.5rem;
     border-radius: 8px;
     position: sticky;
-    top: 2rem;
+    top: 100px;
+
+    max-height: calc(100vh - 120px); 
+    overflow-y: auto;
 }
 
 .price-section {

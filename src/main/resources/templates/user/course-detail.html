@@ -12,152 +12,105 @@
             <div class="course-main-content">
                 <div class="course-header-banner">
                     <div class="header-text">
-                        <h1 th:text="${course.name}">Làm Game 2D Với Godot</h1>
-                        <p class="course-description" th:text="${course.description}">
-                            Khóa học "Godot Cơ Bản" hướng dẫn tạo game 2D từ cơ bản đến xuất bản. Học viên sẽ làm quen Godot, thiết kế nhân vật, lập trình logic, thêm hiệu ứng, âm thanh và xuất game lên nhiều nền tảng.
-                        </p>
+                        <h1 th:text="${course.name}">Tên khóa học</h1>
+                        
                         <div class="course-tags">
-                            <span class="tag">godot</span>
-                            <span class="tag">game2d</span>
-                            <span class="tag">basic</span>
+                            <span class="tag" style="text-transform: uppercase;" th:text="${course.category.name()}">CATEGORY</span>
+                            <span class="tag" th:text="${course.mode.name() == 'ONLINE' ? 'Trực tuyến' : 'Tại trung tâm'}">MODE</span>
                         </div>
-                        <div class="author-info">
-                            <span>Tác giả: <strong>codelearn</strong></span>
-                            <span><i class="fas fa-user-friends"></i> 787 Học viên</span>
-                            <span>
-                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i> 0.0
+                        
+                        <div class="author-info" style="margin-top: 20px;">
+                            <span>Tác giả: 
+                                <strong th:text="${course.teacher != null ? 'Giáo viên #' + course.teacher.id : 'Trung tâm EOE'}">Tác giả</strong>
                             </span>
+                            <span><i class="fas fa-eye"></i> <span th:text="${course.viewCount}">0</span> lượt xem</span>
                         </div>
                     </div>
                     <div class="header-image">
-                        <img th:if="${course.imageUrl}" th:src="${course.imageUrl}" alt="Godot Game 2D" class="course-illustration">
-                        <img th:unless="${course.imageUrl}" src="/images/godot_illustration.png" alt="Godot Game 2D" class="course-illustration"> </div>
+                        <img th:if="${course.imageUrl}" th:src="${course.imageUrl}" alt="Course Image" class="course-illustration">
+                        <img th:unless="${course.imageUrl}" src="/images/default-course.jpg" alt="Default Course Image" class="course-illustration"> 
+                    </div>
+                </div>
+
+                <nav class="course-nav-tabs">
+                    <a href="#" class="tab-item active" data-tab="tab-gioithieu">Giới thiệu</a>
+                    <a href="#" class="tab-item" data-tab="tab-binhluan">Bình luận</a>
+                </nav>
+
+                <div class="tab-content-container">
+                    <div id="tab-gioithieu" class="tab-pane active">
+                        <div class="course-body-content" th:utext="${course.description}">
+                            Chưa có thông tin giới thiệu chi tiết cho khóa học này.
+                        </div>
                     </div>
 
-                    <nav class="course-nav-tabs">
-                        <a href="#" class="tab-item active" data-tab="tab-gioithieu">Giới thiệu</a>
-                        <a href="#" class="tab-item" data-tab="tab-binhluan">Bình luận</a>
-                    </nav>
+                    <div id="tab-binhluan" class="tab-pane">
+                        <div class="comment-section">
+                            <h3 style="font-size: 18px; margin-bottom: 15px; color: #1c1e21;">Bình luận</h3>
 
-                    <div class="tab-content-container">
-                        <div id="tab-gioithieu" class="tab-pane active">
-                            <div class="course-body-content">
-                                <h2>Quyền lợi của học viên</h2>
-                                <div class="benefits-grid">
-                                    <div class="benefit-item">
-                                        <i class="fas fa-certificate"></i>
-                                        <span>Nhận chứng chỉ khi hoàn thành 80% khóa học</span>
+                            <form th:action="@{/user/course-detail/comment}" method="post">
+                                <input type="hidden" name="courseSlug" th:value="${course.slug}">
+                                
+                                <div class="comment-input-group">
+                                    <img src="/images/home/avatar_clone.png" alt="User Avatar" class="comment-avatar">
+                                    <div class="comment-box-wrapper">
+                                        <textarea name="commentText" 
+                                                  class="comment-textarea" 
+                                                  placeholder="Viết bình luận công khai..." 
+                                                  required 
+                                                  oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea>
+                                        
+                                        <button type="submit" class="btn-send-comment">
+                                            <i class="fas fa-paper-plane"></i>
+                                        </button>
                                     </div>
-                                    <div class="benefit-item">
-                                        <i class="fas fa-trophy"></i>
-                                        <span>Tham gia cuộc thi lập trình định kỳ</span>
-                                    </div>
-                                    <div class="benefit-item">
-                                        <i class="fas fa-code"></i>
-                                        <span>Truy cập linh hoạt, mọi lúc mọi nơi</span>
-                                    </div>
-                                    <div class="benefit-item">
-                                        <i class="fas fa-gift"></i>
-                                        <span>Nhận nhiều phần quà hấp dẫn</span>
+                                </div>
+                            </form>
+
+                            <div class="comment-list">
+                                <div th:each="cmt : ${courseComments}" class="comment-item">
+                                    <img th:src="${cmt.userAvatar != null ? cmt.userAvatar : '/images/home/avatar_clone.png'}" class="comment-avatar">
+                                    <div class="comment-content-wrapper">
+                                        <div class="comment-bubble">
+                                            <a href="#" class="comment-author" th:text="${cmt.userName}">Nguyễn Văn A</a>
+                                            <p class="comment-text" th:text="${cmt.content}">Bài học rất hay!</p>
+                                        </div>
+                                        <div class="comment-actions">
+                                            <span class="comment-time" th:text="${cmt.timeAgo}">Vừa xong</span>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <h2 class="content-heading">Tự tay tạo nên trò chơi 2D đầu tiên...</h2>
-                                <p>Bạn từng mơ tạo ra một trò chơi...</p>
-                                <p>Khóa học <a href="#">Godot cơ bản</a>...</p>
-
-                                <h2 class="content-heading">Bạn sẽ học được gì?</h2>
-                                <ul class="learning-list">
-                                    <li><i class="fas fa-check"></i> Tự tin cài đặt và thiết lập dự án...</li>
-                                    <li><i class="fas fa-check"></i> Làm chủ giao diện <strong>Godot Editor</strong>...</li>
-                                    <li><i class="fas fa-check"></i> Xây dựng tư duy tổ chức dự án game...</li>
-                                    <li><i class="fas fa-check"></i> Viết được những dòng mã đầu tiên...</li>
-                                    <li><i class="fas fa-check"></i> Quản lý luồng game và điều khiển...</li>
-                                    <li><i class="fas fa-check"></i> Sáng tạo trò chơi 2D đơn giản...</li>
-                                </ul>
-
-                                <h2 class="content-heading">Khóa học phù hợp với ai?</h2>
-                                <p>Khóa học này được thiết kế dành riêng cho...</p>
-
-                                <h2 class="content-heading">Phương pháp đào tạo:</h2>
-                                <ul class="learning-list">
-                                    <li><i class="fas fa-check"></i> Học <strong>100% online</strong>...</li>
-                                    <li><i class="fas fa-check"></i> Kết hợp thực hành trực tiếp...</li>
-                                    <li><i class="fas fa-check"></i> Có mentor hỗ trợ giải đáp...</li>
-                                </ul>
+                                <div th:if="${#lists.isEmpty(courseComments)}" style="text-align: center; color: #65676b; padding: 20px;">
+                                    <i class="far fa-comment-dots" style="font-size: 24px; margin-bottom: 5px;"></i>
+                                    <p>Chưa có bình luận nào. Hãy là người đầu tiên!</p>
+                                </div>
                             </div>
-                        </div>
 
-                        <div id="tab-binhluan" class="tab-pane">
-                            <div class="comment-section">
-                                <h3 style="font-size: 18px; margin-bottom: 15px; color: #1c1e21;">Bình luận</h3>
-
-                                <form th:action="@{/user/course-detail/comment}" method="post">
-                                    <input type="hidden" name="courseSlug" th:value="${course.slug}">
-                                    
-                                    <div class="comment-input-group">
-                                        <img src="/images/home/avatar_clone.png" alt="User Avatar" class="comment-avatar">
-                                        
-                                        <div class="comment-box-wrapper">
-                                            <textarea name="commentText" 
-                                                    class="comment-textarea" 
-                                                    placeholder="Viết bình luận công khai..." 
-                                                    required 
-                                                    oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea>
-                                            
-                                            <button type="submit" class="btn-send-comment">
-                                                <i class="fas fa-paper-plane"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </form>
-
-                                <div class="comment-list">
-                                    <div th:each="cmt : ${courseComments}" class="comment-item">
-                                        <img th:src="${cmt.userAvatar != null ? cmt.userAvatar : '/images/home/avatar_clone.png'}" 
-                                            class="comment-avatar">
-                                        
-                                        <div class="comment-content-wrapper">
-                                            <div class="comment-bubble">
-                                                <a href="#" class="comment-author" th:text="${cmt.userName}">Nguyễn Văn A</a>
-                                                <p class="comment-text" th:text="${cmt.content}">Bài học rất hay!</p>
-                                            </div>
-                                            
-                                            <div class="comment-actions">
-                                                <span class="comment-time" th:text="${cmt.timeAgo}">Vừa xong</span>
-                                                </div>
-                                        </div>
-                                    </div>
-
-                                    <div th:if="${#lists.isEmpty(courseComments)}" style="text-align: center; color: #65676b; padding: 20px;">
-                                        <i class="far fa-comment-dots" style="font-size: 24px; margin-bottom: 5px;"></i>
-                                        <p>Chưa có bình luận nào. Hãy là người đầu tiên!</p>
-                                    </div>
-                                </div>
-
-                                <div id="load-more-container" style="text-align: center; margin-top: 15px;">
-                                    <button id="btn-load-more" class="btn-see-more" onclick="loadMoreComments()">
-                                        Xem thêm bình luận cũ hơn
-                                    </button>
-                                </div>
+                            <div id="load-more-container" style="text-align: center; margin-top: 15px;">
+                                <button id="btn-load-more" class="btn-see-more" onclick="loadMoreComments()">
+                                    Xem thêm bình luận cũ hơn
+                                </button>
                             </div>
                         </div>
                     </div>
+                </div>
             </div>
 
             <div class="course-sidebar">
                 <div class="sidebar-box">
                     
                     <th:block th:unless="${isOwned}">
-                        <div class="price-section">
-                            <span class="discount-price" th:text="${#numbers.formatDecimal(course.fee, 0, 'COMMA', 0, 'POINT')} + 'đ'"></span>
-                            <span class="original-price">1.000.000đ</span>
-                            <span class="discount-badge">-50%</span>
-                        </div>
+                        <div class="price-section" style="margin-bottom: 20px;">
+                            <span class="discount-price" th:if="${course.fee > 0}" 
+                                  th:text="${#numbers.formatDecimal(course.fee, 0, 'COMMA', 0, 'POINT')} + 'đ'">
+                            </span>
+                            <span class="discount-price" style="color: #28a745;" th:if="${course.fee == 0}">Miễn phí</span>
+                            
+                            </div>
 
                         <div class="button-group">
-                            <button class="btn btn-buy">Mua ngay</button>
-                            <button class="btn btn-cart" style="margin-top: 10px; background: #fff; color: #333; border: 1px solid #ccc;">Thêm vào giỏ</button>
+                            <button class="btn btn-buy" th:text="${course.fee > 0 ? 'Mua ngay' : 'Đăng ký học'}">Mua ngay</button>
                         </div>
                     </th:block>
 
@@ -165,39 +118,43 @@
                         <div class="owned-alert" style="background: #d4edda; color: #155724; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 20px;">
                             <i class="fas fa-check-circle" style="font-size: 24px; display: block; margin-bottom: 5px;"></i>
                             <strong>Bạn đã sở hữu khóa học này</strong>
-                            <p style="font-size: 13px; margin: 5px 0 0;">Ngày đăng ký: <span th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy')}"></span></p>
                         </div>
 
                         <div class="button-group">
                             <a th:href="@{'/user/my-course-detail/' + ${course.slug}}" 
-                            class="btn" 
-                            style="background: #28a745; color: white; display: block; text-align: center; text-decoration: none; font-weight: bold; padding: 12px; border-radius: 5px;">
-                                <i class="fas fa-play"></i> TIẾP TỤC HỌC
+                               class="btn" 
+                               style="background: #28a745; color: white; display: block; text-align: center; text-decoration: none; font-weight: bold; padding: 12px; border-radius: 5px;">
+                                <i class="fas fa-play"></i> VÀO HỌC NGAY
                             </a>
                         </div>
                     </th:block>
 
-
                     <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
                     <h2>Thông tin khóa học</h2>
-                    <ul class="course-info-list">
-                        <li><i class="fas fa-clock"></i> <span th:text="${course.duration}"></span> giờ học</li>
-                        <li><i class="fas fa-video"></i> Truy cập trọn đời</li>
-                        <li><i class="fas fa-certificate"></i> Cấp chứng chỉ</li>
+                    <ul class="course-info-list" style="list-style: none; padding: 0; line-height: 2;">
+                        <li>
+                            <i class="fas fa-clock" style="width: 20px; color: #555;"></i> 
+                            Thời lượng: <strong th:text="${course.duration != null ? course.duration : 'Đang cập nhật'}"></strong>
+                        </li>
+                        
+                        <li th:if="${course.accessPeriodDays != null && course.accessPeriodDays > 0}">
+                            <i class="fas fa-calendar-alt" style="width: 20px; color: #555;"></i> 
+                            Thời hạn truy cập: <strong th:text="${course.accessPeriodDays} + ' ngày'"></strong>
+                        </li>
+                        <li th:unless="${course.accessPeriodDays != null && course.accessPeriodDays > 0}">
+                            <i class="fas fa-infinity" style="width: 20px; color: #555;"></i> 
+                            Thời hạn truy cập: <strong>Trọn đời</strong>
+                        </li>
                     </ul>
-
                 </div>
             </div>
         </div>
     </main>
 
-<!-- Xử lí mua bán -->
     <div id="paymentModal" class="modal">
         <div class="modal-content">
             <span class="close-modal">&times;</span>
-            
             <h2>Xác nhận thanh toán</h2>
-            
             <div class="payment-info">
                 <div class="payment-row">
                     <span>Khóa học:</span>
@@ -205,8 +162,7 @@
                 </div>
                 <div class="payment-row">
                     <span>Học phí:</span>
-                    <strong style="color: #dc3545;" 
-                            th:text="${#numbers.formatDecimal(course.fee, 0, 'COMMA', 0, 'POINT')} + 'đ'">0đ</strong>
+                    <strong style="color: #dc3545;" th:text="${course.fee == 0 ? 'Miễn phí' : #numbers.formatDecimal(course.fee, 0, 'COMMA', 0, 'POINT') + 'đ'}">0đ</strong>
                 </div>
             </div>
 
@@ -214,32 +170,15 @@
                 <p>Số dư ví của bạn:</p>
                 <h3 th:text="${#numbers.formatDecimal(userBalance ?: 0, 0, 'COMMA', 0, 'POINT')} + 'đ'">0đ</h3>
                 
-                <p th:if="${userBalance >= course.fee}" class="text-success">
-                    <i class="fas fa-check-circle"></i> Số dư khả dụng
-                </p>
-                
-                <p th:if="${userBalance < course.fee}" class="text-danger">
-                    <i class="fas fa-times-circle"></i> Số dư không đủ
-                </p>
+                <p th:if="${userBalance >= course.fee}" class="text-success"><i class="fas fa-check-circle"></i> Số dư khả dụng</p>
+                <p th:if="${userBalance < course.fee}" class="text-danger"><i class="fas fa-times-circle"></i> Số dư không đủ</p>
             </div>
 
             <div class="modal-actions">
-                <button th:if="${userBalance >= course.fee}" 
-                        id="btn-confirm-payment" 
-                        class="btn btn-confirm">
-                    Xác nhận thanh toán
-                </button>
-
-                <a th:if="${userBalance < course.fee}" 
-                href="/user/deposit" 
-                class="btn btn-deposit">
-                    Nạp thêm tiền
-                </a>
+                <button th:if="${userBalance >= course.fee}" id="btn-confirm-payment" class="btn btn-confirm">Xác nhận thanh toán</button>
+                <a th:if="${userBalance < course.fee}" th:href="@{/user/userInfor#tab-wallet}" class="btn btn-deposit">Nạp thêm tiền</a>
             </div>
-            
-            <p style="margin-top: 15px; font-size: 0.9em; color: #666;">
-                * Số tiền sẽ được trừ trực tiếp vào ví của bạn.
-            </p>
+            <p style="margin-top: 15px; font-size: 0.9em; color: #666;">* Số tiền sẽ được trừ trực tiếp vào ví của bạn.</p>
         </div>
     </div>
 

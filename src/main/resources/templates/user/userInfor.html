@@ -214,17 +214,33 @@
         const breadcrumbCurrent = document.getElementById('breadcrumb-current'); 
         
         const urlParams = new URLSearchParams(window.location.search);
-        const activeTabId = urlParams.get('tab') ? 'tab-' + urlParams.get('tab') : 'tab-profile';
         
+        // --- CẬP NHẬT CHÍNH Ở ĐÂY ---
+        // Ưu tiên 1: Lấy tab từ Hash (#) trên URL (ví dụ: #tab-wallet)
+        // Ưu tiên 2: Lấy từ Parameter (?tab=...)
+        let activeTabId = 'tab-profile';
+        if (window.location.hash) {
+            activeTabId = window.location.hash.substring(1); // Cắt dấu # đi
+        } else if (urlParams.get('tab')) {
+            activeTabId = 'tab-' + urlParams.get('tab');
+        }
+        
+        // Xóa class active do Thymeleaf render mặc định
         tabs.forEach(tab => tab.classList.remove('active'));
         links.forEach(l => l.classList.remove('active'));
         
+        // Kích hoạt tab đích
         const tabToActivate = document.getElementById(activeTabId) || document.getElementById('tab-profile');
         const linkToActivate = document.querySelector(`a[data-target="${tabToActivate.id}"]`) || document.querySelector('a[data-target="tab-profile"]');
         
         if(tabToActivate && linkToActivate) {
             tabToActivate.classList.add('active');
             linkToActivate.classList.add('active');
+            
+            // Tránh trình duyệt cuộn loạn xạ, kéo trang lên đầu cho mượt
+            if (window.location.hash) {
+                window.scrollTo(0, 0);
+            }
         }
         
         if (breadcrumbCurrent && linkToActivate) {
@@ -234,8 +250,13 @@
         links.forEach(link => {
             link.addEventListener('click', function(e) {
                 e.preventDefault();
-                window.history.pushState({}, '', window.location.pathname); 
+                
                 const targetId = this.getAttribute('data-target');
+                
+                // --- CẬP NHẬT Ở ĐÂY ---
+                // Khi người dùng tự click chuyển tab, cập nhật Hash trên URL
+                window.history.pushState(null, null, '#' + targetId); 
+                
                 const targetTab = document.getElementById(targetId);
                 
                 links.forEach(l => l.classList.remove('active'));

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import com.example.English.teaching.center.entity.RefreshToken;
 import com.example.English.teaching.center.entity.User;
 import com.example.English.teaching.center.repository.RefreshTokenRepository;
+import com.example.English.teaching.center.utils.JwtUtils;
 
 import jakarta.transaction.Transactional;
 
@@ -44,6 +45,19 @@ public class RefreshTokenService {
         refreshToken.setToken(UUID.randomUUID().toString());
 
         return refreshTokenRepository.save(refreshToken);
+    }
+
+    @Transactional
+    public String processRefreshToken(String refreshTokenString, JwtUtils jwtUtils) {
+        RefreshToken rt = refreshTokenRepository.findByToken(refreshTokenString)
+            .orElseThrow(() -> new RuntimeException("Không tìm thấy Refresh Token"));
+
+        if(rt.getExpiryDate().isBefore(LocalDateTime.now())){
+            refreshTokenRepository.delete(rt);
+            throw new RuntimeException("Refresh Token đã hết hạn.");
+        }
+
+        return jwtUtils.generateTokenFromUsername(rt.getUser().getEmail());
     }
 
     public RefreshToken verifyExpiration(RefreshToken token) {

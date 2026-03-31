@@ -71,17 +71,6 @@ ul {
     border-radius: 5px;
 }
 
-/* ... CSS cho các nút và select box ... */
-.primary-btn {
-    background-color: #ff4d4f;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-
 /* --- PHẦN 4: LƯỚI KHÓA HỌC --- */
 .course-grid {
     width: 90%;
