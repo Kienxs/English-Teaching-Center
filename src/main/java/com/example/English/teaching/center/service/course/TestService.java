@@ -3,6 +3,7 @@ package com.example.English.teaching.center.service.course;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -49,7 +50,7 @@ public class TestService {
         this.questionRepository = questionRepository;
         this.testMapper = testMapper;
     }
-
+// For Students ---------------------------------------------------------
     private Test findTestByIdOrSlug(String identifier) {
         return testRepository.findBySlug(identifier)
             .orElseGet(() -> {
@@ -146,7 +147,13 @@ public class TestService {
         return testResultRepository.save(result);
     }
 
-    // For Teachers
+// For Teachers ---------------------------------------------------------
+    private void verifyTestOwnership(Test test, Long teacherId){
+        if(!test.getLesson().getCourse().getTeacher().getId().equals(teacherId)){
+            throw new RuntimeException("Cảnh báo bảo mật: Bạn không có quyền thao tác trên bài thi này!");
+        }
+    }
+
     @Transactional
     public String saveTest(TestSaveDTO dto) {
         Lesson lesson = lessonRepository.findById(dto.getLessonId()).orElseThrow(() -> new RuntimeException("Không tìm thấy bài học"));
@@ -173,27 +180,45 @@ public class TestService {
     }
 
     @Transactional
-    public void deleteTest(Long id) {
-        testRepository.deleteById(id);
+    public void deleteTest(Long id, Long teacherId) { 
+        Test test = testRepository.findById(id).orElseThrow(() -> new RuntimeException("Không tìm thấy bài test"));
+        verifyTestOwnership(test, teacherId);
+        testRepository.delete(test);
     }
 
     @Transactional
-    public void saveQuestion(QuestionSaveDTO dto) {
+    public void saveQuestion(QuestionSaveDTO dto, Long teacherId) { 
         Test test = testRepository.findById(dto.getTestId())
             .orElseThrow(() -> new RuntimeException("Không tìm thấy bài Test!"));
+            
+        verifyTestOwnership(test, teacherId);
+
         Question q = (dto.getId() != null) 
             ? questionRepository.findById(dto.getId()).orElse(new Question()) 
             : new Question();
+            
         q.setTest(test);
         q.setQuestionText(dto.getQuestionText());
-        q.setOptions(dto.getOptions());
         q.setPoints(dto.getPoints());
+
+        List<Question.Option> optionsList = Arrays.asList(
+            new Question.Option(dto.getOptionA(), "A".equals(dto.getCorrectAnswer())),
+            new Question.Option(dto.getOptionB(), "B".equals(dto.getCorrectAnswer())),
+            new Question.Option(dto.getOptionC(), "C".equals(dto.getCorrectAnswer())),
+            new Question.Option(dto.getOptionD(), "D".equals(dto.getCorrectAnswer()))
+        );
+        q.setOptions(optionsList);
+
         questionRepository.save(q);
     }
 
     @Transactional
-    public Long deleteQuestionAndGetTestId(Long questionId) {
-        Question q = questionRepository.findById(questionId).orElseThrow();
+    public Long deleteQuestionAndGetTestId(Long questionId, Long teacherId) { // Cập nhật tham số
+        Question q = questionRepository.findById(questionId)
+            .orElseThrow(() -> new RuntimeException("Không tìm thấy câu hỏi"));
+            
+        verifyTestOwnership(q.getTest(), teacherId); // Check quyền
+        
         Long testId = q.getTest().getId();
         questionRepository.delete(q);
         return testId;

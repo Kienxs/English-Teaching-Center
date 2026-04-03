@@ -13,19 +13,17 @@ import org.springframework.stereotype.Component;
 import com.example.English.teaching.center.entity.RefreshToken;
 import com.example.English.teaching.center.entity.User;
 import com.example.English.teaching.center.service.auth.RefreshTokenService;
-import com.example.English.teaching.center.service.user.UserService;
 import com.example.English.teaching.center.utils.JwtUtils;
 
 @Component
 public class CustomAuthenticationSuccessHandler implements AuthenticationSuccessHandler{
     private final JwtUtils jwtUtils;
     private final RefreshTokenService refreshTokenService;
-    private final UserService userService;
 
-    public CustomAuthenticationSuccessHandler(JwtUtils jwtUtils, RefreshTokenService refreshTokenService, UserService userService) {
+    public CustomAuthenticationSuccessHandler(JwtUtils jwtUtils, 
+                                            RefreshTokenService refreshTokenService) {
         this.jwtUtils = jwtUtils;
         this.refreshTokenService = refreshTokenService;
-        this.userService = userService;
     }
 
     @Override

@@ -14,4 +14,10 @@ public class QuestionSaveDTO {
     private String questionText; 
     private List<Question.Option> options;
     private BigDecimal points;
+
+    private String optionA;
+    private String optionB;
+    private String optionC;
+    private String optionD;
+    private String correctAnswer; 
 }

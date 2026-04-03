@@ -47,4 +47,5 @@ public class Test {
     @ToString.Exclude
     @EqualsAndHashCode.Exclude 
     private List<Question> questions;
+
 }

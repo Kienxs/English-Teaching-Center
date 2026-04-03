@@ -8,9 +8,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Pageable;
 
 import com.example.English.teaching.center.dto.CommentDTO;
+import com.example.English.teaching.center.dto.PostEditDTO;
 import com.example.English.teaching.center.dto.PostListDTO;
+import com.example.English.teaching.center.dto.SectionDTO;
 import com.example.English.teaching.center.entity.Comment;
 import com.example.English.teaching.center.entity.Post;
+import com.example.English.teaching.center.entity.PostSection;
 import com.example.English.teaching.center.entity.User;
 import com.example.English.teaching.center.mapper.CommentMapper;
 import com.example.English.teaching.center.mapper.PostMapper;
@@ -39,6 +42,8 @@ public class PostService {
         this.commentRepository = commentRepository;
         this.userRepository = userRepository;
     }
+
+// FUNCTIONS FOR STUDENT --------------------------------------------------------
 
     public Page<PostListDTO> getApprovedPostsByType(Post.PostType type, int pageNo) {
         int pageSize = 6;
@@ -95,5 +100,113 @@ public class PostService {
     @Transactional
     public void incrementViewCount(String slug) {
         postRepository.incrementViewCount(slug);
+    }
+
+// FUNCTIONS FOR TEACHERS -----------------------------------------------
+
+    public Page<Post> getPostsByAuthorId(Long authorId, int pageNo, int pageSize){
+        Pageable pageable = PageRequest.of(pageNo, pageSize, org.springframework.data.domain.Sort.by("createdAt").descending());
+
+        return postRepository.findByAuthorIdAndIsDeletedFalse(authorId, pageable);
+    }
+
+    public java.util.Optional<Post> findPostBySlug(String slug){
+        return postRepository.findBySlugAndIsDeletedFalse(slug);
+    }
+
+    public Post createNewDraftPost(){
+        Post post = new Post();
+        post.setStatus(Post.PostStatus.DRAFT);
+        post.setType(Post.PostType.BLOG);
+        return post;
+    }
+
+    @Transactional
+    public Post saveOrUpdateFromDTO(PostEditDTO dto, Long currentUserId) {
+        Post post;
+        Long currentId = (dto.getId() != null) ? dto.getId() : -1L;
+
+        // 1. KIỂM TRA LÀ THÊM MỚI (INSERT) HAY CẬP NHẬT (UPDATE)
+        if (dto.getId() != null) {
+            post = postRepository.findById(dto.getId())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy bài viết với ID: " + dto.getId()));
+
+            if (!post.getAuthor().getId().equals(currentUserId)) {
+                throw new RuntimeException("Bạn không có quyền chỉnh sửa bài viết này!");
+            }
+        } else {
+            post = new Post();
+            User author = userRepository.findById(currentUserId)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy User!"));
+            
+            post.setAuthor(author);
+            post.setStatus(Post.PostStatus.DRAFT); 
+            post.setType(Post.PostType.BLOG);
+            post.setViewCount(0);
+            post.setIsDeleted(false);
+        }
+
+        // 2. MAP DỮ LIỆU
+        post.setTitle(dto.getTitle());
+        post.setSummary(dto.getSummary());
+        post.setThumbnailUrl(dto.getThumbnailUrl());
+        post.getSections().clear();
+
+        if (dto.getSections() != null && !dto.getSections().isEmpty()) {
+            int order = 0;
+            for (SectionDTO secDto : dto.getSections()) {
+                PostSection newSection = new PostSection();
+                newSection.setSectionTitle(secDto.getSectionTitle());
+                newSection.setSectionContent(secDto.getSectionContent());
+                newSection.setImageUrl(secDto.getImageUrl());
+                newSection.setSectionOrder(order++); 
+                
+                post.addSection(newSection); 
+            }
+        }
+
+        // 3. XỬ LÝ SLUG 
+        String baseSlug = dto.getSlug();
+        if (baseSlug == null || baseSlug.trim().isEmpty()) {
+            baseSlug = generateSlugFromTitle(dto.getTitle());
+        }
+
+        String finalSlug = baseSlug;
+        int count = 1;
+        while (postRepository.existsBySlugAndIdNot(finalSlug, currentId)) {
+            finalSlug = baseSlug + "-" + count++;
+        }
+
+        post.setSlug(finalSlug);
+
+        return postRepository.save(post);
+    }
+
+    private String generateSlugFromTitle(String title) {
+        if (title == null) return "bai-viet-moi";
+        return title.toLowerCase()
+                .replaceAll("[áàảãạăắằẳẵặâấầẩẫậ]", "a")
+                .replaceAll("[éèẻẽẹêếềểễệ]", "e")
+                .replaceAll("[íìỉĩị]", "i")
+                .replaceAll("[óòỏõọôốồổỗộơớờởỡợ]", "o")
+                .replaceAll("[úùủũụưứừửữự]", "u")
+                .replaceAll("[ýỳỷỹỵ]", "y")
+                .replaceAll("đ", "d")
+                .replaceAll("[^a-z0-9\\s]", "") 
+                .replaceAll("\\s+", "-")       
+                .replaceAll("^-+|-+$", "");    
+    }
+
+    @Transactional
+    public void deleteDraftPost(Long postId, Long authorId){
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy bài viết!"));
+
+        if(!post.getAuthor().getId().equals(authorId)){
+            throw new RuntimeException("Bạn không có quyền xóa bài viết này!");
+        }
+        
+        post.setIsDeleted(true);
+        postRepository.save(post);
     }
 }

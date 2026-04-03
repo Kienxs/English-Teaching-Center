@@ -149,7 +149,7 @@ public class AuthController {
         if(isAdmin){
             return "redirect:/admin/dashboard";
         } else if(isTeacher){
-            return "redirect:/teacher/course-management";
+            return "redirect:/teacher/dashboard";
         } else {
             return "redirect:/user/home";
         }

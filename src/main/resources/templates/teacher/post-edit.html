@@ -37,16 +37,16 @@
 <body>
     <div class="sidebar">
         <div class="brand"><i class="fa-solid fa-graduation-cap"></i> English Center</div>
-        <a th:href="@{/teacher/blog-management}" class="menu-item active"><i class="fa-solid fa-arrow-left"></i> Quay lại</a>
+        <a th:href="@{/teacher/post-management}" class="menu-item active"><i class="fa-solid fa-arrow-left"></i> Quay lại</a>
     </div>
 
     <div class="main-content">
-        <form th:action="@{/teacher/blogPost/save}" method="post" th:object="${blogPost}" id="blogForm">
+        <form th:action="@{/teacher/post/save}" method="post" th:object="${post}" id="blogForm">
             <input type="hidden" th:field="*{id}" id="currentBlogId">
             <input type="hidden" th:field="*{slug}" id="currentBlogSlug">
             
             <div class="page-header">
-                <h2 th:text="${blogPost.id == null ? 'Tạo bài Blog mới' : 'Chỉnh sửa: ' + blogPost.title}">Tiêu đề</h2>
+                <h2 th:text="${post.id == null ? 'Tạo bài Blog mới' : 'Chỉnh sửa: ' + post.title}">Tiêu đề</h2>
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <span id="saveStatus"><i class="fa-solid fa-check"></i> Đã lưu nháp</span>
                     
@@ -136,17 +136,19 @@
 
     <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
     <script>
-        // Danh sách lưu trữ các instance của CKEditor
         const editors = {};
+        
+        let sectionCounter = document.querySelectorAll('.section-block').length;
 
-        // 1. Khởi tạo CKEditor
+        let saveTimeout = null;
+        let isSaving = false;
+
         document.addEventListener("DOMContentLoaded", function() {
             document.querySelectorAll('.editor-content').forEach((textarea) => {
                 initEditor(textarea);
             });
         });
 
-        // Hàm khởi tạo 1 editor lẻ (để tái sử dụng khi thêm section mới)
         function initEditor(textareaElement) {
             ClassicEditor
                 .create(textareaElement, { toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', '|', 'undo', 'redo'] })
@@ -156,21 +158,20 @@
                 .catch(error => console.error(error));
         }
 
-        // 2. Thêm Section Mới
         function addNewSection() {
             const container = document.getElementById('sections-container');
-            const index = container.children.length; 
+            const index = sectionCounter++; 
             
             const html = `
-                <div class="section-block" id="section-${index}">
+                <div class="section-block" id="section-block-${index}">
                     <div class="section-header">
-                        <span class="section-title">Mục mới #${index + 1}</span>
+                        <span class="section-title">Mục mới</span>
                         <button type="button" class="btn-remove-section" onclick="removeSection(${index})"><i class="fa-solid fa-trash"></i> Xóa</button>
                     </div>
                     
                     <div class="form-group">
                         <label>Tiêu đề mục con</label>
-                        <input type="text" class="form-control" name="sections[${index}].sectionTitle" placeholder="Nhập tiêu đề mục...">
+                        <input type="text" class="form-control" name="sections[${index}].sectionTitle" placeholder="Nhập tiêu đề mục..." onblur="scheduleAutoSave()">
                     </div>
 
                     <div class="form-group">
@@ -180,7 +181,7 @@
 
                     <div class="form-group">
                         <label>Ảnh minh họa (URL)</label>
-                        <input type="text" class="form-control" name="sections[${index}].imageUrl" oninput="previewSectionImage(this, ${index})" placeholder="https://...">
+                        <input type="text" class="form-control" name="sections[${index}].imageUrl" oninput="previewSectionImage(this, ${index})" onblur="scheduleAutoSave()" placeholder="https://...">
                         <div class="image-preview" id="preview-box-${index}">
                             <span><i class="fa-regular fa-image"></i></span>
                         </div>
@@ -189,43 +190,39 @@
             `;
             
             container.insertAdjacentHTML('beforeend', html);
-            // Khởi tạo Editor cho textarea mới
             initEditor(document.querySelector(`#editor-${index}`));
+            reIndexInputs(); 
         }
 
-        // 3. Xóa Section
         function removeSection(index) {
-            const section = document.getElementById(`section-${index}`);
             if(confirm("Bạn có chắc muốn xóa mục này?")) {
-                section.remove();
-                reIndexInputs();
-                // Xóa instance CKEditor khỏi bộ nhớ để tránh lỗi
+                document.getElementById(`section-block-${index}`).remove();
+                
                 if(editors[`editor-${index}`]) {
                     delete editors[`editor-${index}`];
                 }
+                
+                reIndexInputs();
+                scheduleAutoSave(); 
             }
         }
 
         function reIndexInputs() {
             const blocks = document.querySelectorAll('.section-block');
             blocks.forEach((block, newIndex) => {
-                block.id = `section-${newIndex}`;
+
                 block.querySelector('.section-title').innerText = `Mục #${newIndex + 1}`;
                 
                 block.querySelectorAll('input, textarea').forEach(input => {
-                    if(input.name.includes('sections[')) {
+                    if(input.name && input.name.includes('sections[')) {
                         input.name = input.name.replace(/sections\[\d+\]/, `sections[${newIndex}]`);
                     }
                 });
-                const btnRemove = block.querySelector('.btn-remove-section');
-                btnRemove.setAttribute('onclick', `removeSection(${newIndex})`);
             });
         }
 
         function validateAndSubmit() {
-            // Cập nhật dữ liệu từ CKEditor xuống textarea trước khi submit
             updateEditorsData();
-
             const titleInput = document.getElementById('blogTitleInput');
             const titleError = document.getElementById('titleError');
 
@@ -233,17 +230,12 @@
                 titleInput.classList.add('input-error');
                 titleError.style.display = 'block';
                 titleInput.focus();
-                // Hiệu ứng rung
                 titleInput.animate([
-                    { transform: 'translateX(0)' }, 
-                    { transform: 'translateX(5px)' }, 
-                    { transform: 'translateX(-5px)' }, 
-                    { transform: 'translateX(0)' }
+                    { transform: 'translateX(0)' }, { transform: 'translateX(5px)' }, 
+                    { transform: 'translateX(-5px)' }, { transform: 'translateX(0)' }
                 ], { duration: 200 });
                 return false;
             }
-
-            // Nếu hợp lệ thì submit form
             document.getElementById('blogForm').submit();
         }
 
@@ -260,49 +252,47 @@
             }
         }
 
+        function scheduleAutoSave() {
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+                autoSaveDraft();
+            }, 1500);
+        }
+
         async function autoSaveDraft() {
             const titleInput = document.getElementById('blogTitleInput');
-            // Nếu chưa có tiêu đề thì không lưu
             if(!titleInput.value.trim()) return;
 
+            if(isSaving) return; 
+
+            isSaving = true; // Bật khóa
             const form = document.getElementById('blogForm');
             const statusLabel = document.getElementById('saveStatus');
 
-            // 1. Đồng bộ dữ liệu CKEditor xuống form
             updateEditorsData();
-
-            // 2. Tạo data gửi đi
             const formData = new FormData(form);
 
-            // UI Loading
             statusLabel.innerHTML = '<div class="spinner" style="display:inline-block"></div> Đang lưu...';
             statusLabel.style.opacity = '1';
             statusLabel.style.color = '#666';
 
             try {
-                const response = await fetch(form.action, {
+                const response = await fetch('/teacher/api/post/auto-save', {
                     method: 'POST',
-                    body: formData,
-                    redirect: 'follow'
+                    body: formData
                 });
 
                 if (response.ok) {
-                    // Lấy ID mới từ phản hồi HTML (để cập nhật URL và tránh tạo trùng bài)
-                    const htmlText = await response.text();
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(htmlText, 'text/html');
+                    const data = await response.json();
                     
-                    const newId = doc.getElementById('currentBlogId').value;
-                    const newSlug = doc.getElementById('currentBlogSlug').value;
+                    if (data.id) {
+                        document.getElementById('currentBlogId').value = data.id;
+                        document.getElementById('currentBlogSlug').value = data.slug;
 
-                    if (newId) {
-                        // Cập nhật ID vào form hiện tại
-                        document.getElementById('currentBlogId').value = newId;
-                        document.getElementById('currentBlogSlug').value = newSlug;
-                        
-                        // Cập nhật URL trên thanh địa chỉ mà không load lại trang
-                        const newUrl = `/teacher/blogPost/edit/${newSlug}`;
-                        window.history.replaceState(null, '', newUrl);
+                        const newUrl = `/teacher/post/edit/${data.slug}`;
+                        if (window.location.pathname !== newUrl) {
+                            window.history.replaceState(null, '', newUrl);
+                        }
                     }
 
                     statusLabel.innerHTML = '<i class="fa-solid fa-check"></i> Đã lưu nháp';
@@ -315,6 +305,9 @@
                 console.error(e);
                 statusLabel.innerText = 'Lỗi lưu tự động!';
                 statusLabel.style.color = '#dc3545';
+                setTimeout(() => { statusLabel.style.opacity = '0'; }, 3000);
+            } finally {
+                isSaving = false; // Mở khóa khi save xong (thành công hay thất bại đều mở)
             }
         }
 

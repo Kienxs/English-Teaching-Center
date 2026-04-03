@@ -11,6 +11,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -41,9 +42,6 @@ public class Post {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String summary;
 
-    @Column(nullable = false, columnDefinition = "LONGTEXT")
-    private String content;
-
     @Column(name = "thumbnail_url", length = 255)
     private String thumbnailUrl;
 
@@ -63,6 +61,9 @@ public class Post {
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
     private PostStatus status = PostStatus.DRAFT;
+
+    @Column(name = "is_deleted")
+    private Boolean isDeleted = false;
 
     @Column(name = "admin_note", columnDefinition = "TEXT")
     private String adminNote;
@@ -95,11 +96,22 @@ public class Post {
     @EqualsAndHashCode.Exclude
     private List<Comment> comments;
 
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private List<PostSection> sections = new ArrayList<>();
+
     public enum PostType {
         NEWS, BLOG, ANNOUNCEMENT
     }
 
     public enum PostStatus {
         DRAFT, PENDING, APPROVED, REJECTED, HIDDEN
+    }
+
+    public void addSection(PostSection section) {
+        sections.add(section);
+        section.setPost(this);
     }
 }

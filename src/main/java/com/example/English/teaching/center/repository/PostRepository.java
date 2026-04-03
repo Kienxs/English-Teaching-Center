@@ -33,4 +33,11 @@ public interface PostRepository extends JpaRepository<Post, Long> {
    @Transactional
    @Query("UPDATE Post p SET p.viewCount = p.viewCount + 1 WHERE p.slug = :slug")
    void incrementViewCount(@Param("slug") String slug);
+
+// FUNCTIONS FOR TEACHERS -----------------------------------------------
+   Page<Post> findByAuthorIdAndIsDeletedFalse(Long authorId, Pageable pageable); 
+
+    Optional<Post> findBySlugAndIsDeletedFalse(String slug);
+
+    Boolean existsBySlugAndIdNot(String slug, Long id);
 }

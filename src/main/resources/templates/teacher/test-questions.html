@@ -32,28 +32,33 @@
                 <span th:text="'Câu ' + ${iter.count} + ': ' + ${q.questionText}">Câu 1: ...</span>
                 <div>
                     <span style="font-size: 12px; background: #eee; padding: 2px 6px; border-radius: 4px;" th:text="${q.points} + ' điểm'"></span>
+                    
                     <button class="btn btn-warning" style="font-size: 10px; padding: 2px 5px;" 
                             th:data-id="${q.id}"
                             th:data-text="${q.questionText}"
-                            th:data-a="${q.optionA}"
-                            th:data-b="${q.optionB}"
-                            th:data-c="${q.optionC}"
-                            th:data-d="${q.optionD}"
-                            th:data-correct="${q.correctAnswer}"
+                            th:data-a="${q.options != null and q.options.size() > 0 ? q.options[0].text : ''}"
+                            th:data-b="${q.options != null and q.options.size() > 1 ? q.options[1].text : ''}"
+                            th:data-c="${q.options != null and q.options.size() > 2 ? q.options[2].text : ''}"
+                            th:data-d="${q.options != null and q.options.size() > 3 ? q.options[3].text : ''}"
+                            th:data-correct="${q.options != null and q.options.size() > 0 and q.options[0].correct ? 'A' : 
+                                            (q.options != null and q.options.size() > 1 and q.options[1].correct ? 'B' : 
+                                            (q.options != null and q.options.size() > 2 and q.options[2].correct ? 'C' : 'D'))}"
                             th:data-points="${q.points}"
                             onclick="openEditQuestionModal(this)">
                         <i class="fa-solid fa-pen"></i>
                     </button>
+                    
                     <a th:href="@{/teacher/question/delete/{id}(id=${q.id})}" class="btn btn-danger" style="font-size: 10px; padding: 2px 5px;" onclick="return confirm('Xóa câu này?')">
                         <i class="fa-solid fa-trash"></i>
                     </a>
                 </div>
             </div>
-            <div class="options-grid">
-                <div th:class="${q.correctAnswer == 'A' ? 'correct-ans' : ''}">A. <span th:text="${q.optionA}"></span></div>
-                <div th:class="${q.correctAnswer == 'B' ? 'correct-ans' : ''}">B. <span th:text="${q.optionB}"></span></div>
-                <div th:class="${q.correctAnswer == 'C' ? 'correct-ans' : ''}">C. <span th:text="${q.optionC}"></span></div>
-                <div th:class="${q.correctAnswer == 'D' ? 'correct-ans' : ''}">D. <span th:text="${q.optionD}"></span></div>
+            
+            <div class="options-grid" th:if="${not #lists.isEmpty(q.options)}">
+                <div th:if="${q.options.size() > 0}" th:class="${q.options[0].correct ? 'correct-ans' : ''}">A. <span th:text="${q.options[0].text}"></span></div>
+                <div th:if="${q.options.size() > 1}" th:class="${q.options[1].correct ? 'correct-ans' : ''}">B. <span th:text="${q.options[1].text}"></span></div>
+                <div th:if="${q.options.size() > 2}" th:class="${q.options[2].correct ? 'correct-ans' : ''}">C. <span th:text="${q.options[2].text}"></span></div>
+                <div th:if="${q.options.size() > 3}" th:class="${q.options[3].correct ? 'correct-ans' : ''}">D. <span th:text="${q.options[3].text}"></span></div>
             </div>
         </div>
     </div>

@@ -46,6 +46,7 @@ public class Question {
     @AllArgsConstructor
     public static class Option {
         private String text;
+
         @JsonProperty("isCorrect")
         private boolean isCorrect;
     }

@@ -103,7 +103,7 @@ td { padding: 12px 0; border-bottom: 1px dashed #eee; font-size: 14px; }
         <div class="brand"><i class="fa-solid fa-graduation-cap"></i> English Center</div>
         <a href="/teacher/dashboard" class="menu-item active"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
         <a href="/teacher/course-management" class="menu-item"><i class="fa-solid fa-book-open"></i> Khóa học</a>
-        <a href="/teacher/blog-management" class="menu-item"><i class="fa-solid fa-newspaper"></i> Blog cá nhân</a>
+        <a href="/teacher/post-management" class="menu-item"><i class="fa-solid fa-newspaper"></i> Blog cá nhân</a>
         <a href="#" class="menu-item"><i class="fa-solid fa-user-gear"></i> Hồ sơ</a>
     </div>
 
@@ -207,8 +207,9 @@ td { padding: 12px 0; border-bottom: 1px dashed #eee; font-size: 14px; }
                     <tbody>
                         <tr th:each="enroll : ${recentEnrollments}">
                             <td>
-                                <img th:src="${enroll.student.avatarUrl != null ? enroll.student.avatarUrl : 'https://ui-avatars.com/api/?name=' + enroll.student.name}" class="avatar-circle">
-                                <span th:text="${enroll.student.name}">Nguyễn Văn A</span>
+                                <img th:src="${enroll.student.avatarUrl != null ? enroll.student.avatarUrl : 'https://ui-avatars.com/api/?name=' + enroll.student.fullName}" class="avatar-circle">
+                                
+                                <span th:text="${enroll.student.fullName}">Nguyễn Văn A</span>
                             </td>
                             <td th:text="${enroll.course.name}">TOEIC 500+</td>
                             <td style="color: #888; font-size: 12px;" th:text="${#temporals.format(enroll.enrolledAt, 'dd/MM HH:mm')}">Vừa xong</td>
@@ -225,6 +226,9 @@ const catLabels = /*[[${catLabels}]]*/ [];
 const catData = /*[[${catData}]]*/ [];
 
 const ctxCat = document.getElementById('categoryChart').getContext('2d');
+
+const hasData = catData && catData.length > 0 && catData.reduce((a, b) => a + b, 0) > 0;
+
 new Chart(ctxCat, {
     type: 'doughnut',
     data: {
@@ -237,7 +241,10 @@ new Chart(ctxCat, {
     options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { position: 'bottom' } }
+        plugins: { 
+            legend: { position: 'bottom' },
+            tooltip: { enabled: hasData }
+        }
     }
 });
 
@@ -267,7 +274,8 @@ revenueChartInstance = new Chart(ctxRev, {
             borderWidth: 2,
             pointBackgroundColor: '#fff',
             pointBorderColor: '#4361ee',
-            pointRadius: 4,
+            pointRadius: labels.length > 31 ? 0 : 4,
+            pointHoverRadius: 6,
             fill: true,
             tension: 0.4
         }]
@@ -280,9 +288,24 @@ revenueChartInstance = new Chart(ctxRev, {
             y: { 
                 beginAtZero: true, 
                 grid: { borderDash: [5, 5], color: '#f0f0f0' },
-                ticks: { font: { size: 11 } }
+                ticks: { 
+                    font: { size: 11 },
+                    callback: function(value, index, values) {
+                        if (value === 0) return '0 đ';
+                        if (value >= 1000000) 
+                            return (value / 1000000) + ' Tr'; 
+                        else if (value >= 1000)
+                            return (value / 1000) + ' k';
+                        
+                        return value;
+                    }
+                }
             },
-            x: { grid: { display: false } }
+            x: { grid: { display: false } ,
+                ticks: {
+                    maxTicksLimit: 12 
+                }
+            }
         }
     }
 });

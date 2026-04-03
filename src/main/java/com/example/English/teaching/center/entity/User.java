@@ -72,7 +72,7 @@ public class User {
     private Status status = Status.ACTIVE;
 
     @Column(name = "is_deleted")
-    private boolean isDeleted = false;
+    private Boolean isDeleted = false;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
