@@ -79,6 +79,12 @@ body { background-color: #f9f9f9; }
 .submit-btn:hover { background-color: #343a40; }
 .palette-item.current-q { background-color: #007bff; color: white; border-color: #007bff; }
 
+.palette-item.answered {
+    background-color: #e9ecef;
+    color: #333;
+    border-color: #ced4da; 
+}
+
 #summary-interface {
     display: none; 
     gap: 20px;

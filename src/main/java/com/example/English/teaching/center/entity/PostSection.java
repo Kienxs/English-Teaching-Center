@@ -21,7 +21,7 @@ public class PostSection {
     @Column(name = "section_content", columnDefinition = "LONGTEXT")
     private String sectionContent;
 
-    @Column(name = "image_url")
+    @Column(name = "image_url", columnDefinition = "LONGTEXT")
     private String imageUrl;
 
     @Column(name = "section_order")

@@ -99,5 +99,38 @@
             <p>&copy; 2025 ECE - English Center for Everyone. All rights reserved.</p>
         </div>
     </footer>
+
+    <div th:fragment="sweet-alert">
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        
+        <script th:inline="javascript">
+            document.addEventListener('DOMContentLoaded', function() {
+                // Lấy dữ liệu từ Flash Attributes của Controller
+                const successMsg = /*[[${successMessage}]]*/ null;
+                const errorMsg = /*[[${errorMessage}]]*/ null;
+
+                if (successMsg) {
+                    Swal.fire({
+                        title: 'Thành công!',
+                        text: successMsg,
+                        icon: 'success',
+                        confirmButtonText: 'Tuyệt vời',
+                        confirmButtonColor: '#28a745',
+                        timer: 3000 // Tự động đóng sau 3 giây cho thân thiện
+                    });
+                }
+
+                if (errorMsg) {
+                    Swal.fire({
+                        title: 'Thất bại!',
+                        text: errorMsg,
+                        icon: 'error',
+                        confirmButtonText: 'Đã rõ',
+                        confirmButtonColor: '#dc3545'
+                    });
+                }
+            });
+        </script>
+    </div>
 </body>
 </html>

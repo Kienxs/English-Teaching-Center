@@ -55,7 +55,10 @@ public class UserService {
 
     public UserProfileDTO getUserProfile(String email){
         User user = findByEmail(email);
-        return userMapper.toDTO(user);
+        UserProfileDTO dto = userMapper.toDTO(user);
+        dto.setAvatarUrl(user.getAvatarUrl());
+
+        return dto;
     }
 
     @Transactional
@@ -68,12 +71,9 @@ public class UserService {
 
         // 2. Kiểm tra File
         if(avatarFile != null && !avatarFile.isEmpty()){
-            // Kiểm tra kích thước
             if(avatarFile.getSize() > 2 * 1024 * 1024){
                 throw new InvalidFileException("File quá lớn! Vui lòng chọn ảnh dưới 2MB.");
             }
-            
-            // Kiểm tra định dạng
             String contentType = avatarFile.getContentType();
             if (contentType == null || !contentType.startsWith("image/")) {
                 throw new InvalidFileException("Định dạng không hỗ trợ!");
@@ -81,22 +81,25 @@ public class UserService {
         }
 
         User userToUpdate = findByEmail(email);
+  
         String oldAvatarUrl = userToUpdate.getAvatarUrl();
 
-        // 1. Cập nhật thông tin chữ trước
         userMapper.updateEntityFromDTO(dto, userToUpdate);
 
-        // 2. Xử lý ảnh
         if (avatarFile != null && !avatarFile.isEmpty()) {
-            // Upload ảnh mới
+            // Nếu CÓ chọn ảnh mới -> Up lên Cloudinary
             String newImageUrl = cloudinaryService.uploadFile(avatarFile);
-            userToUpdate.setAvatarUrl(newImageUrl);
+            userToUpdate.setAvatarUrl(newImageUrl); // Gán ảnh mới
 
-            // 3. Xóa ảnh cũ nếu nó tồn tại trên Cloudinary
-            String oldPublicId = cloudinaryService.extractPublicId(oldAvatarUrl);
-            if (oldPublicId != null) {
-                cloudinaryService.deleteFile(oldPublicId);
+            // Xóa ảnh cũ trên Cloudinary
+            if (oldAvatarUrl != null) {
+                String oldPublicId = cloudinaryService.extractPublicId(oldAvatarUrl);
+                if (oldPublicId != null) {
+                    cloudinaryService.deleteFile(oldPublicId);
+                }
             }
+        } else {
+            userToUpdate.setAvatarUrl(oldAvatarUrl);
         }
 
         userRepository.save(userToUpdate);
@@ -110,6 +113,11 @@ public class UserService {
 
     @Transactional
     public void changePassword(String email, PasswordChangeDTO dto) {
+        Bucket bucket = rateLimitingService.resolveBucket(email);
+        if(!bucket.tryConsume(1)) {
+            throw new RateLimitException("Bạn thao tác quá nhiều lần! Vui lòng thử lại sau ít phút.");
+        }
+
         User user = findByEmail(email);
 
         if (!passwordEncoder.matches(dto.getCurrentPassword(), user.getPassword())) 

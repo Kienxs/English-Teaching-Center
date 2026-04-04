@@ -2,6 +2,7 @@ package com.example.English.teaching.center.controller.teacher;
 
 import com.cloudinary.http5.api.Response;
 import com.example.English.teaching.center.dto.PostEditDTO;
+import com.example.English.teaching.center.dto.SectionDTO;
 import com.example.English.teaching.center.entity.Post; 
 import com.example.English.teaching.center.entity.User;
 import com.example.English.teaching.center.service.content.PostService;
@@ -63,6 +64,18 @@ public class TeacherPostController {
         dto.setSummary(existingPost.getSummary());
         dto.setThumbnailUrl(existingPost.getThumbnailUrl());
         dto.setSlug(existingPost.getSlug());
+        dto.setStatus(existingPost.getStatus()); 
+
+        if (existingPost.getSections() != null) {
+            existingPost.getSections().forEach(entitySection -> {
+                SectionDTO secDto = new SectionDTO();
+                secDto.setId(entitySection.getId());
+                secDto.setSectionTitle(entitySection.getSectionTitle());
+                secDto.setSectionContent(entitySection.getSectionContent());
+                secDto.setImageUrl(entitySection.getImageUrl());
+                dto.getSections().add(secDto);
+            });
+        }
 
         model.addAttribute("post", dto);
         model.addAttribute("pageTitle", "Chỉnh sửa: " + existingPost.getTitle());

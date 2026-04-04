@@ -166,7 +166,6 @@
                     timerElement.innerHTML = "00:00";
                     alert("Đã hết thời gian làm bài! Hệ thống sẽ tự động nộp bài.");
                     
-                    // Xóa thời gian trong storage để lần sau thi lại được tính mới
                     localStorage.removeItem(storageKey);
                     
                     examForm.submit();
@@ -178,10 +177,9 @@
         if(testDurationMinutes > 0) {
             startTimer(testDurationMinutes);
         } else {
-            timerElement.innerHTML = "--:--"; // Không giới hạn thời gian
+            timerElement.innerHTML = "--:--"; 
         }
 
-        // --- 3. LOGIC GIAO DIỆN CŨ (GIỮ NGUYÊN) ---
         const testInterface = document.getElementById('test-interface');
         const summaryInterface = document.getElementById('summary-interface');
         const summaryTableBody = document.getElementById('summary-table-body');
@@ -197,8 +195,7 @@
             questions[currentIndex].classList.add('active');
 
             document.querySelectorAll('#test-interface .palette-item').forEach(item => item.classList.remove('current-q'));
-            
-            // Fix lỗi null nếu index ko tồn tại
+
             let paletteItem = document.getElementById('palette-' + currentIndex);
             if(paletteItem) paletteItem.classList.add('current-q');
 
@@ -234,10 +231,7 @@
             let p2 = document.getElementById('palette-sum-' + index);
             
             [p1, p2].forEach(p => {
-                if(p) {
-                    p.style.backgroundColor = '#e9ecef';
-                    p.style.color = '#333';
-                }
+                if(p) p.classList.add('answered'); 
             });
 
             questionBox.querySelector('.q-status').innerText = "Đã trả lời";
@@ -277,7 +271,7 @@
 
         function returnToTest() {
             summaryInterface.classList.remove('active');
-            testInterface.style.display = 'none'; 
+            testInterface.style.display = ''; 
             updateUI(); 
         }
 
@@ -286,13 +280,11 @@
             returnToTest();
         }
 
-        // Xử lý khi người dùng nộp bài thủ công -> Xóa timer storage
         document.querySelector('.btn-final-submit').addEventListener('click', function() {
              localStorage.removeItem('exam_start_time_' + testId);
         });
 
         updateUI();
     </script>
-
 </body>
 </html>

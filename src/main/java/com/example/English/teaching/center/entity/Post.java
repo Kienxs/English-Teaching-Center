@@ -42,7 +42,7 @@ public class Post {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String summary;
 
-    @Column(name = "thumbnail_url", length = 255)
+    @Column(name = "thumbnail_url", columnDefinition = "LONGTEXT")
     private String thumbnailUrl;
 
     @Enumerated(EnumType.STRING)

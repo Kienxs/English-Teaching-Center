@@ -32,7 +32,6 @@
                  th:classappend="${param.tab == null && errorMessage == null} ? 'active' : (${param.tab == 'profile' || (errorMessage != null && param.tab == null)} ? 'active' : '')">
                 
                 <form id="profileForm" th:action="@{/user/userInfor/update}" th:object="${userProfileDTO}" enctype="multipart/form-data" method="post">
-                    
                     <div class="card">
                         <div class="card-header">
                             <h2>THÔNG TIN CÁ NHÂN</h2>
@@ -41,9 +40,7 @@
                         <div class="profile-details">
                             <div class="avatar-upload">
                                 <img th:src="${user.avatarUrl != null ? user.avatarUrl : '/images/home/avatar_clone.png'}" alt="Avatar" id="avatar-preview">
-                                
                                 <input type="file" id="avatar-input" name="avatarFile" accept="image/*" style="display: none;">
-                                
                                 <label for="avatar-input" class="avatar-overlay">
                                     <i class="fas fa-camera"></i>
                                     <span>Đổi avatar</span>
@@ -122,7 +119,6 @@
                         </div>
                         
                         <br>
-                        
                         <div class="form-group">
                             <div class="g-recaptcha" th:data-sitekey="${recaptchaSiteKey}"></div>
                         </div>
@@ -158,7 +154,6 @@
                                     min="10000" step="10000" required class="form-control-lg">
                                 <span class="currency-suffix">VNĐ</span>
                             </div>
-                            
                             <button type="submit" class="btn btn-primary btn-deposit-submit">
                                 <i class="fas fa-wallet"></i> Xác nhận nạp tiền
                             </button>
@@ -187,7 +182,6 @@
                         </div>
 
                         <br>
-                        
                         <div class="form-group">
                             <div class="g-recaptcha" th:data-sitekey="${recaptchaSiteKey}"></div>
                         </div>
@@ -198,9 +192,10 @@
                     </form>
                 </div>
             </div>
-            
         </main>
     </div>
+
+    <div th:replace="~{fragments :: sweet-alert}"></div>
 
     <div th:replace="~{fragments :: footer}"></div>
     
@@ -210,37 +205,27 @@
     document.addEventListener('DOMContentLoaded', function() {
         const links = document.querySelectorAll('.sidebar-link');
         const tabs = document.querySelectorAll('.content-tab');
-        
         const breadcrumbCurrent = document.getElementById('breadcrumb-current'); 
-        
         const urlParams = new URLSearchParams(window.location.search);
         
-        // --- CẬP NHẬT CHÍNH Ở ĐÂY ---
-        // Ưu tiên 1: Lấy tab từ Hash (#) trên URL (ví dụ: #tab-wallet)
-        // Ưu tiên 2: Lấy từ Parameter (?tab=...)
+        // Điều hướng Tab
         let activeTabId = 'tab-profile';
         if (window.location.hash) {
-            activeTabId = window.location.hash.substring(1); // Cắt dấu # đi
+            activeTabId = window.location.hash.substring(1); 
         } else if (urlParams.get('tab')) {
             activeTabId = 'tab-' + urlParams.get('tab');
         }
         
-        // Xóa class active do Thymeleaf render mặc định
         tabs.forEach(tab => tab.classList.remove('active'));
         links.forEach(l => l.classList.remove('active'));
         
-        // Kích hoạt tab đích
         const tabToActivate = document.getElementById(activeTabId) || document.getElementById('tab-profile');
         const linkToActivate = document.querySelector(`a[data-target="${tabToActivate.id}"]`) || document.querySelector('a[data-target="tab-profile"]');
         
         if(tabToActivate && linkToActivate) {
             tabToActivate.classList.add('active');
             linkToActivate.classList.add('active');
-            
-            // Tránh trình duyệt cuộn loạn xạ, kéo trang lên đầu cho mượt
-            if (window.location.hash) {
-                window.scrollTo(0, 0);
-            }
+            if (window.location.hash) window.scrollTo(0, 0);
         }
         
         if (breadcrumbCurrent && linkToActivate) {
@@ -250,11 +235,7 @@
         links.forEach(link => {
             link.addEventListener('click', function(e) {
                 e.preventDefault();
-                
                 const targetId = this.getAttribute('data-target');
-                
-                // --- CẬP NHẬT Ở ĐÂY ---
-                // Khi người dùng tự click chuyển tab, cập nhật Hash trên URL
                 window.history.pushState(null, null, '#' + targetId); 
                 
                 const targetTab = document.getElementById(targetId);
@@ -263,13 +244,9 @@
                 this.classList.add('active');
                 
                 tabs.forEach(tab => tab.classList.remove('active'));
-                if (targetTab) {
-                    targetTab.classList.add('active');
-                }
+                if (targetTab) targetTab.classList.add('active');
                 
-                if (breadcrumbCurrent) {
-                    updateBreadcrumb(this.textContent.trim());
-                }
+                if (breadcrumbCurrent) updateBreadcrumb(this.textContent.trim());
             });
         });
 
@@ -285,7 +262,6 @@
         // Xem trước Avatar
         const avatarInput = document.getElementById('avatar-input');
         const avatarPreview = document.getElementById('avatar-preview');
-
         if (avatarInput && avatarPreview) {
             avatarInput.addEventListener('change', function() {
                 const file = this.files[0]; 
@@ -334,12 +310,11 @@
             });
         }
 
-        // KHÓA NGÀY SINH (KHÔNG CHO CHỌN TƯƠNG LAI)
+        // Khóa ngày sinh ở quá khứ
         const dobInput = document.getElementById('dob');
         if (dobInput) {
             const today = new Date().toISOString().split("T")[0];
             dobInput.setAttribute('max', today);
-            
             dobInput.addEventListener('change', function() {
                 if (this.value > today) {
                     this.setCustomValidity("Ngày sinh không thể lớn hơn ngày hiện tại!");
@@ -347,38 +322,6 @@
                     this.setCustomValidity("");
                 }
             });
-        }
-
-        // Xử lý Thông báo bằng SweetAlert2
-        const successMsg = "[[${successMessage}]]";
-        const errorMsg = "[[${errorMessage}]]";
-
-        if (successMsg && successMsg !== "null" && successMsg.trim() !== "") {
-            if(typeof Swal !== 'undefined') {
-                Swal.fire({
-                    title: 'Thành công!',
-                    text: successMsg,
-                    icon: 'success',
-                    confirmButtonText: 'OK',
-                    confirmButtonColor: '#28a745'
-                });
-            } else {
-                alert("Thành công: " + successMsg);
-            }
-        }
-
-        if (errorMsg && errorMsg !== "null" && errorMsg.trim() !== "") {
-            if(typeof Swal !== 'undefined') {
-                Swal.fire({
-                    title: 'Thất bại!',
-                    text: errorMsg,
-                    icon: 'error',
-                    confirmButtonText: 'Đã rõ',
-                    confirmButtonColor: '#dc3545'
-                });
-            } else {
-                alert("Lỗi: " + errorMsg);
-            }
         }
 
         // Kiểm tra ReCaptcha và hiệu ứng Loading cho các Form
@@ -393,6 +336,7 @@
                 item.formElement.addEventListener('submit', function(e) {
                     const captchaResponse = item.formElement.querySelector('[name="g-recaptcha-response"]');
 
+                    // Check Captcha client-side
                     if (captchaResponse && !captchaResponse.value) {
                         e.preventDefault(); 
                         if(typeof Swal !== 'undefined') {
@@ -403,6 +347,7 @@
                         return; 
                     }
 
+                    // Loading effect
                     item.btnElement.disabled = true;
                     item.btnElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
                     document.body.style.cursor = 'wait';

@@ -116,9 +116,9 @@
                 <div class="right-col">
                     <div class="card">
                         <div class="card-header">Ảnh bìa (Thumbnail)</div>
-                        <input type="text" class="form-control" th:field="*{thumbnail}" id="thumbInput" oninput="previewMainThumb()" onblur="autoSaveDraft()">
+                        <input type="text" class="form-control" th:field="*{thumbnailUrl}" id="thumbInput" oninput="previewMainThumb()" onblur="autoSaveDraft()">
                         <div class="image-preview" id="mainThumbPreview">
-                            <img th:if="*{thumbnail != null && thumbnail != ''}" th:src="*{thumbnail}">
+                            <img th:if="*{thumbnailUrl != null && thumbnailUrl != ''}" th:src="*{thumbnailUrl}">
                         </div>
                     </div>
                     
