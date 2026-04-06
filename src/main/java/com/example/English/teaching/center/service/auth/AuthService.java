@@ -1,12 +1,14 @@
 package com.example.English.teaching.center.service.auth;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.example.English.teaching.center.dto.UserRegisterDTO;
+import com.example.English.teaching.center.dto.auth.RegisterRequest;
 import com.example.English.teaching.center.entity.User;
 import com.example.English.teaching.center.exception.RateLimitException;
 import com.example.English.teaching.center.mapper.UserMapper;
@@ -27,6 +29,9 @@ public class AuthService {
     private final ReCaptchaService reCaptchaService;
     private final EmailService emailService;
 
+    @Value("${app.domain}")
+    private String appDomain;
+
     public AuthService(UserRepository userRepository, 
                        PasswordEncoder passwordEncoder, 
                        UserMapper userMapper,
@@ -42,24 +47,21 @@ public class AuthService {
     }
 // Register -------------------------------
     @Transactional
-    public void registerNewUser(UserRegisterDTO dto, String recaptchaResponse) {
+    public void registerNewUser(RegisterRequest dto, String recaptchaResponse) {
         // 1. Rate Limit
         Bucket bucket = rateLimitingService.resolveBucket(dto.getEmail());
-        if (!bucket.tryConsume(1)) {
+        if (!bucket.tryConsume(1)) 
             throw new RateLimitException("Bạn thao tác quá nhanh! Vui lòng thử lại sau 10 phút.");
-        }
 
         // 2. Xác thực reCAPTCHA
-        if (!reCaptchaService.verify(recaptchaResponse)) {
+        if (!reCaptchaService.verify(recaptchaResponse)) 
             throw new RuntimeException("Xác thực robot thất bại. Vui lòng thử lại!");
-        }
 
         User user = userMapper.toEntity(dto);
 
         // 3. Kiểm tra trùng lặp dữ liệu
-        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+        if (userRepository.findByEmail(user.getEmail()).isPresent())
             throw new IllegalArgumentException("Email đã tồn tại!");
-        }
 
         // 4. Mã hóa mật khẩu và lưu
         user.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -99,23 +101,20 @@ public class AuthService {
     public User authenticateOnly(String email, String rawPassword) throws IllegalAccessException {
         // 1. Rate Limit 
         Bucket bucket = rateLimitingService.resolveBucket("login_" + email); 
-        if (!bucket.tryConsume(1)) {
+        if (!bucket.tryConsume(1)) 
             throw new RateLimitException("Bạn đã nhập sai quá nhiều lần. Vui lòng thử lại sau 10 phút.");
-        }
 
         // 2. Tìm user
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new IllegalAccessException("Email không tồn tại!"));
 
         // 3. Check if the account has been activated
-        if(user.getStatus() == User.Status.PENDING){
+        if(user.getStatus() == User.Status.PENDING)
             throw new IllegalAccessException("Tài khoản chưa được kích hoạt. Vui lòng kiểm tra email của bạn!");
-        }
 
         // 4. Check password
-        if(!passwordEncoder.matches(rawPassword, user.getPassword())){
+        if(!passwordEncoder.matches(rawPassword, user.getPassword()))
             throw new IllegalAccessException("Mật khẩu không đúng!");
-        }
         
         return user; 
     }
@@ -124,31 +123,38 @@ public class AuthService {
     @Transactional
     public void generatePasswordResetToken(String email) throws Exception{
         Bucket bucket = rateLimitingService.resolveBucket("forgot_" + email);
-        if (!bucket.tryConsume(1)) {
+        if (!bucket.tryConsume(1)) 
             throw new RateLimitException("Bạn thao tác quá nhanh! Vui lòng thử lại sau 10 phút.");
-        }
 
         User user = userRepository.findByEmail(email).orElse(null);
 
         if(user != null){
             String token = UUID.randomUUID().toString();
             user.setResetPasswordToken(token);
+            user.setResetPasswordExpiry(LocalDateTime.now().plusMinutes(15));
+
             userRepository.save(user);
 
-            String resetPasswordLink = "http://localhost:8080/reset-password?token=" + token;
+            String resetPasswordLink = appDomain + "/reset-password?token=" + token;
             emailService.sendPasswordResetEmail(email, resetPasswordLink);
-        }else{
-            throw new Exception("Nếu email hợp lệ, một đường link khôi phục đã được gửi đi.");
         }
     }
 
     public User getByResetPasswordToken(String token){
-        return userRepository.findByResetPasswordToken(token).orElse(null);
+        User user = userRepository.findByResetPasswordToken(token).orElse(null);
+
+        if(user != null && user.getResetPasswordExpiry() != null){
+            if(user.getResetPasswordExpiry().isBefore(LocalDateTime.now()))
+                return null;
+            return user;
+        }
+        return null;
     }
 
     @Transactional
     public void updatePasswordByToken(User user, String newPassword){
         user.setPassword(passwordEncoder.encode(newPassword));
+        user.setResetPasswordToken(null);
         user.setResetPasswordToken(null);
         userRepository.save(user);
     }

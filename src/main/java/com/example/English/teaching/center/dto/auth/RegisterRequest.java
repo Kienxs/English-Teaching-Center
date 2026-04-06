@@ -1,4 +1,6 @@
-package com.example.English.teaching.center.dto;
+package com.example.English.teaching.center.dto.auth;
+
+import com.example.English.teaching.center.utils.HtmlSanitizerUtils;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -7,7 +9,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class UserRegisterDTO {
+public class RegisterRequest {
     @NotBlank(message = "Họ tên không được để trống")
     private String fullName;
 
@@ -22,4 +24,13 @@ public class UserRegisterDTO {
     @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&._-])[A-Za-z\\d@$!%*?&._-]{8,}$",
              message = "Mật khẩu phải có ít nhất 8 ký tự, chứa chữ hoa, chữ thường, số và ký tự đặc biệt!")
     private String password;
+
+    public void setFullName(String fullName){
+        this.fullName = HtmlSanitizerUtils.sanitizePlainText(fullName).trim();
+    }
+
+    public void setEmail(String email){
+        if(email != null) 
+            this.email = email.trim().toLowerCase();
+    }
 }

@@ -1,9 +1,9 @@
 package com.example.English.teaching.center.controller.teacher;
 
-import com.example.English.teaching.center.dto.CourseDTO;
-import com.example.English.teaching.center.dto.CourseSaveDTO;
-import com.example.English.teaching.center.dto.LessonSaveDTO;
-import com.example.English.teaching.center.dto.MaterialDTO;
+import com.example.English.teaching.center.dto.course.CourseDetailResponse;
+import com.example.English.teaching.center.dto.course.CourseSaveDTO;
+import com.example.English.teaching.center.dto.course.LessonSaveDTO;
+import com.example.English.teaching.center.dto.course.MaterialDTO;
 import com.example.English.teaching.center.entity.Course;
 import com.example.English.teaching.center.entity.User;
 import com.example.English.teaching.center.service.course.CourseService;
@@ -38,7 +38,7 @@ public class TeacherCourseController {
         if(principal == null) return "redirect:/login";
 
         User teacher = userService.findByEmail(principal.getName());
-        Page<CourseDTO> coursePage = courseService.getCoursesByTeacher(teacher.getId(), page, size);
+        Page<CourseDetailResponse> coursePage = courseService.getCoursesByTeacher(teacher.getId(), page, size);
         
         model.addAttribute("coursePage", coursePage); 
         model.addAttribute("currentPage", page);
@@ -66,9 +66,11 @@ public class TeacherCourseController {
     }
 
     @GetMapping("/course/delete/{id}")
-    public String deleteCourse(@PathVariable("id") Long id, RedirectAttributes ra) {
+    public String deleteCourse(@PathVariable("id") Long id, 
+                                RedirectAttributes ra, Principal principal) {
         try{
-            courseService.deleteDraftCourse(id);
+            User currenUser = userService.findByEmail(principal.getName());
+            courseService.deleteDraftCourse(id, currenUser.getId());
             ra.addFlashAttribute("successMessage", "Đã xóa khóa học thành công!");
         }catch (Exception e){
             ra.addFlashAttribute("errorMessage", "Lỗi: " + e.getMessage());

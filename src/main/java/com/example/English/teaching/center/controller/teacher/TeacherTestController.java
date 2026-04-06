@@ -1,7 +1,7 @@
 package com.example.English.teaching.center.controller.teacher;
 
-import com.example.English.teaching.center.dto.QuestionSaveDTO;
-import com.example.English.teaching.center.dto.TestSaveDTO;
+import com.example.English.teaching.center.dto.course.QuestionSaveDTO;
+import com.example.English.teaching.center.dto.course.TestSaveDTO;
 import com.example.English.teaching.center.entity.Test;
 import com.example.English.teaching.center.entity.User;
 import com.example.English.teaching.center.service.course.TestService;

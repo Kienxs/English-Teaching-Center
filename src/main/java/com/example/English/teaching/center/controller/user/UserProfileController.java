@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.example.English.teaching.center.dto.PasswordChangeDTO;
-import com.example.English.teaching.center.dto.UserProfileDTO;
-import com.example.English.teaching.center.dto.UsernameChangeDTO;
+import com.example.English.teaching.center.dto.user.PasswordChangeDTO;
+import com.example.English.teaching.center.dto.user.UserProfileDTO;
+import com.example.English.teaching.center.dto.user.UsernameChangeDTO;
 import com.example.English.teaching.center.exception.InvalidFileException;
 import com.example.English.teaching.center.exception.RateLimitException;
 import com.example.English.teaching.center.service.infra.ReCaptchaService;

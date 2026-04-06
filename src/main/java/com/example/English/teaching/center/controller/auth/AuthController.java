@@ -11,8 +11,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.security.core.Authentication;
 import org.springframework.ui.Model;
 
-import com.example.English.teaching.center.dto.ResetPasswordDTO;
-import com.example.English.teaching.center.dto.UserRegisterDTO;
+import com.example.English.teaching.center.dto.auth.ResetPasswordRequest;
+import com.example.English.teaching.center.dto.auth.RegisterRequest;
 import com.example.English.teaching.center.entity.User;
 import com.example.English.teaching.center.exception.RateLimitException;
 import com.example.English.teaching.center.service.auth.AuthService;
@@ -54,7 +54,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public String registerUser(@Valid @ModelAttribute("user") UserRegisterDTO dto,
+    public String registerUser(@Valid @ModelAttribute("user") RegisterRequest dto,
                            BindingResult bindingResult, 
                            Model model,
                            @RequestParam("g-recaptcha-response") String recaptchaResponse,
@@ -199,7 +199,7 @@ public class AuthController {
     }
 
     @PostMapping("/reset-password")
-    public String processResetPassword(@Valid @ModelAttribute ResetPasswordDTO dto,
+    public String processResetPassword(@Valid @ModelAttribute ResetPasswordRequest dto,
                                        BindingResult bindingResult,
                                        RedirectAttributes ra) {
                                     

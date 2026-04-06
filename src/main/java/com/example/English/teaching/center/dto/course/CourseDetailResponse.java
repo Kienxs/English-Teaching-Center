@@ -1,4 +1,4 @@
-package com.example.English.teaching.center.dto;
+package com.example.English.teaching.center.dto.course;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -7,7 +7,7 @@ import java.util.List;
 import lombok.Data;
 
 @Data
-public class CourseDTO {
+public class CourseDetailResponse {
     private Long id;
     private String name;
     private String slug;

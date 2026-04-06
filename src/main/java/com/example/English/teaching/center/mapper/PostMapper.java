@@ -2,15 +2,15 @@ package com.example.English.teaching.center.mapper;
 
 import org.springframework.stereotype.Component;
 
-import com.example.English.teaching.center.dto.PostListDTO;
+import com.example.English.teaching.center.dto.content.PostListResponse;
 import com.example.English.teaching.center.entity.Post;
 
 @Component
 public class PostMapper {
-    public PostListDTO toListDTO(Post entity){
+    public PostListResponse toListDTO(Post entity){
         if(entity == null) return null;
 
-        PostListDTO dto = new PostListDTO();
+        PostListResponse dto = new PostListResponse();
         dto.setId(entity.getId());
         dto.setTitle(entity.getTitle());
         dto.setSlug(entity.getSlug());

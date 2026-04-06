@@ -8,7 +8,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
-import com.example.English.teaching.center.dto.CourseCommentDTO;
+import com.example.English.teaching.center.dto.content.CourseCommentRequest;
+import com.example.English.teaching.center.dto.content.CourseCommentResponse;
 import com.example.English.teaching.center.entity.Course;
 import com.example.English.teaching.center.entity.CourseComment;
 import com.example.English.teaching.center.entity.User;
@@ -37,24 +38,24 @@ public class CourseCommentService {
     }
 
     @Transactional(readOnly = true)
-    public Page<CourseCommentDTO> getCommentsByCourseId(Long courseId, int page, int size) {
+    public Page<CourseCommentResponse> getCommentsByCourseId(Long courseId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         return courseCommentRepository.findByCourseId(courseId, pageable)
                 .map(commentMapper::toDTO);
     }
 
     @Transactional
-    public CourseComment saveComment(Long courseId, String userEmail, String text) {
+    public CourseComment saveComment(CourseCommentRequest requestDTO, String userEmail) {
         User user = userRepository.findByEmail(userEmail)
             .orElseThrow(() -> new RuntimeException("User not found"));
 
-        Course course = courseRepository.findById(courseId)
+        Course course = courseRepository.findById(requestDTO.getCourseId())
             .orElseThrow(() -> new RuntimeException("Course not found"));
 
         CourseComment courseComment = new CourseComment();
         courseComment.setUser(user);
         courseComment.setCourse(course);
-        courseComment.setCommentText(text);
+        courseComment.setCommentText(requestDTO.getText());
         courseComment.setCreatedAt(LocalDateTime.now());
         
         return courseCommentRepository.save(courseComment);

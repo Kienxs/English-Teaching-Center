@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.SQLRestriction; // Dùng @Where(clause = "is_deleted = false") nếu xài Spring Boot 2.x / Hibernate 5
+import org.hibernate.annotations.SQLRestriction; 
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.core.GrantedAuthority;
 
@@ -23,9 +23,7 @@ import lombok.ToString;
 @Table(name = "users")
 @Data 
 @NoArgsConstructor
-// TỰ ĐỘNG XÓA MỀM: Khi gọi userRepository.delete(), sẽ tự chuyển thành lệnh UPDATE
 @SQLDelete(sql = "UPDATE users SET is_deleted = true WHERE id=? and version=?")
-// TỰ ĐỘNG LỌC: Các lệnh find() sẽ chỉ lấy user chưa bị xóa
 @SQLRestriction("is_deleted = false") 
 public class User {
 
@@ -62,6 +60,9 @@ public class User {
 
     @Column(name = "reset_password_token", length = 40)
     private String resetPasswordToken;
+
+    @Column(name = "reset_password_expiry")
+    private LocalDateTime resetPasswordExpiry;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)

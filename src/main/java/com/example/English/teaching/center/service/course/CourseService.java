@@ -1,7 +1,7 @@
 package com.example.English.teaching.center.service.course;
 
-import com.example.English.teaching.center.dto.CourseDTO;
-import com.example.English.teaching.center.dto.CourseSaveDTO;
+import com.example.English.teaching.center.dto.course.CourseDetailResponse;
+import com.example.English.teaching.center.dto.course.CourseSaveDTO;
 import com.example.English.teaching.center.entity.Course;
 import com.example.English.teaching.center.entity.Lesson;
 import com.example.English.teaching.center.entity.StudentCourse;
@@ -63,7 +63,7 @@ public class CourseService {
     }
 
 // Process for student --------------------------------------------------------------------
-    public List<CourseDTO> getAllCourses() {
+    public List<CourseDetailResponse> getAllCourses() {
         return courseRepository.findAll().stream()
             .map(courseMapper::toDTO)
             .toList();
@@ -190,7 +190,7 @@ public class CourseService {
     }
 
     //Process for teacher ---------------------------------------------------------------------
-    public Page<CourseDTO> getCoursesByTeacher(Long teacherId, int pageNo, int pageSize) {
+    public Page<CourseDetailResponse> getCoursesByTeacher(Long teacherId, int pageNo, int pageSize) {
         Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by("createdAt").descending());
         Page<Course> coursePage = courseRepository.findByTeacherIdOrderByCreatedAtDesc(teacherId, pageable);
         return coursePage.map(courseMapper::toDTO);
@@ -229,6 +229,9 @@ public class CourseService {
         } else {
             course = courseRepository.findById(dto.getId())
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy khóa học"));
+            
+            if (!course.getTeacher().getId().equals(teacherId)) 
+                throw new SecurityException("Cảnh báo bảo mật: Bạn không có quyền chỉnh sửa khóa học này!");
         }
 
         course.setName(dto.getName());
@@ -240,11 +243,20 @@ public class CourseService {
         return courseRepository.save(course);
     }
 
-    public void deleteDraftCourse(Long id){
-        courseRepository.deleteById(id);
+    public void deleteDraftCourse(Long courseId, Long teacherId){
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy khóa học"));
+        
+        if(!course.getTeacher().getId().equals(teacherId))
+            throw new SecurityException("Cảnh báo bảo mật: Bạn không có quyền xóa khóa học này!");
+        
+        if(course.getStatus() != Course.Status.DRAFT)
+            throw new IllegalStateException("Lỗi nghiệp vụ: Chỉ có thể xóa khóa học ở trạng thái NHÁP");
+
+        courseRepository.delete(course);
     }
 
-    public Page<CourseDTO> getCoursesWithFilters(String categoryStr,
+    public Page<CourseDetailResponse> getCoursesWithFilters(String categoryStr,
                                                 String modeStr,
                                                 String keyword,
                                                 String sortStr,

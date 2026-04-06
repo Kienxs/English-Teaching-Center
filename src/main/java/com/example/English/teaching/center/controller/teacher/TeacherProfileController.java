@@ -1,8 +1,8 @@
 package com.example.English.teaching.center.controller.teacher;
 
-import com.example.English.teaching.center.dto.PasswordChangeDTO;
-import com.example.English.teaching.center.dto.TeacherProfileDTO;
-import com.example.English.teaching.center.dto.UserProfileDTO;
+import com.example.English.teaching.center.dto.report.TeacherProfileDTO;
+import com.example.English.teaching.center.dto.user.PasswordChangeDTO;
+import com.example.English.teaching.center.dto.user.UserProfileDTO;
 import com.example.English.teaching.center.service.infra.ReCaptchaService;
 import com.example.English.teaching.center.service.user.TeacherProfileService;
 import com.example.English.teaching.center.service.user.UserService;
@@ -41,6 +41,7 @@ public class TeacherProfileController {
             @RequestParam(value = "tab", defaultValue = "general") String tab ) {
 
         String email = principal.getName();
+        model.addAttribute("user", userService.findByEmail(email));
         model.addAttribute("userProfileDTO", userService.getUserProfile(email));
         model.addAttribute("teacherProfile", teacherProfileService.getExpertiseProfile(email));
         model.addAttribute("passwordChangeDTO", new PasswordChangeDTO());

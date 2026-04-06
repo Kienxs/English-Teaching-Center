@@ -2,7 +2,7 @@ package com.example.English.teaching.center.mapper;
 
 import org.springframework.stereotype.Component;
 
-import com.example.English.teaching.center.dto.LessonDTO;
+import com.example.English.teaching.center.dto.course.LessonDTO;
 import com.example.English.teaching.center.entity.Lesson;
 
 @Component

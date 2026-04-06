@@ -7,10 +7,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Pageable;
 
-import com.example.English.teaching.center.dto.CommentDTO;
-import com.example.English.teaching.center.dto.PostEditDTO;
-import com.example.English.teaching.center.dto.PostListDTO;
-import com.example.English.teaching.center.dto.SectionDTO;
+import com.example.English.teaching.center.dto.content.CommentRequest;
+import com.example.English.teaching.center.dto.content.CommentResponse;
+import com.example.English.teaching.center.dto.content.EditPostRequest;
+import com.example.English.teaching.center.dto.content.PostListResponse;
+import com.example.English.teaching.center.dto.content.SectionResponse;
 import com.example.English.teaching.center.entity.Comment;
 import com.example.English.teaching.center.entity.Post;
 import com.example.English.teaching.center.entity.PostSection;
@@ -45,7 +46,7 @@ public class PostService {
 
 // FUNCTIONS FOR STUDENT --------------------------------------------------------
 
-    public Page<PostListDTO> getApprovedPostsByType(Post.PostType type, int pageNo) {
+    public Page<PostListResponse> getApprovedPostsByType(Post.PostType type, int pageNo) {
         int pageSize = 6;
 
         Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
@@ -61,25 +62,23 @@ public class PostService {
     }
 
     @Transactional
-    public void saveComment(String postSlug,
-                            String email,
-                            String content){
-
+    public void saveComment(CommentRequest requestDTO,
+                            String email){
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng!"));
 
-        Post post = postRepository.findBySlugAndStatus(postSlug, Post.PostStatus.APPROVED)
+        Post post = postRepository.findBySlugAndStatus(requestDTO.getPostSlug(), Post.PostStatus.APPROVED)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy bài viết!"));
 
         Comment comment = new Comment();
-        comment.setContent(content);
+        comment.setContent(requestDTO.getContent());
         comment.setUser(user);
         comment.setPost(post);
         comment.setStatus(Comment.Status.APPROVED);
         commentRepository.save(comment);
     }
 
-    public List<PostListDTO> getRelatedPosts(Post.PostType type, Long currentId) {
+    public List<PostListResponse> getRelatedPosts(Post.PostType type, Long currentId) {
         Pageable topFive = PageRequest.of(0, 5); 
         List<Post> posts = postRepository.findRelatedPosts(type, currentId, topFive);
         
@@ -88,7 +87,7 @@ public class PostService {
                     .toList();
     }
 
-    public List<CommentDTO> getCommentsByCursor(Long postId, Long lastId, int limit){
+    public List<CommentResponse> getCommentsByCursor(Long postId, Long lastId, int limit){
         Pageable pageable = PageRequest.of(0, limit);
         List<Comment> comments = commentRepository.findCommentsByCursor(postId, lastId, pageable);
 
@@ -122,7 +121,7 @@ public class PostService {
     }
 
     @Transactional
-    public Post saveOrUpdateFromDTO(PostEditDTO dto, Long currentUserId) {
+    public Post saveOrUpdateFromDTO(EditPostRequest dto, Long currentUserId) {
         Post post;
         Long currentId = (dto.getId() != null) ? dto.getId() : -1L;
 
@@ -154,7 +153,7 @@ public class PostService {
 
         if (dto.getSections() != null && !dto.getSections().isEmpty()) {
             int order = 0;
-            for (SectionDTO secDto : dto.getSections()) {
+            for (SectionResponse secDto : dto.getSections()) {
                 PostSection newSection = new PostSection();
                 newSection.setSectionTitle(secDto.getSectionTitle());
                 newSection.setSectionContent(secDto.getSectionContent());

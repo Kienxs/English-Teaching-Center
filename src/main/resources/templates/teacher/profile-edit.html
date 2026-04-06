@@ -1,35 +1,15 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title th:text="${pageTitle}">Hồ sơ của tôi</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="/css/teacher/course-edit.css">
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-    <style>
-        .tabs { display: flex; border-bottom: 2px solid #ddd; margin-bottom: 20px; }
-        .tab-btn { padding: 12px 25px; cursor: pointer; border: none; background: none; font-size: 16px; color: #555; border-bottom: 3px solid transparent; transition: 0.3s; font-weight: 500;}
-        .tab-btn:hover { color: #007bff; }
-        .tab-btn.active { color: #007bff; border-bottom: 3px solid #007bff; }
-        .tab-content { display: none; background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);}
-        .tab-content.active { display: block; }
-        .avatar-preview { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid #ddd; margin-bottom: 10px; }
-    </style>
+<head th:replace="~{teacher/fragments_teacher :: teacher-head('Hồ sơ của tôi', ~{:: .page-asset})}">
+    <link class="page-asset" rel="stylesheet" href="/css/teacher/course-edit.css">
+    <link class="page-asset" rel="stylesheet" href="/css/teacher/profile-edit.css">
+    <script class="page-asset" src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body>
-    <div class="sidebar">
-        <div class="brand"><i class="fa-solid fa-graduation-cap"></i> English Center</div>
-        <a th:href="@{/teacher/dashboard}" class="menu-item"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
-        <a th:href="@{/teacher/course-management}" class="menu-item"><i class="fa-solid fa-book-open"></i> Khóa học</a>
-        <a th:href="@{/teacher/post-management}" class="menu-item"><i class="fa-solid fa-newspaper"></i> Blog cá nhân</a>
-        <a th:href="@{/teacher/profile}" class="menu-item active"><i class="fa-solid fa-user-gear"></i> Hồ sơ</a>
-    </div>
+    <div th:replace="~{teacher/fragments_teacher :: teacher-sidebar('profile')}"></div>
 
     <div class="main-content">
         <div class="page-header"><h2>Quản lý Hồ sơ</h2></div>
-
-        <div th:if="${successMessage}" class="alert alert-success" style="color: green; padding: 10px; background: #e8f5e9; margin-bottom: 15px;">[[${successMessage}]]</div>
-        <div th:if="${errorMessage}" class="alert alert-danger" style="color: red; padding: 10px; background: #fde8e8; margin-bottom: 15px;">[[${errorMessage}]]</div>
 
         <div class="tabs">
             <button class="tab-btn" th:classappend="${activeTab == 'general'} ? 'active' : ''" onclick="openTab('general')"><i class="fa-solid fa-id-card"></i> Thông tin cá nhân</button>
@@ -38,7 +18,7 @@
         </div>
 
         <div id="general" class="tab-content" th:classappend="${activeTab == 'general'} ? 'active' : ''">
-            <form th:action="@{/teacher/profile/update-basic}" method="post" enctype="multipart/form-data" th:object="${userProfileDTO}">
+            <form id="profileForm" th:action="@{/teacher/profile/update-basic}" method="post" enctype="multipart/form-data" th:object="${userProfileDTO}">
                 <div style="display: flex; gap: 30px;">
                     <div style="text-align: center;">
                         <img th:src="*{avatarUrl != null && avatarUrl != '' ? avatarUrl : '/images/home/avatar_clone.png'}" class="avatar-preview" id="previewImg">
@@ -51,6 +31,10 @@
                             <label>Họ và Tên</label>
                             <input type="text" class="form-control" th:field="*{fullName}" required>
                         </div>
+                        <div class="form-group">
+                            <label for="email">Địa chỉ Email (Không thể thay đổi)<span class="required">*</span></label>
+                            <input type="email" class="form-control" id="email" th:value="${user.email}" readonly style="cursor: not-allowed;">
+                        </div>
                         <div class="form-group" style="margin-top: 15px;">
                             <label>Số điện thoại</label>
                             <input type="text" class="form-control" th:field="*{phone}">
@@ -58,14 +42,14 @@
                         <div class="form-group" style="margin-top: 15px;">
                             <div class="g-recaptcha" th:data-sitekey="${recaptchaSiteKey}"></div>
                         </div>
-                        <button type="submit" class="btn btn-primary" style="margin-top: 15px;">Lưu thông tin</button>
+                        <button type="submit" id="btnUpdateBasic" class="btn btn-primary" style="margin-top: 15px;">Lưu thông tin</button>
                     </div>
                 </div>
             </form>
         </div>
 
         <div id="expertise" class="tab-content" th:classappend="${activeTab == 'expertise'} ? 'active' : ''">
-            <form th:action="@{/teacher/profile/update-expertise}" method="post" th:object="${teacherProfile}">
+            <form id="expertiseForm" th:action="@{/teacher/profile/update-expertise}" method="post" th:object="${teacherProfile}">
                 <div class="form-group">
                     <label>Chuyên môn (IELTS, TESOL...)</label>
                     <input type="text" class="form-control" th:field="*{expertise}">
@@ -81,12 +65,12 @@
                 <div class="form-group" style="margin-top: 15px;">
                     <div class="g-recaptcha" th:data-sitekey="${recaptchaSiteKey}"></div>
                 </div>
-                <button type="submit" class="btn btn-primary" style="margin-top: 15px;">Lưu chuyên môn</button>
+                <button type="submit" id="btnUpdateExpertise" class="btn btn-primary" style="margin-top: 15px;">Lưu chuyên môn</button>
             </form>
         </div>
 
         <div id="password" class="tab-content" th:classappend="${activeTab == 'password'} ? 'active' : ''">
-            <form th:action="@{/teacher/profile/change-password}" method="post" th:object="${passwordChangeDTO}" style="max-width: 500px;">
+            <form id="passwordForm" th:action="@{/teacher/profile/change-password}" method="post" th:object="${passwordChangeDTO}" style="max-width: 500px;">
                 <div class="form-group">
                     <label>Mật khẩu hiện tại</label>
                     <input type="password" class="form-control" th:field="*{currentPassword}" required>
@@ -99,24 +83,22 @@
                     <label>Nhập lại mật khẩu mới</label>
                     <input type="password" class="form-control" th:field="*{confirmPassword}" required minlength="6">
                 </div>
-
                 <div class="form-group" style="margin-top: 15px;">
                     <div class="g-recaptcha" th:data-sitekey="${recaptchaSiteKey}"></div>
                 </div>
-
-                <button type="submit" class="btn btn-primary" style="margin-top: 15px;">Đổi mật khẩu</button>
+                <button type="submit" id="btnUpdatePassword" class="btn btn-primary" style="margin-top: 15px;">Đổi mật khẩu</button>
             </form>
         </div>
     </div>
+
+    <div th:replace="~{fragments :: sweet-alert}"></div>
 
     <script>
         function openTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            
             document.getElementById(tabName).classList.add('active');
             event.currentTarget.classList.add('active');
-            
             window.history.replaceState(null, null, "?tab=" + tabName);
         }
 
@@ -128,6 +110,37 @@
             }
             if (file) reader.readAsDataURL(file);
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Đồng bộ bộ Check Captcha
+            const forms = [
+                { formElement: document.getElementById('profileForm'), btnElement: document.getElementById('btnUpdateBasic') },
+                { formElement: document.getElementById('expertiseForm'), btnElement: document.getElementById('btnUpdateExpertise') },
+                { formElement: document.getElementById('passwordForm'), btnElement: document.getElementById('btnUpdatePassword') }
+            ];
+
+            forms.forEach(item => {
+                if (item.formElement && item.btnElement) {
+                    item.formElement.addEventListener('submit', function(e) {
+                        const captchaResponse = item.formElement.querySelector('[name="g-recaptcha-response"]');
+                        if (captchaResponse && !captchaResponse.value) {
+                            e.preventDefault(); 
+                            Swal.fire({
+                                title: 'Cảnh báo!',
+                                text: 'Vui lòng xác nhận bạn không phải người máy!',
+                                icon: 'warning',
+                                confirmButtonText: 'Đã rõ',
+                                confirmButtonColor: '#f39c12'
+                            });
+                            return; 
+                        }
+                        item.btnElement.disabled = true;
+                        item.btnElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+                        document.body.style.cursor = 'wait';
+                    });
+                }
+            });
+        });
     </script>
 </body>
 </html>

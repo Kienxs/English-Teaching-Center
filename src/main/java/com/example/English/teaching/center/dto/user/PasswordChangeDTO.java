@@ -1,4 +1,4 @@
-package com.example.English.teaching.center.dto;
+package com.example.English.teaching.center.dto.user;
 
 import lombok.*;
 

@@ -12,7 +12,7 @@ import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
-import com.example.English.teaching.center.dto.TeacherDashboardDTO;
+import com.example.English.teaching.center.dto.report.TeacherDashboardDTO;
 import com.example.English.teaching.center.entity.User;
 import com.example.English.teaching.center.repository.CourseRepository;
 import com.example.English.teaching.center.repository.StudentCourseRepository;

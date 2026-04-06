@@ -7,7 +7,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import com.example.English.teaching.center.dto.TeacherDashboardDTO;
+import com.example.English.teaching.center.dto.report.TeacherDashboardDTO;
 import com.example.English.teaching.center.service.user.TeacherService;
 
 @Controller

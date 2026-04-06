@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+    
+<head th:fragment="teacher-head(title, extraLinks)">
+    <meta charset="UTF-8">
+    <title th:text="${title}">Teacher Portal</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <th:block th:replace="${extraLinks}" />
+</head>
+
+<body>
+    <div th:fragment="teacher-sidebar(activeTab)" class="sidebar">
+        <div class="brand"><i class="fa-solid fa-graduation-cap"></i> English Center</div>
+        
+        <a th:href="@{/teacher/dashboard}" 
+        class="menu-item" th:classappend="${activeTab == 'dashboard'} ? 'active' : ''">
+        <i class="fa-solid fa-chart-line"></i> Dashboard
+        </a>
+        
+        <a th:href="@{/teacher/course-management}" 
+        class="menu-item" th:classappend="${activeTab == 'courses'} ? 'active' : ''">
+        <i class="fa-solid fa-book-open"></i> Khóa học
+        </a>
+        
+        <a th:href="@{/teacher/post-management}" 
+        class="menu-item" th:classappend="${activeTab == 'posts'} ? 'active' : ''">
+        <i class="fa-solid fa-newspaper"></i> Blog cá nhân
+        </a>
+        
+        <a th:href="@{/teacher/profile}" 
+        class="menu-item" th:classappend="${activeTab == 'profile'} ? 'active' : ''">
+        <i class="fa-solid fa-user-gear"></i> Hồ sơ
+        </a>
+        
+        <a th:href="@{/logout}" class="menu-item">
+        <i class="fa-solid fa-right-from-bracket"></i> Đăng Xuất
+        </a>
+    </div>
+</body>
+
+</html>

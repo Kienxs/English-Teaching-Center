@@ -1,20 +1,11 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Quản lý Blog</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="/css/teacher/dashboard.css">
-    <link rel="stylesheet" href="/css/pageStyle.css">
+<head th:replace="~{teacher/fragments_teacher :: teacher-head('Quản lý Blog', ~{:: .page-asset})}">
+    <link class="page-asset" rel="stylesheet" href="/css/pageStyle.css">
+    <link class="page-asset" rel="stylesheet" href="/css/teacher/dashboard.css">
 </head>
 <body>
-    <div class="sidebar">
-        <div class="brand"><i class="fa-solid fa-graduation-cap"></i> English Center</div>
-        <a th:href="@{/teacher/dashboard}" class="menu-item"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
-        <a th:href="@{/teacher/course-management}" class="menu-item"><i class="fa-solid fa-book-open"></i> Khóa học</a>
-        <a th:href="@{/teacher/post-management}" class="menu-item active"><i class="fa-solid fa-newspaper"></i> Blog cá nhân</a>
-        <a th:href="@{/teacher/profile}" class="menu-item"><i class="fa-solid fa-user-gear"></i> Hồ sơ</a>
-    </div>
+    <div th:replace="~{teacher/fragments_teacher :: teacher-sidebar('posts')}"></div>
 
     <div class="main-content">
         <div class="header">

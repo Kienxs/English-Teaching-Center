@@ -1,11 +1,11 @@
-package com.example.English.teaching.center.dto;
+package com.example.English.teaching.center.dto.content;
 
 import java.time.LocalDateTime;
 
 import lombok.Data;
 
 @Data
-public class PostListDTO {
+public class PostListResponse {
     private Long id;
     private String title;
     private String slug;

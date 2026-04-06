@@ -10,9 +10,9 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
-import com.example.English.teaching.center.dto.QuestionSaveDTO;
-import com.example.English.teaching.center.dto.TestDTO;
-import com.example.English.teaching.center.dto.TestSaveDTO;
+import com.example.English.teaching.center.dto.course.QuestionSaveDTO;
+import com.example.English.teaching.center.dto.course.TestDTO;
+import com.example.English.teaching.center.dto.course.TestSaveDTO;
 import com.example.English.teaching.center.entity.Lesson;
 import com.example.English.teaching.center.entity.Question;
 import com.example.English.teaching.center.entity.Test;

@@ -7,10 +7,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.example.English.teaching.center.dto.PasswordChangeDTO;
-import com.example.English.teaching.center.dto.UserNavbarDTO;
-import com.example.English.teaching.center.dto.UserProfileDTO;
-import com.example.English.teaching.center.dto.UsernameChangeDTO;
+import com.example.English.teaching.center.dto.user.PasswordChangeDTO;
+import com.example.English.teaching.center.dto.user.UserNavbarDTO;
+import com.example.English.teaching.center.dto.user.UserProfileDTO;
+import com.example.English.teaching.center.dto.user.UsernameChangeDTO;
 import com.example.English.teaching.center.entity.User;
 import com.example.English.teaching.center.exception.InvalidFileException;
 import com.example.English.teaching.center.exception.RateLimitException;

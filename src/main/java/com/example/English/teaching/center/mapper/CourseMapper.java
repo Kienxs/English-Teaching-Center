@@ -3,7 +3,7 @@ package com.example.English.teaching.center.mapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.example.English.teaching.center.dto.CourseDTO;
+import com.example.English.teaching.center.dto.course.CourseDetailResponse;
 import com.example.English.teaching.center.entity.Course;
 
 @Component
@@ -15,10 +15,10 @@ public class CourseMapper {
         this.lessonMapper = lessonMapper;
     }
 
-    public CourseDTO toDTO(Course entity){
+    public CourseDetailResponse toDTO(Course entity){
         if(entity == null) return null;
 
-        CourseDTO dto = new CourseDTO();
+        CourseDetailResponse dto = new CourseDetailResponse();
         dto.setId(entity.getId());
         dto.setName(entity.getName());
         dto.setSlug(entity.getSlug());

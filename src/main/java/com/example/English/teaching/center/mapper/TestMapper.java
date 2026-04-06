@@ -2,10 +2,10 @@ package com.example.English.teaching.center.mapper;
 
 import org.springframework.stereotype.Component;
 
-import com.example.English.teaching.center.dto.QuestionDTO;
-import com.example.English.teaching.center.dto.QuestionSaveDTO;
-import com.example.English.teaching.center.dto.TestDTO;
-import com.example.English.teaching.center.dto.TestSaveDTO;
+import com.example.English.teaching.center.dto.course.QuestionDTO;
+import com.example.English.teaching.center.dto.course.QuestionSaveDTO;
+import com.example.English.teaching.center.dto.course.TestDTO;
+import com.example.English.teaching.center.dto.course.TestSaveDTO;
 import com.example.English.teaching.center.entity.Question;
 import com.example.English.teaching.center.entity.Test;
 

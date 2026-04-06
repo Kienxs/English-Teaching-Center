@@ -88,3 +88,13 @@ body { display: flex; min-height: 100vh; background: #f4f6f9; }
 .modal-header { font-weight: bold; font-size: 18px; margin-bottom: 20px; display: flex; justify-content: space-between; }
 .close-btn { cursor: pointer; font-size: 24px; color: #999; }
 .close-btn:hover { color: #333; }
+
+.error-message { color: #dc3545; font-size: 12px; margin-top: 5px; display: none; }
+        .input-error { border-color: #dc3545 !important; }
+        
+        #saveStatus {
+            font-size: 13px; color: #28a745; font-weight: bold; margin-right: 15px; 
+            opacity: 0; transition: opacity 0.5s; display: inline-flex; align-items: center; gap: 5px;
+        }
+        .spinner { border: 2px solid #f3f3f3; border-top: 2px solid #3498db; border-radius: 50%; width: 12px; height: 12px; animation: spin 1s linear infinite; display: none;}
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }

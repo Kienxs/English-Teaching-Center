@@ -1,4 +1,4 @@
-package com.example.English.teaching.center.dto;
+package com.example.English.teaching.center.dto.report;
 
 import java.math.BigDecimal;
 

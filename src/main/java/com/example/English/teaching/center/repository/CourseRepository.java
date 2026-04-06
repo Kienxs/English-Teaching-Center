@@ -1,6 +1,6 @@
 package com.example.English.teaching.center.repository;
 
-import com.example.English.teaching.center.dto.MonthlyRevenueDTO;
+import com.example.English.teaching.center.dto.report.MonthlyRevenueDTO;
 import com.example.English.teaching.center.entity.Course;
 import com.example.English.teaching.center.entity.StudentCourse;
 import com.example.English.teaching.center.entity.Course.Category;

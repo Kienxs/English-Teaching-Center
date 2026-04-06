@@ -1,8 +1,7 @@
 package com.example.English.teaching.center.controller.teacher;
 
-import com.cloudinary.http5.api.Response;
-import com.example.English.teaching.center.dto.PostEditDTO;
-import com.example.English.teaching.center.dto.SectionDTO;
+import com.example.English.teaching.center.dto.content.EditPostRequest;
+import com.example.English.teaching.center.dto.content.SectionResponse;
 import com.example.English.teaching.center.entity.Post; 
 import com.example.English.teaching.center.entity.User;
 import com.example.English.teaching.center.service.content.PostService;
@@ -11,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -48,7 +48,7 @@ public class TeacherPostController {
 
     @GetMapping("/post/create")
     public String showCreatePostForm(Model model){
-        model.addAttribute("post", new PostEditDTO());
+        model.addAttribute("post", new EditPostRequest());
         model.addAttribute("pageTitle", "Tạo bài viết mới");
         return "teacher/post-edit";
     }
@@ -58,7 +58,7 @@ public class TeacherPostController {
         Post existingPost = postService.findPostBySlug(slug)
             .orElseThrow(() -> new RuntimeException("Không tìm thấy bài viết"));
 
-        PostEditDTO dto = new PostEditDTO();
+        EditPostRequest dto = new EditPostRequest();
         dto.setId(existingPost.getId());
         dto.setTitle(existingPost.getTitle());
         dto.setSummary(existingPost.getSummary());
@@ -68,7 +68,7 @@ public class TeacherPostController {
 
         if (existingPost.getSections() != null) {
             existingPost.getSections().forEach(entitySection -> {
-                SectionDTO secDto = new SectionDTO();
+                SectionResponse secDto = new SectionResponse();
                 secDto.setId(entitySection.getId());
                 secDto.setSectionTitle(entitySection.getSectionTitle());
                 secDto.setSectionContent(entitySection.getSectionContent());
@@ -83,8 +83,16 @@ public class TeacherPostController {
     }
 
     @PostMapping("/post/save")
-    public String savePost(@ModelAttribute("post") PostEditDTO postDto,
+    public String savePost(@ModelAttribute("post") EditPostRequest postDto,
+                            BindingResult bindingResult,
                            Principal principal, RedirectAttributes ra) {
+        if (bindingResult.hasErrors()) {
+            ra.addFlashAttribute("errorMessage", "Vui lòng nhập đầy đủ thông tin bắt buộc!");
+            return postDto.getId() != null 
+                   ? "redirect:/teacher/post/edit/" + postDto.getSlug() 
+                   : "redirect:/teacher/post/create";
+        }
+        
         User currentUser = userService.findByEmail(principal.getName());
         try{
             Post saved = postService.saveOrUpdateFromDTO(postDto, currentUser.getId());
@@ -99,7 +107,7 @@ public class TeacherPostController {
     @PostMapping("/api/post/auto-save")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> autoSaveDraft(
-                                      @ModelAttribute PostEditDTO postDto,
+                                      @ModelAttribute EditPostRequest postDto,
                                       Principal principal) {
         User currentUser = userService.findByEmail(principal.getName());
         try{

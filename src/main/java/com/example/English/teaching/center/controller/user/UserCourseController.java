@@ -10,14 +10,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.example.English.teaching.center.dto.CourseCommentDTO;
-import com.example.English.teaching.center.dto.TestDTO;
+import com.example.English.teaching.center.dto.content.CourseCommentRequest;
+import com.example.English.teaching.center.dto.content.CourseCommentResponse;
+import com.example.English.teaching.center.dto.course.TestDTO;
 import com.example.English.teaching.center.entity.Course;
 import com.example.English.teaching.center.entity.StudentCourse;
 import com.example.English.teaching.center.entity.TestResult;
@@ -56,7 +58,7 @@ public class UserCourseController {
         Map<String, Object> data = courseService.getCourseDetailData(slug, email, session);
 
         Course course = (Course) data.get("course");
-        Page<CourseCommentDTO> pageComments = courseCommentService.getCommentsByCourseId(course.getId(), 0, 5);
+        Page<CourseCommentResponse> pageComments = courseCommentService.getCommentsByCourseId(course.getId(), 0, 5);
         
         model.addAttribute("courseComments", pageComments.getContent());
         model.addAttribute("totalComments", pageComments.getTotalElements());
@@ -105,14 +107,17 @@ public class UserCourseController {
     }
 
     @PostMapping("/course-detail/comment")
-    public String postComment(@RequestParam("courseSlug") String courseSlug,
-                            @RequestParam("commentText") String text,
-                            Principal principal) {
-        if (principal != null && text != null && !text.trim().isEmpty()) {
-            courseService.findBySlug(courseSlug).ifPresent(course -> {
-                courseCommentService.saveComment(course.getId(), principal.getName(), text);
-            });
+    public String postComment( Principal principal,
+                        @RequestParam("courseSlug") String courseSlug,
+                        @ModelAttribute CourseCommentRequest requestDTO) {
+        if(principal != null && requestDTO.getText() != null && !requestDTO.getText().trim().isEmpty()){
+            try{
+                courseCommentService.saveComment(requestDTO, principal.getName());
+            }catch(Exception e){
+                System.err.println("Lỗi khi lưu bình luận khóa học: " + e.getMessage());
+            }
         }
+
         return "redirect:/user/course-detail/" + courseSlug + "#tab-binhluan";
     }
 

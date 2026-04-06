@@ -187,182 +187,152 @@
 </body>
 
 <script th:inline="javascript">
-    /*<![CDATA[*/
-    // --- 1. KHAI BÁO BIẾN TOÀN CỤC ---
-    const courseId = /*[[${course.id}]]*/ 0;
-    let currentPage = 0; 
+    const postId = /*[[${post.id}]]*/ 0;
+    let lastCommentId = null;
+    const limit = 5; 
     
-    // --- 2. LOGIC THANH TOÁN (PAYMENT) ---
-    const modal = document.getElementById("paymentModal");
-    const btnBuy = document.querySelector(".btn-buy");
-    const closeBtn = document.querySelector(".close-modal");
-    const btnConfirm = document.getElementById("btn-confirm-payment");
+    const commentContainer = document.getElementById('comment-container');
+    const btnLoadMore = document.getElementById('btn-load-more');
+    const noCommentsMsg = document.getElementById('no-comments-msg');
 
-    if (btnBuy) btnBuy.onclick = () => modal.style.display = "block";
-    if (closeBtn) closeBtn.onclick = () => modal.style.display = "none";
-    window.onclick = (event) => { if (event.target == modal) modal.style.display = "none"; }
+    function escapeHTML(str) {
+        if (!str) return '';
+        return str.replace(/[&<>'"]/g, 
+            tag => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                "'": '&#39;',
+                '"': '&quot;'
+            }[tag] || tag)
+        );
+    }
 
-    if (btnConfirm) {
-        btnConfirm.onclick = function() {
-            btnConfirm.disabled = true;
-            btnConfirm.innerText = "Đang xử lý...";
+    function timeAgo(dateString) {
+        if (!dateString) return 'Vừa xong';
+        const date = new Date(dateString);
+        const seconds = Math.floor((new Date() - date) / 1000);
+        
+        let interval = seconds / 31536000;
+        if (interval > 1) return Math.floor(interval) + " năm trước";
+        interval = seconds / 2592000;
+        if (interval > 1) return Math.floor(interval) + " tháng trước";
+        interval = seconds / 86400;
+        if (interval > 1) return Math.floor(interval) + " ngày trước";
+        interval = seconds / 3600;
+        if (interval > 1) return Math.floor(interval) + " giờ trước";
+        interval = seconds / 60;
+        if (interval > 1) return Math.floor(interval) + " phút trước";
+        return "Vừa xong";
+    }
 
-            fetch('/api/courses/enroll', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ courseId: courseId })
-            })
+    function loadComments() {
+        if (lastCommentId !== null) {
+            btnLoadMore.innerText = "Đang tải...";
+            btnLoadMore.disabled = true;
+        }
+
+        let url = `/api/comments/${postId}?limit=${limit}`;
+        if (lastCommentId !== null) {
+            url += `&lastId=${lastCommentId}`;
+        }
+
+        fetch(url)
             .then(response => {
-                if (response.ok) {
-                    Swal.fire({
-                        title: 'Đăng ký thành công!',
-                        text: 'Chào mừng bạn đến với khóa học. Bắt đầu học ngay thôi!',
-                        icon: 'success',
-                        confirmButtonText: 'Vào học ngay',
-                        confirmButtonColor: '#28a745',
-                        allowOutsideClick: false 
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            window.location.href = "/user/my-course"; 
-                        }
-                    });
-                } else {
-                    return response.text().then(msg => { throw new Error(msg); });
-                }
+                if (!response.ok) throw new Error("Lỗi khi tải bình luận");
+                return response.json();
             })
-            .catch(error => {
-                Swal.fire({
-                    title: 'Giao dịch thất bại!',
-                    text: error.message,
-                    icon: 'error',
-                    confirmButtonText: 'Đóng',
-                    confirmButtonColor: '#dc3545'
-                });
-                btnConfirm.disabled = false;
-                btnConfirm.innerText = "Xác nhận thanh toán";
-            });
-        }
-    }
-
-    // --- 3. HÀM XỬ LÝ CẮT CHỮ (Tách riêng để tái sử dụng) ---
-    function applyReadMoreToComments() {
-        const comments = document.querySelectorAll('.comment-text');
-        const MAX_LENGTH = 250; 
-
-        comments.forEach(comment => {
-            // Kiểm tra xem đã xử lý cắt chữ chưa (tránh cắt đi cắt lại)
-            if (!comment.hasAttribute('data-full-text')) {
-                const fullText = comment.innerText;
-                if (fullText.length > MAX_LENGTH) {
-                    comment.setAttribute('data-full-text', fullText);
-                    
-                    const shortText = fullText.substring(0, MAX_LENGTH) + "...";
-                    comment.innerText = shortText;
-                    
-                    const seeMoreBtn = document.createElement('span');
-                    seeMoreBtn.innerText = ' Xem thêm';
-                    seeMoreBtn.className = 'see-more-link'; 
-                    seeMoreBtn.style.color = '#0084ff';
-                    seeMoreBtn.style.cursor = 'pointer';
-                    seeMoreBtn.style.fontWeight = 'bold';
-                    
-                    seeMoreBtn.onclick = function() {
-                        comment.innerText = comment.getAttribute('data-full-text');
-                        // Không cần ẩn nút vì gán innerText ở trên đã tự động xóa mất cái nút (span) đi rồi
-                    };
-                    
-                    comment.appendChild(seeMoreBtn); 
-                }
-            }
-        });
-    }
-
-    // --- 4. LOGIC DOM LOAD ---
-    document.addEventListener("DOMContentLoaded", function() {   
-        // Tab logic
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-
-            const targetBtn = document.querySelector(`.tab-item[data-tab="${tabId}"]`);
-            if(targetBtn) targetBtn.classList.add('active');
-
-            const targetPane = document.getElementById(tabId);
-            if(targetPane) targetPane.classList.add('active');
-        }
-
-        document.querySelectorAll('.tab-item').forEach(tab => {
-            tab.addEventListener('click', function(e) {
-                e.preventDefault();
-                switchTab(this.getAttribute('data-tab'));
-            });
-        });
-
-        if(window.location.hash === '#tab-binhluan') {
-            switchTab('tab-binhluan');
-            setTimeout(() => {
-                const commentSection = document.getElementById('tab-binhluan');
-                if(commentSection) commentSection.scrollIntoView({behavior: "smooth", block: "start"});
-            }, 100);
-        }
-
-        // Áp dụng cắt chữ cho các comment load sẵn bằng Thymeleaf
-        applyReadMoreToComments();
-    });
-
-    // --- 5. LOGIC TẢI THÊM BÌNH LUẬN ---
-    function loadMoreComments() {
-        currentPage++; 
-        const btn = document.getElementById('btn-load-more');
-        btn.innerText = "Đang tải...";
-
-        fetch(`/api/courses/comments/${courseId}?page=${currentPage}`)
-            .then(response => response.json())
             .then(data => {
-                if (!data || data.length === 0) {
-                    btn.style.display = 'none'; 
+                if (data.length === 0 && lastCommentId === null) {
+                    noCommentsMsg.style.display = 'block';
+                    btnLoadMore.style.display = 'none';
                     return;
                 }
 
-                const container = document.querySelector('.comment-list'); 
-
-                data.forEach(cmt => {
-                    const avatar = cmt.userAvatar ? cmt.userAvatar : '/images/home/avatar_clone.png';
+                data.forEach(comment => {
+                    const avatarContent = comment.userAvatar 
+                        ? `<img src="${escapeHTML(comment.userAvatar)}" alt="avatar" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`
+                        : (comment.userName ? comment.userName.charAt(0).toUpperCase() : 'U');
                     
-                    // Escape HTML nhẹ nhàng để chống XSS ở Frontend
-                    const safeContent = cmt.content.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                    const safeName = escapeHTML(comment.userName);
+                    const safeContent = escapeHTML(comment.content);
                     
-                    const html = `
+                    const displayTime = comment.timeAgo ? comment.timeAgo : timeAgo(comment.createdAt);
+                    
+                    const commentHtml = `
                         <div class="comment-item">
-                            <img src="${avatar}" class="comment-avatar">
-                            <div class="comment-content-wrapper">
-                                <div class="comment-bubble">
-                                    <a href="#" class="comment-author">${cmt.userName}</a>
-                                    <p class="comment-text">${safeContent}</p>
-                                </div>
-                                <div class="comment-actions">
-                                    <span class="comment-time">${cmt.timeAgo}</span>
-                                </div>
+                            <div class="comment-avatar">${avatarContent}</div>
+                            <div class="comment-info">
+                                <h5>${safeName}</h5>
+                                <span class="comment-time">${displayTime}</span>
+                                <p class="comment-text">${safeContent}</p>
                             </div>
                         </div>
                     `;
-                    container.insertAdjacentHTML('beforeend', html);
+                    commentContainer.insertAdjacentHTML('beforeend', commentHtml);
+                    
+                    lastCommentId = comment.id;
                 });
 
-                btn.innerText = "Xem thêm bình luận cũ hơn";
-                
-                // Gọi lại hàm cắt chữ để áp dụng cho những comment vừa chèn thêm vào DOM
-                applyReadMoreToComments();
-                
-                if(data.length < 5) {
-                    btn.style.display = 'none';
+                btnLoadMore.disabled = false;
+
+                // Nếu trả về ít hơn limit -> hết bình luận
+                if (data.length < limit) {
+                    btnLoadMore.style.display = 'none';
+                } else {
+                    btnLoadMore.style.display = 'block';
+                    btnLoadMore.innerText = "Xem thêm bình luận";
                 }
             })
-            .catch(err => {
-                console.error(err);
-                btn.innerText = "Lỗi tải trang";
+            .catch(error => {
+                console.error("Lỗi:", error);
+                btnLoadMore.innerText = "Lỗi tải dữ liệu. Thử lại!";
+                btnLoadMore.disabled = false;
             });
     }
-    /*]]>*/
+
+    document.addEventListener("DOMContentLoaded", function() {
+        loadComments();
+    });
+
+// XỬ LÝ GỬI BÌNH LUẬN BẰNG AJAX -----------------------------------------
+    document.getElementById('commentForm').addEventListener('submit', function(event) {
+        event.preventDefault(); 
+
+        const form = event.target;
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const formData = new FormData(form);
+
+        let btnOriginalText = submitBtn.innerText;
+        submitBtn.innerText = "Đang gửi...";
+        submitBtn.disabled = true;
+
+        fetch('/api/comments/add', {
+            method: 'POST',
+            body: new URLSearchParams(formData) 
+        })
+        .then(async response => {
+            if (response.ok) {
+                form.querySelector('textarea').value = '';
+                
+                commentContainer.innerHTML = '';
+                lastCommentId = null; 
+                noCommentsMsg.style.display = 'none';
+                
+                loadComments(); 
+            } else {
+                const errorMsg = await response.text();
+                alert(errorMsg); 
+            }
+        })
+        .catch(error => {
+            console.error("Lỗi gửi bình luận:", error);
+            alert("Có lỗi xảy ra, vui lòng thử lại sau!");
+        })
+        .finally(() => {
+            submitBtn.innerText = btnOriginalText;
+            submitBtn.disabled = false;
+        });
+    });
 </script>
 </html>

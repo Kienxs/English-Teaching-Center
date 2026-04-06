@@ -2,7 +2,7 @@ package com.example.English.teaching.center.service.user;
 
 import org.springframework.stereotype.Service;
 
-import com.example.English.teaching.center.dto.TeacherProfileDTO;
+import com.example.English.teaching.center.dto.report.TeacherProfileDTO;
 import com.example.English.teaching.center.entity.Teacher;
 import com.example.English.teaching.center.entity.User;
 import com.example.English.teaching.center.exception.RateLimitException;

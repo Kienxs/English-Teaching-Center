@@ -2,9 +2,9 @@ package com.example.English.teaching.center.mapper;
 
 import org.springframework.stereotype.Component;
 
-import com.example.English.teaching.center.dto.UserNavbarDTO;
-import com.example.English.teaching.center.dto.UserProfileDTO;
-import com.example.English.teaching.center.dto.UserRegisterDTO;
+import com.example.English.teaching.center.dto.auth.RegisterRequest;
+import com.example.English.teaching.center.dto.user.UserNavbarDTO;
+import com.example.English.teaching.center.dto.user.UserProfileDTO;
 import com.example.English.teaching.center.entity.User;
 
 @Component
@@ -28,7 +28,7 @@ public class UserMapper {
             entity.setPhone(dto.getPhone());
     }
 
-    public User toEntity(UserRegisterDTO dto){
+    public User toEntity(RegisterRequest dto){
         if(dto == null) return null;
 
         User user = new User();

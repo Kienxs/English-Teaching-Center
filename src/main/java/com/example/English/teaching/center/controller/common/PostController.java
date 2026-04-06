@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.example.English.teaching.center.dto.PostListDTO;
+import com.example.English.teaching.center.dto.content.PostListResponse;
 import com.example.English.teaching.center.entity.Post;
 import com.example.English.teaching.center.service.content.PostService;
 
@@ -31,7 +31,7 @@ public class PostController {
     @GetMapping("/blog")
     public String blogPage(@RequestParam(value = "page", defaultValue = "1") int page,
                            Model model) {
-        Page<PostListDTO> postPage = postService.getApprovedPostsByType(Post.PostType.BLOG, page);
+        Page<PostListResponse> postPage = postService.getApprovedPostsByType(Post.PostType.BLOG, page);
         model.addAttribute("postPage", postPage);
         return "user/blog";
     }
@@ -39,7 +39,7 @@ public class PostController {
     @GetMapping("/news")
     public String newsPage(@RequestParam(value = "page", defaultValue = "1") int page,
                            Model model) {
-        Page<PostListDTO> postPage = postService.getApprovedPostsByType(Post.PostType.NEWS, page);
+        Page<PostListResponse> postPage = postService.getApprovedPostsByType(Post.PostType.NEWS, page);
         model.addAttribute("postPage", postPage);
         return "user/news";
     }
@@ -76,7 +76,7 @@ public class PostController {
         Post post = postService.getPostBySlug(slug);
         model.addAttribute("post", post);
 
-        List<PostListDTO> related = postService.getRelatedPosts(post.getType(), post.getId());
+        List<PostListResponse> related = postService.getRelatedPosts(post.getType(), post.getId());
         model.addAttribute("relatedPosts", related);
 
         String activeTab = (post.getType() == Post.PostType.NEWS) ? "news" : "blog";
