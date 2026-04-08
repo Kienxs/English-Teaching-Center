@@ -10,7 +10,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.English.teaching.center.dto.report.MonthlyRevenueDTO;
+import com.example.English.teaching.center.dto.report.MonthlyRevenueResponse;
 import com.example.English.teaching.center.entity.Course;
 import com.example.English.teaching.center.repository.CourseRepository;
 

@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.example.English.teaching.center.dto.user.PasswordChangeDTO;
-import com.example.English.teaching.center.dto.user.UserProfileDTO;
-import com.example.English.teaching.center.dto.user.UsernameChangeDTO;
+import com.example.English.teaching.center.dto.user.PasswordChangeRequest;
+import com.example.English.teaching.center.dto.user.UserProfileRequest;
+import com.example.English.teaching.center.dto.user.UsernameChangeRequest;
 import com.example.English.teaching.center.exception.InvalidFileException;
 import com.example.English.teaching.center.exception.RateLimitException;
 import com.example.English.teaching.center.service.infra.ReCaptchaService;
@@ -45,14 +45,14 @@ public class UserProfileController {
 
         model.addAttribute("user", userService.findByEmail(email));
         model.addAttribute("userProfileDTO", userService.getUserProfile(email));
-        model.addAttribute("passwordChangeDTO", new PasswordChangeDTO());
+        model.addAttribute("passwordChangeDTO", new PasswordChangeRequest());
         model.addAttribute("recaptchaSiteKey", recaptchaSiteKey);
 
         return "user/userInfor";
     }
 
     @PostMapping("/update")
-    public String updateProfile(@ModelAttribute UserProfileDTO dto,
+    public String updateProfile(@ModelAttribute UserProfileRequest dto,
                                 @RequestParam(value = "avatarFile", required = false) MultipartFile avatarFile,
                                 @RequestParam(value = "g-recaptcha-response", required = false) String recaptchaResponse,
                                 Principal principal,
@@ -76,7 +76,7 @@ public class UserProfileController {
 
     @PostMapping("/changePassword")
     public String changePassword(Principal principal,
-                        @ModelAttribute("passwordChangeDTO") PasswordChangeDTO dto,
+                        @ModelAttribute("passwordChangeDTO") PasswordChangeRequest dto,
                         @RequestParam(value="g-recaptcha-response", required = false) String recaptchaResponse,
                         RedirectAttributes redirectAttributes) {
         try {
@@ -92,7 +92,7 @@ public class UserProfileController {
 
     @PostMapping("/changeUsername")
     public String changeUsername(Principal principal,
-                    @Valid @ModelAttribute("usernameChangeDTO") UsernameChangeDTO dto,
+                    @Valid @ModelAttribute("usernameChangeDTO") UsernameChangeRequest dto,
                     @RequestParam(value="g-recaptcha-response", required = false) String recaptchaResponse,
                     RedirectAttributes redirectAttributes){
 

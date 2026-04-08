@@ -10,22 +10,26 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
-import com.example.English.teaching.center.dto.course.QuestionSaveDTO;
-import com.example.English.teaching.center.dto.course.TestDTO;
-import com.example.English.teaching.center.dto.course.TestSaveDTO;
+import com.example.English.teaching.center.dto.course.QuestionSaveRequest;
+import com.example.English.teaching.center.dto.course.TestResponse;
+import com.example.English.teaching.center.dto.course.TestSaveRequest;
 import com.example.English.teaching.center.entity.Lesson;
 import com.example.English.teaching.center.entity.Question;
 import com.example.English.teaching.center.entity.Test;
 import com.example.English.teaching.center.entity.TestResult;
 import com.example.English.teaching.center.entity.User;
+import com.example.English.teaching.center.exception.RateLimitException;
 import com.example.English.teaching.center.mapper.TestMapper;
 import com.example.English.teaching.center.repository.LessonRepository;
 import com.example.English.teaching.center.repository.QuestionRepository;
 import com.example.English.teaching.center.repository.TestRepository;
 import com.example.English.teaching.center.repository.TestResultRepository;
 import com.example.English.teaching.center.repository.UserRepository;
+import com.example.English.teaching.center.service.infra.RateLimitingService;
+import com.example.English.teaching.center.utils.NetworkUtils;
 import com.example.English.teaching.center.utils.SlugUtils;
 
+import io.github.bucket4j.Bucket;
 import jakarta.transaction.Transactional;
 
 @Service
@@ -36,19 +40,22 @@ public class TestService {
     private final LessonRepository lessonRepository;
     private final QuestionRepository questionRepository;
     private final TestMapper testMapper;
+    private final RateLimitingService rateLimitingService;
 
     public TestService(TestRepository testRepository,
                        TestResultRepository testResultRepository,
                        UserRepository userRepository,
                        LessonRepository lessonRepository,
                        QuestionRepository questionRepository,
-                       TestMapper testMapper) {
+                       TestMapper testMapper,
+                       RateLimitingService rateLimitingService) {
         this.testRepository = testRepository;
         this.testResultRepository = testResultRepository;
         this.userRepository = userRepository;
         this.lessonRepository = lessonRepository;
         this.questionRepository = questionRepository;
         this.testMapper = testMapper;
+        this.rateLimitingService = rateLimitingService;
     }
 // For Students ---------------------------------------------------------
     private Test findTestByIdOrSlug(String identifier) {
@@ -62,14 +69,18 @@ public class TestService {
             });
     }
 
-    public TestDTO getSafeTestDetails(String identifier){
+    public TestResponse getSafeTestDetails(String identifier){
         Test test = Optional.ofNullable((findTestByIdOrSlug(identifier)))
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy bài thi: " + identifier));
         return testMapper.toTestDTO(test);
     }
 
-    @Transactional
     public TestResult startOrResumeTest(String identifier, User user){
+        String clientIP = NetworkUtils.getClientIPFromContext();
+        Bucket bucket = rateLimitingService.resolveBucket("START_TEST_" + user.getEmail() + "_" + clientIP, 5, 1);
+        if(!bucket.tryConsume(1)) 
+            throw new RateLimitException("Vui lòng không nháy đúp nút bắt đầu!");
+
         Test test = Optional.ofNullable(findTestByIdOrSlug(identifier))
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy bài thi: " + identifier));
 
@@ -77,9 +88,8 @@ public class TestService {
 
         if(!activeTests.isEmpty()){
             TestResult active = activeTests.get(0);
-            if(!active.getTest().getId().equals(test.getId())){
+            if(!active.getTest().getId().equals(test.getId()))
                 throw new IllegalStateException("Bạn đang có bài thi chưa hoàn thành: " + active.getTest().getTitle());
-            }
             return active;
         }
 
@@ -92,8 +102,13 @@ public class TestService {
         return testResultRepository.save(newResult);
     }
 
-    @Transactional
+   @Transactional
     public TestResult submitTest(String identifier, Map<String, String> answers, String email){
+        String clientIP = NetworkUtils.getClientIPFromContext();
+        Bucket bucket = rateLimitingService.resolveBucket("SUBMIT_TEST_" + email + "_" + clientIP, 3, 1);
+        if(!bucket.tryConsume(1)) 
+            throw new RateLimitException("Đang xử lý bài thi, vui lòng không gửi liên tục!");
+
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng!"));
         
@@ -102,11 +117,22 @@ public class TestService {
 
         List<TestResult> doingTests = testResultRepository.findByStudentIdAndStatus(user.getId(), TestResult.Status.DOING);
 
-        if(doingTests.isEmpty() || !doingTests.get(0).getTest().getId().equals(test.getId())){
+        if(doingTests.isEmpty() || !doingTests.get(0).getTest().getId().equals(test.getId()))
             throw new IllegalStateException("Không tìm thấy bài thi đang làm hoặc đã nộp rồi.");
-        }
 
         TestResult result = doingTests.get(0);
+
+        long expectedDurationSeconds = test.getDurationMinutes() * 60L;
+        long actualTakenSeconds = java.time.Duration.between(result.getStartTime(), LocalDateTime.now()).getSeconds();
+        
+        if (actualTakenSeconds > expectedDurationSeconds + 60) {
+            result.setScore(BigDecimal.ZERO);
+            result.setSubmitTime(LocalDateTime.now());
+            result.setStatus(TestResult.Status.COMPLETED);
+            result.setExecutionTimeSeconds((int) actualTakenSeconds);
+            testResultRepository.save(result);
+            throw new IllegalStateException("Bạn đã nộp bài quá thời gian quy định! Bài thi bị hủy kết quả.");
+        }
 
         double earnedPoints = 0;
         double totalPoints = 0;
@@ -138,11 +164,7 @@ public class TestService {
         result.setSubmitTime(LocalDateTime.now());
         result.setStatus(TestResult.Status.COMPLETED);
         result.setDetails(detailsList);
-
-        if (result.getStartTime() != null) {
-            long seconds = java.time.Duration.between(result.getStartTime(), result.getSubmitTime()).getSeconds();
-            result.setExecutionTimeSeconds((int) seconds);
-        }
+        result.setExecutionTimeSeconds((int) actualTakenSeconds); // Lưu bằng thời gian tính toán ở trên
 
         return testResultRepository.save(result);
     }
@@ -155,9 +177,23 @@ public class TestService {
     }
 
     @Transactional
-    public String saveTest(TestSaveDTO dto) {
-        Lesson lesson = lessonRepository.findById(dto.getLessonId()).orElseThrow(() -> new RuntimeException("Không tìm thấy bài học"));
+    public String saveTest(TestSaveRequest dto, Long teacherId) {
+        String clientIP = NetworkUtils.getClientIPFromContext();
+        Bucket bucket = rateLimitingService.resolveBucket("SAVE_TEST_" + teacherId + "_" + clientIP, 20, 1);
+        if (!bucket.tryConsume(1)) 
+            throw new RateLimitException("Hệ thống đang bận, thầy/cô vui lòng thao tác chậm lại một chút nhé!");
+
+        Lesson lesson = lessonRepository.findById(dto.getLessonId())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy bài học"));
+
+        if(!lesson.getCourse().getTeacher().getId().equals(teacherId))
+            throw new SecurityException("Bạn không có quyền tạo bài thi cho khóa học của người khác!");
+
         Test test = (dto.getId() != null) ? testRepository.findById(dto.getId()).orElse(new Test()) : new Test();
+        
+        if(test.getId() != null)
+            verifyTestOwnership(test, teacherId);
+
         test.setId(dto.getId());
         test.setLesson(lesson);
         test.setTitle(dto.getTitle());
@@ -181,13 +217,24 @@ public class TestService {
 
     @Transactional
     public void deleteTest(Long id, Long teacherId) { 
-        Test test = testRepository.findById(id).orElseThrow(() -> new RuntimeException("Không tìm thấy bài test"));
+        String clientIP = NetworkUtils.getClientIPFromContext();
+        Bucket bucket = rateLimitingService.resolveBucket("DELETE_TEST_" + teacherId + "_" + clientIP, 10, 1);
+        if (!bucket.tryConsume(1)) 
+            throw new RateLimitException("Thao tác quá nhanh!");
+
+        Test test = testRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Không tìm thấy bài test"));
         verifyTestOwnership(test, teacherId);
         testRepository.delete(test);
     }
 
     @Transactional
-    public void saveQuestion(QuestionSaveDTO dto, Long teacherId) { 
+    public void saveQuestion(QuestionSaveRequest dto, Long teacherId) { 
+        String clientIP = NetworkUtils.getClientIPFromContext();
+        Bucket bucket = rateLimitingService.resolveBucket("SAVE_QUESTION_" + teacherId + "_" + clientIP, 40, 1);
+        if (!bucket.tryConsume(1)) 
+            throw new RateLimitException("Thầy/cô đang lưu câu hỏi quá nhanh, vui lòng chờ ít giây!");
+
         Test test = testRepository.findById(dto.getTestId())
             .orElseThrow(() -> new RuntimeException("Không tìm thấy bài Test!"));
             
@@ -213,11 +260,16 @@ public class TestService {
     }
 
     @Transactional
-    public Long deleteQuestionAndGetTestId(Long questionId, Long teacherId) { // Cập nhật tham số
+    public Long deleteQuestionAndGetTestId(Long questionId, Long teacherId) { 
+        String clientIP = NetworkUtils.getClientIPFromContext();
+        Bucket bucket = rateLimitingService.resolveBucket("DELETE_QUESTION_" + teacherId + "_" + clientIP, 20, 1);
+        if (!bucket.tryConsume(1)) 
+            throw new RateLimitException("Thao tác xóa quá nhanh!");
+
         Question q = questionRepository.findById(questionId)
             .orElseThrow(() -> new RuntimeException("Không tìm thấy câu hỏi"));
             
-        verifyTestOwnership(q.getTest(), teacherId); // Check quyền
+        verifyTestOwnership(q.getTest(), teacherId); 
         
         Long testId = q.getTest().getId();
         questionRepository.delete(q);

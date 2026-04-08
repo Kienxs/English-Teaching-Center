@@ -19,3 +19,22 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 });
+
+function confirmLogout(event){
+  event.preventDefault();
+
+  Swal.fire({
+      title: 'Đăng xuất?',
+      text: "Bạn có chắc chắn muốn thoát khỏi phiên làm việc hiện tại?",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#9f224e',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Vâng, Đăng xuất',
+      cancelButtonText: 'Hủy bỏ'
+  }).then((result) => {
+      if (result.isConfirmed) {
+          window.location.href = '/logout';
+      }
+  })
+}

@@ -1,8 +1,8 @@
 package com.example.English.teaching.center.controller.teacher;
 
-import com.example.English.teaching.center.dto.report.TeacherProfileDTO;
-import com.example.English.teaching.center.dto.user.PasswordChangeDTO;
-import com.example.English.teaching.center.dto.user.UserProfileDTO;
+import com.example.English.teaching.center.dto.report.TeacherProfileRequest;
+import com.example.English.teaching.center.dto.user.PasswordChangeRequest;
+import com.example.English.teaching.center.dto.user.UserProfileRequest;
 import com.example.English.teaching.center.service.infra.ReCaptchaService;
 import com.example.English.teaching.center.service.user.TeacherProfileService;
 import com.example.English.teaching.center.service.user.UserService;
@@ -44,7 +44,7 @@ public class TeacherProfileController {
         model.addAttribute("user", userService.findByEmail(email));
         model.addAttribute("userProfileDTO", userService.getUserProfile(email));
         model.addAttribute("teacherProfile", teacherProfileService.getExpertiseProfile(email));
-        model.addAttribute("passwordChangeDTO", new PasswordChangeDTO());
+        model.addAttribute("passwordChangeDTO", new PasswordChangeRequest());
         model.addAttribute("pageTitle", "Thông tin cá nhân");
 
         model.addAttribute("recaptchaSiteKey", recaptchaSiteKey);
@@ -54,7 +54,7 @@ public class TeacherProfileController {
     }
 
     @PostMapping("/update-basic")
-    public String updateBasicProfile(@ModelAttribute UserProfileDTO dto,
+    public String updateBasicProfile(@ModelAttribute UserProfileRequest dto,
                 @RequestParam(value = "avatarFile", required = false) MultipartFile avatarFile,
                 @RequestParam(value = "g-recaptcha-response", required = false) String recaptchaResponse,
                 Principal principal, RedirectAttributes ra) {
@@ -72,7 +72,7 @@ public class TeacherProfileController {
     }
 
     @PostMapping("/update-expertise")
-    public String updateExpertise(@ModelAttribute TeacherProfileDTO dto, 
+    public String updateExpertise(@ModelAttribute TeacherProfileRequest dto, 
                 @RequestParam(value = "g-recaptcha-response", required = false) String recaptchaResponse,
                 Principal principal, RedirectAttributes ra) {
         try{
@@ -89,7 +89,7 @@ public class TeacherProfileController {
     }
 
     @PostMapping("/change-password")
-    public String changePassword(@ModelAttribute("passwordChangeDTO") PasswordChangeDTO dto,
+    public String changePassword(@ModelAttribute("passwordChangeDTO") PasswordChangeRequest dto,
                 @RequestParam(value = "g-recaptcha-response", required = false) String recaptchaResponse,            
                 Principal principal, RedirectAttributes ra) {
         try {

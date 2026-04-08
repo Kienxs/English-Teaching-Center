@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @Data
-public class QuestionDTO {
+public class QuestionResponse {
     private Long id;
     private String questionText;
     private BigDecimal points;

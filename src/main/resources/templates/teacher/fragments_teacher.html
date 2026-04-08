@@ -7,7 +7,9 @@
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/js/main.js"></script>
+
     <th:block th:replace="${extraLinks}" />
 </head>
 
@@ -35,10 +37,9 @@
         <i class="fa-solid fa-user-gear"></i> Hồ sơ
         </a>
         
-        <a th:href="@{/logout}" class="menu-item">
+        <a href="#" class="menu-item" onclick="confirmLogout(event)">
         <i class="fa-solid fa-right-from-bracket"></i> Đăng Xuất
         </a>
     </div>
 </body>
-
 </html>

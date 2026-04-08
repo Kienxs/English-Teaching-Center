@@ -1,9 +1,9 @@
 package com.example.English.teaching.center.controller.teacher;
 
 import com.example.English.teaching.center.dto.course.CourseDetailResponse;
-import com.example.English.teaching.center.dto.course.CourseSaveDTO;
-import com.example.English.teaching.center.dto.course.LessonSaveDTO;
-import com.example.English.teaching.center.dto.course.MaterialDTO;
+import com.example.English.teaching.center.dto.course.CourseSaveRequest;
+import com.example.English.teaching.center.dto.course.LessonSaveRequest;
+import com.example.English.teaching.center.dto.course.MaterialSaveRequest;
 import com.example.English.teaching.center.entity.Course;
 import com.example.English.teaching.center.entity.User;
 import com.example.English.teaching.center.service.course.CourseService;
@@ -79,15 +79,18 @@ public class TeacherCourseController {
     }
 
     @PostMapping("/course/save")
-    public String saveCourse(@ModelAttribute("course") CourseSaveDTO dto, Principal principal) {
+    public String saveCourse(@ModelAttribute("course") CourseSaveRequest dto, Principal principal) {
         User currentUser = userService.findByEmail(principal.getName());
         Course savedCourse = courseService.saveOrUpdateCourse(dto, currentUser.getId());
         return "redirect:/teacher/course/edit/" + savedCourse.getSlug();
     }
 
     @PostMapping("/lesson/save")
-    public String saveLesson(@ModelAttribute("LessonSaveDTO") LessonSaveDTO dto){
-        lessonService.saveOrUpdateLesson(dto);
+    public String saveLesson(@ModelAttribute("LessonSaveDTO") LessonSaveRequest dto,
+                            Principal principal){
+        User currentUser = userService.findByEmail(principal.getName());
+
+        lessonService.saveOrUpdateLesson(dto, currentUser.getId());
         String slug = courseService.findCourseById(dto.getCourseId())
                         .orElseThrow(() -> new RuntimeException("Không tìm thấy khóa học"))
                         .getSlug();
@@ -96,14 +99,23 @@ public class TeacherCourseController {
 
     @PostMapping("/lesson/delete/{lessonId}/{courseSlug}")
     public String deleteLesson(@PathVariable ("lessonId") Long lessonId,
-                               @PathVariable ("courseSlug") String courseSlug){
-        lessonService.deleteLesson(lessonId);
+                               @PathVariable ("courseSlug") String courseSlug,
+                                Principal principal){
+        User currentUser = userService.findByEmail(principal.getName());
+
+        lessonService.deleteLesson(lessonId, currentUser.getId());
         return "redirect:/teacher/course/edit/" + courseSlug;
     }
 
     @PostMapping("/material/save")
-    public String saveMaterial(@ModelAttribute MaterialDTO dto){
-        Long courseId = lessonService.saveOrUpdateMaterial(dto);
+    public String saveMaterial(@ModelAttribute MaterialSaveRequest dto, 
+                                Principal principal){ 
+        String email = principal.getName();
+        User currentUser = userService.findByEmail(email);
+        Long teacherId = currentUser.getId();
+
+        Long courseId = lessonService.saveOrUpdateMaterial(dto, teacherId);
+        
         String slug = courseService.findCourseById(courseId)
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy khóa học"))
                     .getSlug();
@@ -111,8 +123,16 @@ public class TeacherCourseController {
     }
 
     @PostMapping("/material/delete/{id}/{courseSlug}")
-    public String deleteMaterial(@PathVariable Long id, @PathVariable String courseSlug){
-        lessonService.deleteMaterial(id);
+    public String deleteMaterial(@PathVariable Long id, 
+                                 @PathVariable String courseSlug, 
+                                 Principal principal){ 
+        
+        String email = principal.getName();
+        User currentUser = userService.findByEmail(email);
+        Long teacherId = currentUser.getId();
+
+        lessonService.deleteMaterial(id, teacherId);
+        
         return "redirect:/teacher/course/edit/" + courseSlug;
     }
 }

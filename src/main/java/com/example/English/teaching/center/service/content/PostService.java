@@ -11,17 +11,21 @@ import com.example.English.teaching.center.dto.content.CommentRequest;
 import com.example.English.teaching.center.dto.content.CommentResponse;
 import com.example.English.teaching.center.dto.content.EditPostRequest;
 import com.example.English.teaching.center.dto.content.PostListResponse;
-import com.example.English.teaching.center.dto.content.SectionResponse;
+import com.example.English.teaching.center.dto.content.SectionRequest;
 import com.example.English.teaching.center.entity.Comment;
 import com.example.English.teaching.center.entity.Post;
 import com.example.English.teaching.center.entity.PostSection;
 import com.example.English.teaching.center.entity.User;
+import com.example.English.teaching.center.exception.RateLimitException;
 import com.example.English.teaching.center.mapper.CommentMapper;
 import com.example.English.teaching.center.mapper.PostMapper;
 import com.example.English.teaching.center.repository.CommentRepository;
 import com.example.English.teaching.center.repository.PostRepository;
 import com.example.English.teaching.center.repository.UserRepository;
+import com.example.English.teaching.center.service.infra.RateLimitingService;
+import com.example.English.teaching.center.utils.NetworkUtils;
 
+import io.github.bucket4j.Bucket;
 import jakarta.transaction.Transactional;
 
 @Service
@@ -31,28 +35,28 @@ public class PostService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
+    private final RateLimitingService rateLimitingService;
 
     public PostService(PostMapper postMapper, 
                         PostRepository postRepository,
                         CommentRepository commentRepository,
                         UserRepository userRepository,
-                        CommentMapper commentMapper) {
+                        CommentMapper commentMapper,
+                        RateLimitingService rateLimitingService) {
         this.postMapper = postMapper;
         this.commentMapper = commentMapper;
         this.postRepository = postRepository;
         this.commentRepository = commentRepository;
         this.userRepository = userRepository;
+        this.rateLimitingService = rateLimitingService;
     }
 
 // FUNCTIONS FOR STUDENT --------------------------------------------------------
 
     public Page<PostListResponse> getApprovedPostsByType(Post.PostType type, int pageNo) {
         int pageSize = 6;
-
         Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
-
         Page<Post> postPage = postRepository.findByTypeAndStatusOrderByCreatedAtDesc(type, Post.PostStatus.APPROVED, pageable);
-
         return postPage.map(postMapper::toListDTO);
     }
 
@@ -62,8 +66,14 @@ public class PostService {
     }
 
     @Transactional
-    public void saveComment(CommentRequest requestDTO,
-                            String email){
+    public void saveComment(CommentRequest requestDTO, String email){
+        String clientIP = NetworkUtils.getClientIPFromContext();
+        String limitKey = "BLOG_COMMENT_" + email + "_" + clientIP;
+
+        Bucket bucket = rateLimitingService.resolveBucket(limitKey, 5, 1);
+        if(!bucket.tryConsume(1))
+            throw new RateLimitException("Bạn bình luận quá nhanh! Vui lòng đợi 1 phút.");
+
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng!"));
 
@@ -98,14 +108,19 @@ public class PostService {
 
     @Transactional
     public void incrementViewCount(String slug) {
-        postRepository.incrementViewCount(slug);
+        String clientIP = NetworkUtils.getClientIPFromContext();
+        String limitKey = "VIEW_POST_" + slug + "_" + clientIP;
+
+        Bucket bucket = rateLimitingService.resolveBucket(limitKey, 1, 30);
+        
+        if(bucket.tryConsume(1)) 
+            postRepository.incrementViewCount(slug);
     }
 
 // FUNCTIONS FOR TEACHERS -----------------------------------------------
 
     public Page<Post> getPostsByAuthorId(Long authorId, int pageNo, int pageSize){
         Pageable pageable = PageRequest.of(pageNo, pageSize, org.springframework.data.domain.Sort.by("createdAt").descending());
-
         return postRepository.findByAuthorIdAndIsDeletedFalse(authorId, pageable);
     }
 
@@ -122,6 +137,14 @@ public class PostService {
 
     @Transactional
     public Post saveOrUpdateFromDTO(EditPostRequest dto, Long currentUserId) {
+        String clientIP = NetworkUtils.getClientIPFromContext();
+        String limitKey = "SAVE_POST_" + currentUserId + "_" + clientIP;
+
+        Bucket bucket = rateLimitingService.resolveBucket(limitKey, 10, 1);
+        if(!bucket.tryConsume(1)) {
+            throw new RateLimitException("Hệ thống đang bận, vui lòng lưu chậm lại!");
+        }
+
         Post post;
         Long currentId = (dto.getId() != null) ? dto.getId() : -1L;
 
@@ -153,7 +176,7 @@ public class PostService {
 
         if (dto.getSections() != null && !dto.getSections().isEmpty()) {
             int order = 0;
-            for (SectionResponse secDto : dto.getSections()) {
+            for (SectionRequest secDto : dto.getSections()) {
                 PostSection newSection = new PostSection();
                 newSection.setSectionTitle(secDto.getSectionTitle());
                 newSection.setSectionContent(secDto.getSectionContent());
@@ -198,6 +221,14 @@ public class PostService {
 
     @Transactional
     public void deleteDraftPost(Long postId, Long authorId){
+        String clientIP = NetworkUtils.getClientIPFromContext();
+        String limitKey = "DELETE_POST_" + authorId + "_" + clientIP;
+
+        Bucket bucket = rateLimitingService.resolveBucket(limitKey, 5, 5);
+        if(!bucket.tryConsume(1)) {
+            throw new RateLimitException("Thao tác quá nhanh!");
+        }
+
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy bài viết!"));
 

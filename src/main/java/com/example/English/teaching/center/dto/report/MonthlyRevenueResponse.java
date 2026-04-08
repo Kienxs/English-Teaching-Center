@@ -2,12 +2,10 @@ package com.example.English.teaching.center.dto.report;
 
 import java.math.BigDecimal;
 
-import lombok.*;
+import lombok.Data;
 
-@Getter
-@Setter
-@NoArgsConstructor
-public class MonthlyRevenueDTO {
+@Data
+public class MonthlyRevenueResponse {
     String getRevenueMonth;
     Long getTotalEnrollments;
     BigDecimal getTotalRevenue;

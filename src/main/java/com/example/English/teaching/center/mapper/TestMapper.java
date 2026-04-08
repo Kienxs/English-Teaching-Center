@@ -2,10 +2,10 @@ package com.example.English.teaching.center.mapper;
 
 import org.springframework.stereotype.Component;
 
-import com.example.English.teaching.center.dto.course.QuestionDTO;
-import com.example.English.teaching.center.dto.course.QuestionSaveDTO;
-import com.example.English.teaching.center.dto.course.TestDTO;
-import com.example.English.teaching.center.dto.course.TestSaveDTO;
+import com.example.English.teaching.center.dto.course.QuestionResponse;
+import com.example.English.teaching.center.dto.course.QuestionSaveRequest;
+import com.example.English.teaching.center.dto.course.TestResponse;
+import com.example.English.teaching.center.dto.course.TestSaveRequest;
 import com.example.English.teaching.center.entity.Question;
 import com.example.English.teaching.center.entity.Test;
 
@@ -14,10 +14,10 @@ import java.util.stream.Collectors;
 @Component
 public class TestMapper {
     
-    public QuestionDTO toQuestionDTO(Question entity){
+    public QuestionResponse toQuestionDTO(Question entity){
         if(entity == null) return null;
 
-        QuestionDTO dto = new QuestionDTO();
+        QuestionResponse dto = new QuestionResponse();
         dto.setId(entity.getId());
         dto.setQuestionText(entity.getQuestionText());
         dto.setPoints(entity.getPoints());
@@ -31,10 +31,10 @@ public class TestMapper {
         return dto;
     }
 
-    public QuestionSaveDTO toQuestionSaveDTO(Question entity){
+    public QuestionSaveRequest toQuestionSaveDTO(Question entity){
         if(entity == null) return null;
 
-        QuestionSaveDTO dto = new QuestionSaveDTO();
+        QuestionSaveRequest dto = new QuestionSaveRequest();
         dto.setId(entity.getId());
         dto.setTestId(entity.getTest() != null ? entity.getTest().getId() : null);
         dto.setQuestionText(entity.getQuestionText());
@@ -45,10 +45,10 @@ public class TestMapper {
         return dto;
     }
 
-    public TestDTO toTestDTO(Test entity){
+    public TestResponse toTestDTO(Test entity){
         if(entity == null) return null;
 
-        TestDTO dto = new TestDTO();
+        TestResponse dto = new TestResponse();
         dto.setId(entity.getId());
         dto.setTitle(entity.getTitle());
         dto.setSlug(entity.getSlug());
@@ -63,10 +63,10 @@ public class TestMapper {
         return dto;
     }
 
-    public TestSaveDTO toTestSaveDTO(Test entity){
+    public TestSaveRequest toTestSaveDTO(Test entity){
         if(entity == null) return null;
 
-        TestSaveDTO dto = new TestSaveDTO();
+        TestSaveRequest dto = new TestSaveRequest();
         dto.setId(entity.getId());
         dto.setTitle(entity.getTitle());
         dto.setDurationMinutes(entity.getDurationMinutes());

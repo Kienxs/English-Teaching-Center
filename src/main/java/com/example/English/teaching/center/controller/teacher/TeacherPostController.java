@@ -1,7 +1,7 @@
 package com.example.English.teaching.center.controller.teacher;
 
 import com.example.English.teaching.center.dto.content.EditPostRequest;
-import com.example.English.teaching.center.dto.content.SectionResponse;
+import com.example.English.teaching.center.dto.content.SectionRequest;
 import com.example.English.teaching.center.entity.Post; 
 import com.example.English.teaching.center.entity.User;
 import com.example.English.teaching.center.service.content.PostService;
@@ -68,7 +68,7 @@ public class TeacherPostController {
 
         if (existingPost.getSections() != null) {
             existingPost.getSections().forEach(entitySection -> {
-                SectionResponse secDto = new SectionResponse();
+                SectionRequest secDto = new SectionRequest();
                 secDto.setId(entitySection.getId());
                 secDto.setSectionTitle(entitySection.getSectionTitle());
                 secDto.setSectionContent(entitySection.getSectionContent());

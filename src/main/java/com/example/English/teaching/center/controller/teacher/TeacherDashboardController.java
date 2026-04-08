@@ -7,7 +7,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import com.example.English.teaching.center.dto.report.TeacherDashboardDTO;
+import com.example.English.teaching.center.dto.report.TeacherDashboardResponse;
 import com.example.English.teaching.center.service.user.TeacherService;
 
 @Controller
@@ -22,7 +22,7 @@ public class TeacherDashboardController {
     @GetMapping("/dashboard")
     public String dashboard(Model model, Principal principal) {
 
-        TeacherDashboardDTO dashboardData = teacherService.getDashboardData(principal.getName());
+        TeacherDashboardResponse dashboardData = teacherService.getDashboardData(principal.getName());
 
         model.addAttribute("totalViews", dashboardData.getTotalViews());
         model.addAttribute("totalCourses", dashboardData.getTotalCourses());

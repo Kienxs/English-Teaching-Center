@@ -19,7 +19,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.English.teaching.center.dto.content.CourseCommentRequest;
 import com.example.English.teaching.center.dto.content.CourseCommentResponse;
-import com.example.English.teaching.center.dto.course.TestDTO;
+import com.example.English.teaching.center.dto.course.TestResponse;
 import com.example.English.teaching.center.entity.Course;
 import com.example.English.teaching.center.entity.StudentCourse;
 import com.example.English.teaching.center.entity.TestResult;
@@ -51,19 +51,39 @@ public class UserCourseController {
 
     @GetMapping("/course-detail/{slug}")
     public String courseDetail(@PathVariable String slug, 
-                            Model model, Principal principal,
-                            HttpSession session){ 
+                               @RequestParam(defaultValue = "0") int page, 
+                               Model model, Principal principal,
+                               HttpSession session){ 
         String email = (principal != null) ? principal.getName() : "anonymousUser";
         
         Map<String, Object> data = courseService.getCourseDetailData(slug, email, session);
-
         Course course = (Course) data.get("course");
-        Page<CourseCommentResponse> pageComments = courseCommentService.getCommentsByCourseId(course.getId(), 0, 5);
+        
+        Page<CourseCommentResponse> pageComments = courseCommentService.getCommentsByCourseId(course.getId(), page, 5);
         
         model.addAttribute("courseComments", pageComments.getContent());
         model.addAttribute("totalComments", pageComments.getTotalElements());
+        
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", pageComments.getTotalPages());
+        
         model.addAllAttributes(data);
         return "user/course-detail";
+    }
+
+    @PostMapping("/course-detail/comment")
+    public String postComment( Principal principal,
+                        @RequestParam("courseSlug") String courseSlug,
+                        @ModelAttribute CourseCommentRequest requestDTO) {
+        if(principal != null && requestDTO.getText() != null && !requestDTO.getText().trim().isEmpty()){
+            try{
+                courseCommentService.saveComment(requestDTO, principal.getName());
+            }catch(Exception e){
+                System.err.println("Lỗi khi lưu bình luận khóa học: " + e.getMessage());
+            }
+        }
+
+        return "redirect:/user/course-detail/" + courseSlug + "#tab-binhluan";
     }
 
     @GetMapping("/my-courses") 
@@ -106,20 +126,6 @@ public class UserCourseController {
         return "user/my-course-detail"; 
     }
 
-    @PostMapping("/course-detail/comment")
-    public String postComment( Principal principal,
-                        @RequestParam("courseSlug") String courseSlug,
-                        @ModelAttribute CourseCommentRequest requestDTO) {
-        if(principal != null && requestDTO.getText() != null && !requestDTO.getText().trim().isEmpty()){
-            try{
-                courseCommentService.saveComment(requestDTO, principal.getName());
-            }catch(Exception e){
-                System.err.println("Lỗi khi lưu bình luận khóa học: " + e.getMessage());
-            }
-        }
-
-        return "redirect:/user/course-detail/" + courseSlug + "#tab-binhluan";
-    }
 
     @GetMapping("/do-test/{testSlug}")
     public String doTest(@PathVariable String testSlug, 
@@ -133,7 +139,7 @@ public class UserCourseController {
             User user = userService.findByEmail(principal.getName());
             TestResult result = testService.startOrResumeTest(testSlug, user);
 
-            TestDTO safeTest = testService.getSafeTestDetails(testSlug);
+            TestResponse safeTest = testService.getSafeTestDetails(testSlug);
 
             model.addAttribute("test", safeTest);
             model.addAttribute("resultId", result.getId());

@@ -2,7 +2,6 @@
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments :: headInfo(${course.name}, ~{:: .page-asset})}">
     <link class="page-asset" rel="stylesheet" href="/css/user/course-detail.css">
-    <script class="page-asset" src="/js/loadComments.js"></script>
 </head>
 <body>
     <div th:replace="~{fragments :: navbar('course')}"></div>
@@ -48,18 +47,17 @@
                         <div class="comment-section">
                             <h3 style="font-size: 18px; margin-bottom: 15px; color: #1c1e21;">Bình luận</h3>
 
-                            <form th:action="@{/user/course-detail/comment}" method="post">
+                            <form class="comment-form" th:action="@{/user/course-detail/comment}" method="post">
                                 <input type="hidden" name="courseSlug" th:value="${course.slug}">
-                                
+                                <input type="hidden" name="courseId" th:value="${course.id}">
                                 <div class="comment-input-group">
                                     <img src="/images/home/avatar_clone.png" alt="User Avatar" class="comment-avatar">
                                     <div class="comment-box-wrapper">
-                                        <textarea name="commentText" 
-                                                  class="comment-textarea" 
-                                                  placeholder="Viết bình luận công khai..." 
-                                                  required 
-                                                  oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea>
-                                        
+                                        <textarea name="text" 
+                                                class="comment-textarea" 
+                                                placeholder="Viết bình luận công khai..." 
+                                                required 
+                                                oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"></textarea>
                                         <button type="submit" class="btn-send-comment">
                                             <i class="fas fa-paper-plane"></i>
                                         </button>
@@ -68,29 +66,39 @@
                             </form>
 
                             <div class="comment-list">
-                                <div th:each="cmt : ${courseComments}" class="comment-item">
-                                    <img th:src="${cmt.userAvatar != null ? cmt.userAvatar : '/images/home/avatar_clone.png'}" class="comment-avatar">
-                                    <div class="comment-content-wrapper">
-                                        <div class="comment-bubble">
-                                            <a href="#" class="comment-author" th:text="${cmt.userName}">Nguyễn Văn A</a>
-                                            <p class="comment-text" th:text="${cmt.content}">Bài học rất hay!</p>
-                                        </div>
-                                        <div class="comment-actions">
-                                            <span class="comment-time" th:text="${cmt.timeAgo}">Vừa xong</span>
-                                        </div>
-                                    </div>
-                                </div>
-
                                 <div th:if="${#lists.isEmpty(courseComments)}" style="text-align: center; color: #65676b; padding: 20px;">
                                     <i class="far fa-comment-dots" style="font-size: 24px; margin-bottom: 5px;"></i>
                                     <p>Chưa có bình luận nào. Hãy là người đầu tiên!</p>
                                 </div>
+                                
+                                <div th:each="cmt : ${courseComments}" class="comment-item">
+                                    <img th:src="${cmt.userAvatar != null ? cmt.userAvatar : '/images/home/avatar_clone.png'}" class="comment-avatar">
+                                    <div class="comment-content-wrapper">
+                                        <div class="comment-bubble">
+                                            <a href="#" class="comment-author" th:text="${cmt.userName}">Tên User</a>
+                                            <p class="comment-text" th:text="${cmt.content}">Nội dung bình luận</p>
+                                        </div>
+                                        <div class="comment-actions">
+                                            <span class="comment-time" th:text="${cmt.timeAgo}">Thời gian</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div id="load-more-container" style="text-align: center; margin-top: 15px;">
-                                <button id="btn-load-more" class="btn-see-more" onclick="loadMoreComments()">
-                                    Xem thêm bình luận cũ hơn
-                                </button>
+                            <div th:if="${totalPages > 1}" style="display: flex; justify-content: center; gap: 10px; margin-top: 20px;">
+    
+                                <a th:if="${currentPage > 0}" 
+                                th:href="@{'/user/course-detail/' + ${course.slug} + '?page=' + ${currentPage - 1} + '#tab-binhluan'}" 
+                                class="btn-see-more" style="text-decoration: none; padding: 8px 15px; border: 1px solid #ccc; border-radius: 5px; color: #333;">
+                                    &laquo; Mới hơn
+                                </a>
+
+                                <a th:if="${currentPage < totalPages - 1}" 
+                                th:href="@{'/user/course-detail/' + ${course.slug} + '?page=' + ${currentPage + 1} + '#tab-binhluan'}" 
+                                class="btn-see-more" style="text-decoration: none; padding: 8px 15px; border: 1px solid #ccc; border-radius: 5px; color: #333;">
+                                    Cũ hơn &raquo;
+                                </a>
+                                
                             </div>
                         </div>
                     </div>
@@ -106,11 +114,10 @@
                                   th:text="${#numbers.formatDecimal(course.fee, 0, 'COMMA', 0, 'POINT')} + 'đ'">
                             </span>
                             <span class="discount-price" style="color: #28a745;" th:if="${course.fee == 0}">Miễn phí</span>
-                            
-                            </div>
+                        </div>
 
                         <div class="button-group">
-                            <button class="btn btn-buy" th:text="${course.fee > 0 ? 'Mua ngay' : 'Đăng ký học'}">Mua ngay</button>
+                            <button id="btn-open-modal" class="btn btn-buy" th:text="${course.fee > 0 ? 'Mua ngay' : 'Đăng ký học'}">Mua ngay</button>
                         </div>
                     </th:block>
 
@@ -184,155 +191,72 @@
 
     <div th:replace="~{fragments :: sweet-alert}"></div>
     <div th:replace="~{fragments :: footer}"></div>
-</body>
 
 <script th:inline="javascript">
-    const postId = /*[[${post.id}]]*/ 0;
-    let lastCommentId = null;
-    const limit = 5; 
-    
-    const commentContainer = document.getElementById('comment-container');
-    const btnLoadMore = document.getElementById('btn-load-more');
-    const noCommentsMsg = document.getElementById('no-comments-msg');
+    const courseId = /*[[${course.id}]]*/ 0;
 
-    function escapeHTML(str) {
-        if (!str) return '';
-        return str.replace(/[&<>'"]/g, 
-            tag => ({
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                "'": '&#39;',
-                '"': '&quot;'
-            }[tag] || tag)
-        );
-    }
+// 1. LOGIC CHUYỂN TAB --------------------------------------------------------
+    const tabItems = document.querySelectorAll('.tab-item');
+    const tabPanes = document.querySelectorAll('.tab-pane');
 
-    function timeAgo(dateString) {
-        if (!dateString) return 'Vừa xong';
-        const date = new Date(dateString);
-        const seconds = Math.floor((new Date() - date) / 1000);
-        
-        let interval = seconds / 31536000;
-        if (interval > 1) return Math.floor(interval) + " năm trước";
-        interval = seconds / 2592000;
-        if (interval > 1) return Math.floor(interval) + " tháng trước";
-        interval = seconds / 86400;
-        if (interval > 1) return Math.floor(interval) + " ngày trước";
-        interval = seconds / 3600;
-        if (interval > 1) return Math.floor(interval) + " giờ trước";
-        interval = seconds / 60;
-        if (interval > 1) return Math.floor(interval) + " phút trước";
-        return "Vừa xong";
-    }
-
-    function loadComments() {
-        if (lastCommentId !== null) {
-            btnLoadMore.innerText = "Đang tải...";
-            btnLoadMore.disabled = true;
-        }
-
-        let url = `/api/comments/${postId}?limit=${limit}`;
-        if (lastCommentId !== null) {
-            url += `&lastId=${lastCommentId}`;
-        }
-
-        fetch(url)
-            .then(response => {
-                if (!response.ok) throw new Error("Lỗi khi tải bình luận");
-                return response.json();
-            })
-            .then(data => {
-                if (data.length === 0 && lastCommentId === null) {
-                    noCommentsMsg.style.display = 'block';
-                    btnLoadMore.style.display = 'none';
-                    return;
-                }
-
-                data.forEach(comment => {
-                    const avatarContent = comment.userAvatar 
-                        ? `<img src="${escapeHTML(comment.userAvatar)}" alt="avatar" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`
-                        : (comment.userName ? comment.userName.charAt(0).toUpperCase() : 'U');
-                    
-                    const safeName = escapeHTML(comment.userName);
-                    const safeContent = escapeHTML(comment.content);
-                    
-                    const displayTime = comment.timeAgo ? comment.timeAgo : timeAgo(comment.createdAt);
-                    
-                    const commentHtml = `
-                        <div class="comment-item">
-                            <div class="comment-avatar">${avatarContent}</div>
-                            <div class="comment-info">
-                                <h5>${safeName}</h5>
-                                <span class="comment-time">${displayTime}</span>
-                                <p class="comment-text">${safeContent}</p>
-                            </div>
-                        </div>
-                    `;
-                    commentContainer.insertAdjacentHTML('beforeend', commentHtml);
-                    
-                    lastCommentId = comment.id;
-                });
-
-                btnLoadMore.disabled = false;
-
-                // Nếu trả về ít hơn limit -> hết bình luận
-                if (data.length < limit) {
-                    btnLoadMore.style.display = 'none';
-                } else {
-                    btnLoadMore.style.display = 'block';
-                    btnLoadMore.innerText = "Xem thêm bình luận";
-                }
-            })
-            .catch(error => {
-                console.error("Lỗi:", error);
-                btnLoadMore.innerText = "Lỗi tải dữ liệu. Thử lại!";
-                btnLoadMore.disabled = false;
-            });
-    }
-
-    document.addEventListener("DOMContentLoaded", function() {
-        loadComments();
-    });
-
-// XỬ LÝ GỬI BÌNH LUẬN BẰNG AJAX -----------------------------------------
-    document.getElementById('commentForm').addEventListener('submit', function(event) {
-        event.preventDefault(); 
-
-        const form = event.target;
-        const submitBtn = form.querySelector('button[type="submit"]');
-        const formData = new FormData(form);
-
-        let btnOriginalText = submitBtn.innerText;
-        submitBtn.innerText = "Đang gửi...";
-        submitBtn.disabled = true;
-
-        fetch('/api/comments/add', {
-            method: 'POST',
-            body: new URLSearchParams(formData) 
-        })
-        .then(async response => {
-            if (response.ok) {
-                form.querySelector('textarea').value = '';
-                
-                commentContainer.innerHTML = '';
-                lastCommentId = null; 
-                noCommentsMsg.style.display = 'none';
-                
-                loadComments(); 
-            } else {
-                const errorMsg = await response.text();
-                alert(errorMsg); 
+    tabItems.forEach(tab => {
+        tab.addEventListener('click', function(e) {
+            e.preventDefault(); 
+            tabItems.forEach(t => t.classList.remove('active'));
+            tabPanes.forEach(p => p.classList.remove('active'));
+            
+            this.classList.add('active');
+            const targetPaneId = this.getAttribute('data-tab'); 
+            const targetPane = document.getElementById(targetPaneId);
+            if (targetPane) {
+                targetPane.classList.add('active');
             }
-        })
-        .catch(error => {
-            console.error("Lỗi gửi bình luận:", error);
-            alert("Có lỗi xảy ra, vui lòng thử lại sau!");
-        })
-        .finally(() => {
-            submitBtn.innerText = btnOriginalText;
-            submitBtn.disabled = false;
         });
     });
+
+    if(window.location.hash === '#tab-binhluan') {
+        document.querySelector('[data-tab="tab-binhluan"]').click();
+    }
+    
+// 2. LOGIC MODAL THANH TOÁN  ----------------------------------------------------
+    const paymentModal = document.getElementById("paymentModal");
+    const btnOpenModal = document.getElementById("btn-open-modal");
+    const spanCloseModal = document.querySelector(".close-modal");
+
+    if (btnOpenModal) btnOpenModal.onclick = () => paymentModal.style.display = "block";
+    if (spanCloseModal) spanCloseModal.onclick = () => paymentModal.style.display = "none";
+    window.onclick = (e) => { if (e.target == paymentModal) paymentModal.style.display = "none"; }
+
+    const btnConfirmPayment = document.getElementById("btn-confirm-payment");
+    if (btnConfirmPayment) {
+        btnConfirmPayment.addEventListener('click', function() {
+            const originalText = this.innerText;
+            this.innerText = "Đang xử lý...";
+            this.disabled = true;
+
+            fetch('/api/courses/enroll', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ "courseId": courseId })
+            })
+            .then(async response => {
+                if (response.ok) {
+                    const data = await response.json();
+                    Swal.fire({ title: 'Thành công!', text: data.message, icon: 'success', timer: 2000, showConfirmButton: false })
+                    .then(() => window.location.reload());
+                } else {
+                    const errorMsg = await response.text();
+                    Swal.fire('Thất bại', errorMsg, 'error');
+                }
+            })
+            .catch(error => Swal.fire('Lỗi', 'Có lỗi kết nối, vui lòng thử lại!', 'error'))
+            .finally(() => {
+                this.innerText = originalText;
+                this.disabled = false;
+                paymentModal.style.display = "none";
+            });
+        });
+    }
 </script>
+</body>
 </html>

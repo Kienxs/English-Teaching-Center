@@ -1,7 +1,7 @@
 package com.example.English.teaching.center.service.course;
 
 import com.example.English.teaching.center.dto.course.CourseDetailResponse;
-import com.example.English.teaching.center.dto.course.CourseSaveDTO;
+import com.example.English.teaching.center.dto.course.CourseSaveRequest;
 import com.example.English.teaching.center.entity.Course;
 import com.example.English.teaching.center.entity.Lesson;
 import com.example.English.teaching.center.entity.StudentCourse;
@@ -9,6 +9,7 @@ import com.example.English.teaching.center.entity.Teacher;
 import com.example.English.teaching.center.entity.Test;
 import com.example.English.teaching.center.entity.TestResult;
 import com.example.English.teaching.center.entity.User;
+import com.example.English.teaching.center.exception.RateLimitException;
 import com.example.English.teaching.center.mapper.CourseMapper;
 import com.example.English.teaching.center.repository.CourseRepository;
 import com.example.English.teaching.center.repository.LessonRepository;
@@ -16,8 +17,11 @@ import com.example.English.teaching.center.repository.StudentCourseRepository;
 import com.example.English.teaching.center.repository.TeacherRepository;
 import com.example.English.teaching.center.repository.TestResultRepository;
 import com.example.English.teaching.center.repository.UserRepository;
+import com.example.English.teaching.center.service.infra.RateLimitingService;
+import com.example.English.teaching.center.utils.NetworkUtils;
 import com.example.English.teaching.center.utils.SlugUtils;
 
+import io.github.bucket4j.Bucket;
 import jakarta.servlet.http.HttpSession;
 
 import java.math.BigDecimal;
@@ -26,8 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -45,6 +47,7 @@ public class CourseService {
     private final LessonRepository lessonRepository;
     private final StudentCourseRepository studentCourseRepository;
     private final CourseMapper courseMapper;
+    private final RateLimitingService rateLimitingService; 
 
     public CourseService(CourseRepository courseRepository, 
                         TeacherRepository teacherRepository,
@@ -52,7 +55,8 @@ public class CourseService {
                         UserRepository userRepository,
                         LessonRepository lessonRepository,
                         StudentCourseRepository studentCourseRepository,
-                        CourseMapper courseMapper) {
+                        CourseMapper courseMapper,
+                        RateLimitingService rateLimitingService) {
         this.courseRepository = courseRepository;
         this.teacherRepository = teacherRepository;
         this.testResultRepository = testResultRepository;
@@ -60,6 +64,7 @@ public class CourseService {
         this.lessonRepository = lessonRepository;
         this.studentCourseRepository = studentCourseRepository;
         this.courseMapper = courseMapper;
+        this.rateLimitingService = rateLimitingService;
     }
 
 // Process for student --------------------------------------------------------------------
@@ -90,7 +95,13 @@ public class CourseService {
 
     @Transactional 
     public void incrementViewCount(Long courseId) {
-        courseRepository.incrementViewCount(courseId);
+        String clientIP = NetworkUtils.getClientIPFromContext();
+        String limitKey = "VIEW_COURSE_" + courseId + "_" + clientIP;
+
+        Bucket bucket = rateLimitingService.resolveBucket(limitKey, 1, 30);
+        if(bucket.tryConsume(1)) {
+            courseRepository.incrementViewCount(courseId);
+        }
     }
 
     public Map<String, Object> getCourseDetailData(String identifier, 
@@ -98,30 +109,12 @@ public class CourseService {
                                                 HttpSession session ) {
         Course course = Optional.ofNullable(findCourseByIdOrSlug(identifier))
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy khóa học: " + identifier));
-        
-        String sessionKey = "VIEWED_COURSES";
 
-        // 1. Get a list of courses viewed from Sessions.
-        @SuppressWarnings("unchecked")
-        Set<Long> viewedCourses = (Set<Long>) session.getAttribute(sessionKey);
-
-        if(viewedCourses == null) {
-            viewedCourses = new HashSet<>();
-        }
-
-        // 2. Check if the current course is already in the list.
-        if(!viewedCourses.contains(course.getId())){
-            incrementViewCount(course.getId());
-            course.setViewCount(course.getViewCount() + 1);
-
-            viewedCourses.add(course.getId());
-            session.setAttribute(sessionKey, viewedCourses);
-        }
+        incrementViewCount(course.getId());
 
         Map<String, Object> data = new HashMap<>();
         data.put("course", course);
 
-        // 3. Check if you have purchased it.
         boolean isOwned = false;
         BigDecimal balance = BigDecimal.ZERO;
 
@@ -189,7 +182,7 @@ public class CourseService {
         }
     }
 
-    //Process for teacher ---------------------------------------------------------------------
+//Process for teacher ---------------------------------------------------------------------
     public Page<CourseDetailResponse> getCoursesByTeacher(Long teacherId, int pageNo, int pageSize) {
         Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by("createdAt").descending());
         Page<Course> coursePage = courseRepository.findByTeacherIdOrderByCreatedAtDesc(teacherId, pageable);
@@ -208,7 +201,11 @@ public class CourseService {
     }
 
     @Transactional 
-    public Course saveOrUpdateCourse(CourseSaveDTO dto, Long teacherId) {
+    public Course saveOrUpdateCourse(CourseSaveRequest dto, Long teacherId) {
+        String clientIP = NetworkUtils.getClientIPFromContext();
+        Bucket bucket = rateLimitingService.resolveBucket("SAVE_COURSE_" + teacherId + "_" + clientIP, 20, 1);
+        if(!bucket.tryConsume(1)) throw new RateLimitException("Thao tác lưu khóa học quá nhanh, vui lòng chờ ít giây!");
+
         String baseSlug = SlugUtils.makeSlug(dto.getName());
         String finalSlug = baseSlug;
         int count = 1;
@@ -244,6 +241,10 @@ public class CourseService {
     }
 
     public void deleteDraftCourse(Long courseId, Long teacherId){
+        String clientIP = NetworkUtils.getClientIPFromContext();
+        Bucket bucket = rateLimitingService.resolveBucket("DELETE_COURSE_" + teacherId + "_" + clientIP, 5, 1);
+        if(!bucket.tryConsume(1)) throw new RateLimitException("Thao tác quá nhanh!");
+
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy khóa học"));
         

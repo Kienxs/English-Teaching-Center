@@ -1,7 +1,7 @@
 package com.example.English.teaching.center.controller.teacher;
 
-import com.example.English.teaching.center.dto.course.QuestionSaveDTO;
-import com.example.English.teaching.center.dto.course.TestSaveDTO;
+import com.example.English.teaching.center.dto.course.QuestionSaveRequest;
+import com.example.English.teaching.center.dto.course.TestSaveRequest;
 import com.example.English.teaching.center.entity.Test;
 import com.example.English.teaching.center.entity.User;
 import com.example.English.teaching.center.service.course.TestService;
@@ -28,14 +28,23 @@ public class TeacherTestController {
     }
 
     @PostMapping("/test/save")
-    public String saveTest(@ModelAttribute TestSaveDTO dto){ 
-        String slug = testService.saveTest(dto);
+    public String saveTest(@ModelAttribute TestSaveRequest dto,
+                            Principal principal){ 
+        User teacher = userService.findByEmail(principal.getName());
+        String slug = testService.saveTest(dto, teacher.getId());
         return "redirect:/teacher/course/edit/" + slug;
     }
 
     @GetMapping("/test/edit/{testSlug}")
-    public String showTestQuestions(@PathVariable String testSlug, Model model){
+    public String showTestQuestions(@PathVariable String testSlug, 
+                                    Principal principal,
+                                    Model model){
+        User teacher = userService.findByEmail(principal.getName());
         Test test = testService.findTestByIdentifier(testSlug);
+
+        if(!test.getLesson().getCourse().getTeacher().getId().equals(teacher.getId()))
+            return "redirect:/teacher/course-management?error=access_denied";
+
         model.addAttribute("test", test);
         model.addAttribute("questions", test.getQuestions());
         return "teacher/test-questions";
@@ -52,7 +61,7 @@ public class TeacherTestController {
     }
 
     @PostMapping("/question/save")
-    public String saveQuestion(@ModelAttribute QuestionSaveDTO dto, Principal principal) {
+    public String saveQuestion(@ModelAttribute QuestionSaveRequest dto, Principal principal) {
         User teacher = userService.findByEmail(principal.getName());
         testService.saveQuestion(dto, teacher.getId()); 
         

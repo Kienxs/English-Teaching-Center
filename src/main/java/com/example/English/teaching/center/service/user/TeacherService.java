@@ -12,7 +12,7 @@ import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
-import com.example.English.teaching.center.dto.report.TeacherDashboardDTO;
+import com.example.English.teaching.center.dto.report.TeacherDashboardResponse;
 import com.example.English.teaching.center.entity.User;
 import com.example.English.teaching.center.repository.CourseRepository;
 import com.example.English.teaching.center.repository.StudentCourseRepository;
@@ -32,15 +32,15 @@ public class TeacherService {
         this.userRepository = userRepository;
     }
 
-    public TeacherDashboardDTO getDashboardData(String email){
+    public TeacherDashboardResponse getDashboardData(String email){
         User teacher = userRepository.findByEmail(email)
             .orElseThrow(() -> new RuntimeException("Teacher not found"));
         Long teacherId = teacher.getId();   
 
-        TeacherDashboardDTO dto = new TeacherDashboardDTO();
+        TeacherDashboardResponse dto = new TeacherDashboardResponse();
 
         // 1.Logic frocess KPI & Null check
-        Long totalViews = courseRepository.sumViewByTEacherId(teacherId);
+        Long totalViews = courseRepository.sumViewByTeacherId(teacherId);
         dto.setTotalViews(totalViews != null ? totalViews : 0L);
 
         Long totalCourses = courseRepository.countByTeacherId(teacherId);

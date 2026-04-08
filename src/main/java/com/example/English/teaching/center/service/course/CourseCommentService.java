@@ -13,12 +13,16 @@ import com.example.English.teaching.center.dto.content.CourseCommentResponse;
 import com.example.English.teaching.center.entity.Course;
 import com.example.English.teaching.center.entity.CourseComment;
 import com.example.English.teaching.center.entity.User;
+import com.example.English.teaching.center.exception.RateLimitException;
 import com.example.English.teaching.center.mapper.CourseCommentMapper;
 import com.example.English.teaching.center.repository.CourseCommentRepository;
 import com.example.English.teaching.center.repository.CourseRepository;
 import com.example.English.teaching.center.repository.UserRepository;
+import com.example.English.teaching.center.service.infra.RateLimitingService;
+import com.example.English.teaching.center.utils.NetworkUtils;
 
 import org.springframework.transaction.annotation.Transactional;
+import io.github.bucket4j.Bucket;
 
 @Service
 public class CourseCommentService {
@@ -26,15 +30,18 @@ public class CourseCommentService {
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
     private final CourseCommentMapper commentMapper;
+    private final RateLimitingService rateLimitingService;
 
     public CourseCommentService(CourseCommentRepository courseCommentRepository,
                                 UserRepository userRepository, 
                                 CourseRepository courseRepository,
-                                CourseCommentMapper commentMapper){
+                                CourseCommentMapper commentMapper,
+                                RateLimitingService rateLimitingService){
         this.courseCommentRepository = courseCommentRepository;
         this.userRepository = userRepository;
         this.courseRepository = courseRepository;
         this.commentMapper = commentMapper;
+        this.rateLimitingService = rateLimitingService;
     }
 
     @Transactional(readOnly = true)
@@ -45,20 +52,26 @@ public class CourseCommentService {
     }
 
     @Transactional
-    public CourseComment saveComment(CourseCommentRequest requestDTO, String userEmail) {
-        User user = userRepository.findByEmail(userEmail)
+    public CourseComment saveComment(CourseCommentRequest dto, String email) {
+        String clientIP = NetworkUtils.getClientIPFromContext();
+        String limitKey = "COMMENT_" + email + "_" + clientIP;
+
+        Bucket bucket = rateLimitingService.resolveBucket(limitKey, 5, 1);
+        if(!bucket.tryConsume(1))
+            throw new RateLimitException("Bạn thao tác quá nhanh! Vui lòng đợi 1 phút.");
+
+        User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new RuntimeException("User not found"));
 
-        Course course = courseRepository.findById(requestDTO.getCourseId())
+        Course course = courseRepository.findById(dto.getCourseId())
             .orElseThrow(() -> new RuntimeException("Course not found"));
 
         CourseComment courseComment = new CourseComment();
         courseComment.setUser(user);
         courseComment.setCourse(course);
-        courseComment.setCommentText(requestDTO.getText());
+        courseComment.setCommentText(dto.getText());
         courseComment.setCreatedAt(LocalDateTime.now());
         
         return courseCommentRepository.save(courseComment);
     }
 }
-

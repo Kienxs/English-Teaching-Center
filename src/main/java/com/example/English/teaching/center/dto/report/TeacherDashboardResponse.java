@@ -9,7 +9,7 @@ import com.example.English.teaching.center.entity.StudentCourse;
 import lombok.Data;
 
 @Data
-public class TeacherDashboardDTO {
+public class TeacherDashboardResponse {
     // KPI
     private Long totalViews;
     private Long totalCourses;

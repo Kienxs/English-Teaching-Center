@@ -120,8 +120,16 @@
                 Đây là đoạn tóm tắt nội dung bài viết.
             </div>
 
-            <div class="post-content" th:utext="${post.content}">
-                Nội dung chi tiết...
+            <div class="post-content">
+                <th:block th:each="sec : ${post.sections}">
+                    
+                    <h3 th:if="${sec.sectionTitle != null}" th:text="${sec.sectionTitle}"></h3>
+                    
+                    <img th:if="${sec.imageUrl != null}" th:src="${sec.imageUrl}" alt="Section Image" />
+                    
+                    <div th:utext="${sec.sectionContent}"></div>
+                    
+                </th:block>
             </div>
 
             <section class="comment-section">

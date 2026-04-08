@@ -5,7 +5,7 @@ import com.example.English.teaching.center.utils.HtmlSanitizerUtils;
 import lombok.Data;
 
 @Data
-public class TeacherProfileDTO {
+public class TeacherProfileRequest {
     private String bio;
     private String expertise;
     private String linkedinUrl;

@@ -5,7 +5,7 @@ import com.example.English.teaching.center.utils.HtmlSanitizerUtils;
 import lombok.Data;
 
 @Data
-public class SectionResponse {
+public class SectionRequest {
     private Long id;
     private String sectionTitle;
     private String sectionContent;

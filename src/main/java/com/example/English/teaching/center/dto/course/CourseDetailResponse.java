@@ -24,5 +24,5 @@ public class CourseDetailResponse {
     private Long teacherId;
     private String teacherName;
     
-    private List<LessonDTO> lessons;
+    private List<LessonResponse> lessons;
 }

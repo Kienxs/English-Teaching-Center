@@ -9,7 +9,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 @Data
-public class CourseSaveDTO {
+public class CourseSaveRequest {
     private Long id;
 
     @NotBlank(message = "Tên khóa học không được để trống")

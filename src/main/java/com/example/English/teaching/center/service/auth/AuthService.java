@@ -16,6 +16,7 @@ import com.example.English.teaching.center.repository.UserRepository;
 import com.example.English.teaching.center.service.infra.EmailService;
 import com.example.English.teaching.center.service.infra.RateLimitingService;
 import com.example.English.teaching.center.service.infra.ReCaptchaService;
+import com.example.English.teaching.center.utils.NetworkUtils;
 
 import io.github.bucket4j.Bucket;
 import jakarta.transaction.Transactional;
@@ -45,13 +46,16 @@ public class AuthService {
         this.reCaptchaService = reCaptchaService;
         this.emailService = emailService;
     }
-// Register -------------------------------
+// Register ---------------------------------------------------------------
     @Transactional
     public void registerNewUser(RegisterRequest dto, String recaptchaResponse) {
         // 1. Rate Limit
-        Bucket bucket = rateLimitingService.resolveBucket(dto.getEmail());
+        String clientIP = NetworkUtils.getClientIPFromContext();
+        String limitKey = "REGISTER_IP_" + clientIP;
+        
+        Bucket bucket = rateLimitingService.resolveBucket(limitKey, 3, 60);
         if (!bucket.tryConsume(1)) 
-            throw new RateLimitException("Bạn thao tác quá nhanh! Vui lòng thử lại sau 10 phút.");
+            throw new RateLimitException("Hệ thống phát hiện lưu lượng bất thường. Vui lòng thử lại sau 1 giờ.");
 
         // 2. Xác thực reCAPTCHA
         if (!reCaptchaService.verify(recaptchaResponse)) 
@@ -97,12 +101,15 @@ public class AuthService {
         return true;
     }
 
-// login -----------------------------------
+// login ----------------------------------------------------------
     public User authenticateOnly(String email, String rawPassword) throws IllegalAccessException {
         // 1. Rate Limit 
-        Bucket bucket = rateLimitingService.resolveBucket("login_" + email); 
+        String clientIP = NetworkUtils.getClientIPFromContext();
+        String limitKey = "LOGIN_" + email + "_" + clientIP;
+        
+        Bucket bucket = rateLimitingService.resolveBucket(limitKey, 5, 15); 
         if (!bucket.tryConsume(1)) 
-            throw new RateLimitException("Bạn đã nhập sai quá nhiều lần. Vui lòng thử lại sau 10 phút.");
+            throw new RateLimitException("Bạn đã nhập sai quá nhiều lần. Vui lòng thử lại sau 15 phút.");
 
         // 2. Tìm user
         User user = userRepository.findByEmail(email)
@@ -119,12 +126,15 @@ public class AuthService {
         return user; 
     }
 
-// Process forgot password -------------------------------------
+// Process forgot password -----------------------------------------------
     @Transactional
     public void generatePasswordResetToken(String email) throws Exception{
-        Bucket bucket = rateLimitingService.resolveBucket("forgot_" + email);
+        String clientIP = NetworkUtils.getClientIPFromContext();
+        String limitKey = "FORGOT_PASS_IP_" + clientIP;
+        
+        Bucket bucket = rateLimitingService.resolveBucket(limitKey, 3, 15);
         if (!bucket.tryConsume(1)) 
-            throw new RateLimitException("Bạn thao tác quá nhanh! Vui lòng thử lại sau 10 phút.");
+            throw new RateLimitException("Bạn thao tác quá nhanh! Vui lòng thử lại sau 15 phút.");
 
         User user = userRepository.findByEmail(email).orElse(null);
 

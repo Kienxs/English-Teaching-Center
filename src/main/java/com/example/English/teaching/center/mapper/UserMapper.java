@@ -4,22 +4,23 @@ import org.springframework.stereotype.Component;
 
 import com.example.English.teaching.center.dto.auth.RegisterRequest;
 import com.example.English.teaching.center.dto.user.UserNavbarDTO;
-import com.example.English.teaching.center.dto.user.UserProfileDTO;
+import com.example.English.teaching.center.dto.user.UserProfileRequest;
+import com.example.English.teaching.center.dto.user.UserProfileResponse;
 import com.example.English.teaching.center.entity.User;
 
 @Component
 public class UserMapper {
-    public UserProfileDTO toDTO(User entity){
+    public UserProfileResponse toDTO(User entity){
         if(entity == null) return null;
 
-        UserProfileDTO dto = new UserProfileDTO();
+        UserProfileResponse dto = new UserProfileResponse();
         dto.setFullName(entity.getFullName());
         dto.setPhone(entity.getPhone());
 
         return dto;
     }
 
-    public void updateEntityFromDTO(UserProfileDTO dto, User entity){
+    public void updateEntityFromDTO(UserProfileRequest dto, User entity){
         if(dto == null || entity == null) return;
 
         if(dto.getFullName() != null)

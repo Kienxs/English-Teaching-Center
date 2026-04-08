@@ -3,10 +3,10 @@ package com.example.English.teaching.center.dto.course;
 import lombok.Data;
 
 @Data
-public class LessonSaveDTO {
+public class MaterialResponse{
     private Long id;
-    private Long courseId;
+    private Long lessonId;
     private String title;
-    private Integer lessonOrder;
-    private String description;
+    private String fileUrl;
+    private String type;
 }

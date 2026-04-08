@@ -22,7 +22,7 @@ public class EditPostRequest {
 
     private Post.PostStatus status;
 
-    private List<SectionResponse> sections = new ArrayList<>();
+    private List<SectionRequest> sections = new ArrayList<>();
 
     public void setTitle(String title) {
         this.title = HtmlSanitizerUtils.sanitizePlainText(title);

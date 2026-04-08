@@ -1,6 +1,6 @@
 package com.example.English.teaching.center.repository;
 
-import com.example.English.teaching.center.dto.report.MonthlyRevenueDTO;
+import com.example.English.teaching.center.dto.report.MonthlyRevenueResponse;
 import com.example.English.teaching.center.entity.Course;
 import com.example.English.teaching.center.entity.StudentCourse;
 import com.example.English.teaching.center.entity.Course.Category;
@@ -59,7 +59,7 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
 
     //1. Total number of views for all of the teacher's courses
     @Query("SELECT SUM(c.viewCount) FROM Course c WHERE c.teacher.id = :teacherId")
-    Long sumViewByTEacherId(Long teacherId);
+    Long sumViewByTeacherId(Long teacherId);
 
     // 2. Count the number of courses
     Long countByTeacherId(Long teacherId);
@@ -87,5 +87,5 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
             GROUP BY DATE_FORMAT(sc.enrolled_at, '%y-%m')
             ORDER BY revenueMonth ASC
             """, nativeQuery = true)
-    List<MonthlyRevenueDTO> getRevenueByYear(@Param("year") int year);
+    List<MonthlyRevenueResponse> getRevenueByYear(@Param("year") int year);
 }
