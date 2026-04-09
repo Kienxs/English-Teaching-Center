@@ -26,7 +26,6 @@ import com.example.English.teaching.center.repository.TestRepository;
 import com.example.English.teaching.center.repository.TestResultRepository;
 import com.example.English.teaching.center.repository.UserRepository;
 import com.example.English.teaching.center.service.infra.RateLimitingService;
-import com.example.English.teaching.center.utils.NetworkUtils;
 import com.example.English.teaching.center.utils.SlugUtils;
 
 import io.github.bucket4j.Bucket;
@@ -76,8 +75,8 @@ public class TestService {
     }
 
     public TestResult startOrResumeTest(String identifier, User user){
-        String clientIP = NetworkUtils.getClientIPFromContext();
-        Bucket bucket = rateLimitingService.resolveBucket("START_TEST_" + user.getEmail() + "_" + clientIP, 5, 1);
+        String limitKey = "START_TEST_" + user.getEmail();
+        Bucket bucket = rateLimitingService.resolveBucket(limitKey, 5, 1);
         if(!bucket.tryConsume(1)) 
             throw new RateLimitException("Vui lòng không nháy đúp nút bắt đầu!");
 
@@ -104,8 +103,9 @@ public class TestService {
 
    @Transactional
     public TestResult submitTest(String identifier, Map<String, String> answers, String email){
-        String clientIP = NetworkUtils.getClientIPFromContext();
-        Bucket bucket = rateLimitingService.resolveBucket("SUBMIT_TEST_" + email + "_" + clientIP, 3, 1);
+        String limitKey = "SUBMIT_TEST_" + email;
+
+        Bucket bucket = rateLimitingService.resolveBucket(limitKey, 3, 1);
         if(!bucket.tryConsume(1)) 
             throw new RateLimitException("Đang xử lý bài thi, vui lòng không gửi liên tục!");
 
@@ -164,7 +164,7 @@ public class TestService {
         result.setSubmitTime(LocalDateTime.now());
         result.setStatus(TestResult.Status.COMPLETED);
         result.setDetails(detailsList);
-        result.setExecutionTimeSeconds((int) actualTakenSeconds); // Lưu bằng thời gian tính toán ở trên
+        result.setExecutionTimeSeconds((int) actualTakenSeconds); 
 
         return testResultRepository.save(result);
     }
@@ -178,8 +178,9 @@ public class TestService {
 
     @Transactional
     public String saveTest(TestSaveRequest dto, Long teacherId) {
-        String clientIP = NetworkUtils.getClientIPFromContext();
-        Bucket bucket = rateLimitingService.resolveBucket("SAVE_TEST_" + teacherId + "_" + clientIP, 20, 1);
+        String limitKey = "SAVE_TEST_" + teacherId;
+
+        Bucket bucket = rateLimitingService.resolveBucket(limitKey, 20, 1);
         if (!bucket.tryConsume(1)) 
             throw new RateLimitException("Hệ thống đang bận, thầy/cô vui lòng thao tác chậm lại một chút nhé!");
 
@@ -217,8 +218,9 @@ public class TestService {
 
     @Transactional
     public void deleteTest(Long id, Long teacherId) { 
-        String clientIP = NetworkUtils.getClientIPFromContext();
-        Bucket bucket = rateLimitingService.resolveBucket("DELETE_TEST_" + teacherId + "_" + clientIP, 10, 1);
+        String limitKey = "DELETE_TEST_" + teacherId;
+
+        Bucket bucket = rateLimitingService.resolveBucket(limitKey, 10, 1);
         if (!bucket.tryConsume(1)) 
             throw new RateLimitException("Thao tác quá nhanh!");
 
@@ -230,8 +232,9 @@ public class TestService {
 
     @Transactional
     public void saveQuestion(QuestionSaveRequest dto, Long teacherId) { 
-        String clientIP = NetworkUtils.getClientIPFromContext();
-        Bucket bucket = rateLimitingService.resolveBucket("SAVE_QUESTION_" + teacherId + "_" + clientIP, 40, 1);
+        String limitKey = "SAVE_QUESTION_" + teacherId;
+        
+        Bucket bucket = rateLimitingService.resolveBucket(limitKey, 20, 1);
         if (!bucket.tryConsume(1)) 
             throw new RateLimitException("Thầy/cô đang lưu câu hỏi quá nhanh, vui lòng chờ ít giây!");
 
@@ -261,8 +264,9 @@ public class TestService {
 
     @Transactional
     public Long deleteQuestionAndGetTestId(Long questionId, Long teacherId) { 
-        String clientIP = NetworkUtils.getClientIPFromContext();
-        Bucket bucket = rateLimitingService.resolveBucket("DELETE_QUESTION_" + teacherId + "_" + clientIP, 20, 1);
+        String limitKey = "DELETE_QUESTION_" + teacherId;
+
+        Bucket bucket = rateLimitingService.resolveBucket(limitKey, 20, 1);
         if (!bucket.tryConsume(1)) 
             throw new RateLimitException("Thao tác xóa quá nhanh!");
 

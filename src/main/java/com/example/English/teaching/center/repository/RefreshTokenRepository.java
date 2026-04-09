@@ -11,7 +11,9 @@ import com.example.English.teaching.center.entity.User;
 public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long>{
     Optional<RefreshToken> findByToken(String token);
 
-    List<RefreshToken> findAllByUserOrderByExpiryDateAsc(User user);
+    List<RefreshToken> findByUserAndIsRevokedFalseOrderByExpiryDateAsc(User user);
 
     void deleteByUser(User user);
+
+    void deleteAllByUser(User user);
 }

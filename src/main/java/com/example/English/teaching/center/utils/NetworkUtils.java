@@ -7,11 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 
 public class NetworkUtils {
     public static String getClientIP(HttpServletRequest request) {
-        String xfHeader = request.getHeader("X-Forwarded-For");
-        if (xfHeader == null || xfHeader.isEmpty() || "unknown".equalsIgnoreCase(xfHeader))
-            return request.getRemoteAddr();
-
-        return xfHeader.split(",")[0].trim();
+        return request.getRemoteAddr();
     }
 
     public static String getClientIPFromContext(){

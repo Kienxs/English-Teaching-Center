@@ -2,7 +2,9 @@ package com.example.English.teaching.center.service.auth;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -18,11 +20,10 @@ import jakarta.transaction.Transactional;
 
 @Service
 public class RefreshTokenService {
-    @Value("${app.jwt.refreshExpirationMs}") //7 ngày
+    @Value("${app.jwt.refreshExpirationMs}") 
     private Long refreshExpirationMs;
 
     private final int MAX_ACTIVE_DEVICES = 3;
-
     private final RefreshTokenRepository refreshTokenRepository;
     
     public RefreshTokenService(RefreshTokenRepository refreshTokenRepository) {
@@ -30,45 +31,63 @@ public class RefreshTokenService {
     }
 
     @Transactional
-    public RefreshToken createRefreshToken(User user) {
-        List<RefreshToken> activeTokens = refreshTokenRepository.findAllByUserOrderByExpiryDateAsc(user);
+    public RefreshToken createRefreshToken(User user, String deviceId) {
+        List<RefreshToken> activeTokens = refreshTokenRepository.findByUserAndIsRevokedFalseOrderByExpiryDateAsc(user);
 
-        while(activeTokens.size() >= MAX_ACTIVE_DEVICES){
+        Optional<RefreshToken> existingDevice = activeTokens.stream()
+                .filter(rt -> rt.getDeviceId().equals(deviceId))
+                .findFirst();
+ 
+        if(existingDevice.isPresent()){
+            refreshTokenRepository.delete(existingDevice.get());
+            activeTokens.remove(existingDevice.get());
+        } else if(activeTokens.size() >= MAX_ACTIVE_DEVICES){
             RefreshToken oldestToken = activeTokens.get(0);
             refreshTokenRepository.delete(oldestToken);
-            activeTokens.remove(0);
         }
- 
+        
         RefreshToken refreshToken = new RefreshToken();
         refreshToken.setUser(user);
+        refreshToken.setDeviceId(deviceId);
         refreshToken.setExpiryDate(LocalDateTime.now().plus(refreshExpirationMs, ChronoUnit.MILLIS));
         refreshToken.setToken(UUID.randomUUID().toString());
+        refreshToken.setRevoked(false);
 
         return refreshTokenRepository.save(refreshToken);
     }
 
     @Transactional
-    public String processRefreshToken(String refreshTokenString, JwtUtils jwtUtils) {
+    public Map<String, String> processRefreshToken(String refreshTokenString, 
+                                                JwtUtils jwtUtils,
+                                                String deviceId) { 
         RefreshToken rt = refreshTokenRepository.findByToken(refreshTokenString)
             .orElseThrow(() -> new RuntimeException("Không tìm thấy Refresh Token"));
 
-        if(rt.getExpiryDate().isBefore(LocalDateTime.now())){
+        User user = rt.getUser();
+        
+        if (rt.isRevoked()) {
+            refreshTokenRepository.deleteAllByUser(user); 
+            throw new SecurityException("Cảnh báo bảo mật: Phát hiện dấu hiệu đánh cắp Token! Toàn bộ phiên đăng nhập đã bị hủy.");
+        }
+
+        if(rt.getExpiryDate().isBefore(LocalDateTime.now()) || !rt.getDeviceId().equals(deviceId)){
             refreshTokenRepository.delete(rt);
-            throw new RuntimeException("Refresh Token đã hết hạn.");
+            throw new RuntimeException("Refresh Token đã hết hạn hoặc thiết bị không hợp lệ. Vui lòng đăng nhập lại.");
         }
 
-        return jwtUtils.generateTokenFromUsername(rt.getUser().getEmail());
+        rt.setRevoked(true);
+        refreshTokenRepository.save(rt);
+
+        String newAccessToken = jwtUtils.generateAccessToken(user);
+        RefreshToken newRtEntity = createRefreshToken(user, deviceId);
+
+        Map<String, String> tokens = new HashMap<>();
+        tokens.put("accessToken", newAccessToken);
+        tokens.put("refreshToken", newRtEntity.getToken());
+        return tokens;
     }
 
-    public RefreshToken verifyExpiration(RefreshToken token) {
-        if (token.getExpiryDate().compareTo(LocalDateTime.now()) < 0) {
-            refreshTokenRepository.delete(token);
-            throw new RuntimeException("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
-        }
-        return token;
-    }
-
-    public Optional<RefreshToken> findByToken(String token) {
-        return refreshTokenRepository.findByToken(token);
+    public void deleteAllByUser(User user) {
+        refreshTokenRepository.deleteAllByUser(user);
     }
 }

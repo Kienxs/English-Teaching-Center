@@ -10,7 +10,6 @@ import com.example.English.teaching.center.exception.RateLimitException;
 import com.example.English.teaching.center.repository.TeacherRepository;
 import com.example.English.teaching.center.repository.UserRepository;
 import com.example.English.teaching.center.service.infra.RateLimitingService;
-import com.example.English.teaching.center.utils.NetworkUtils;
 
 import io.github.bucket4j.Bucket;
 import jakarta.transaction.Transactional;
@@ -46,8 +45,7 @@ public class TeacherProfileService {
 
     @Transactional
     public void updateExpertiseProfile(String email, TeacherProfileRequest dto) {
-        String clientIP = NetworkUtils.getClientIPFromContext();
-        String limitKey = "UPDATE_TEACHER_" + email + "_" + clientIP;
+        String limitKey = "UPDATE_TEACHER_" + email;
 
         Bucket bucket = rateLimitingService.resolveBucket(limitKey, 5, 10);
         if(!bucket.tryConsume(1))

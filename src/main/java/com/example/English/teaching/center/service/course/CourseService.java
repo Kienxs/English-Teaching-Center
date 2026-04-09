@@ -18,7 +18,6 @@ import com.example.English.teaching.center.repository.TeacherRepository;
 import com.example.English.teaching.center.repository.TestResultRepository;
 import com.example.English.teaching.center.repository.UserRepository;
 import com.example.English.teaching.center.service.infra.RateLimitingService;
-import com.example.English.teaching.center.utils.NetworkUtils;
 import com.example.English.teaching.center.utils.SlugUtils;
 
 import io.github.bucket4j.Bucket;
@@ -94,14 +93,12 @@ public class CourseService {
     }
 
     @Transactional 
-    public void incrementViewCount(Long courseId) {
-        String clientIP = NetworkUtils.getClientIPFromContext();
-        String limitKey = "VIEW_COURSE_" + courseId + "_" + clientIP;
+    public void incrementViewCount(Long courseId, String email) {
+        String limitKey = "VIEW_COURSE_" + courseId + "_USER_" + email;
 
         Bucket bucket = rateLimitingService.resolveBucket(limitKey, 1, 30);
-        if(bucket.tryConsume(1)) {
+        if(bucket.tryConsume(1)) 
             courseRepository.incrementViewCount(courseId);
-        }
     }
 
     public Map<String, Object> getCourseDetailData(String identifier, 
@@ -110,7 +107,7 @@ public class CourseService {
         Course course = Optional.ofNullable(findCourseByIdOrSlug(identifier))
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy khóa học: " + identifier));
 
-        incrementViewCount(course.getId());
+        incrementViewCount(course.getId(), email);
 
         Map<String, Object> data = new HashMap<>();
         data.put("course", course);
@@ -122,13 +119,14 @@ public class CourseService {
             Optional<User> userOpt = userRepository.findByEmail(email);
             if(userOpt.isPresent()){
                 User user = userOpt.get();
-                balance = user.getBalance();
 
                 isOwned = studentCourseRepository.existsByStudentIdAndCourseId(user.getId(), course.getId());
 
-                if (course.getTeacher().getId().equals(user.getId())){
+                if (course.getTeacher().getId().equals(user.getId()))
                     isOwned = true;
-                }
+
+                if (!isOwned && course.getFee().compareTo(BigDecimal.ZERO) > 0) 
+                    balance = user.getBalance();
             }
         }
 
@@ -202,9 +200,11 @@ public class CourseService {
 
     @Transactional 
     public Course saveOrUpdateCourse(CourseSaveRequest dto, Long teacherId) {
-        String clientIP = NetworkUtils.getClientIPFromContext();
-        Bucket bucket = rateLimitingService.resolveBucket("SAVE_COURSE_" + teacherId + "_" + clientIP, 20, 1);
-        if(!bucket.tryConsume(1)) throw new RateLimitException("Thao tác lưu khóa học quá nhanh, vui lòng chờ ít giây!");
+        String limitKey = "SAVE_COURSE_" + teacherId;
+
+        Bucket bucket = rateLimitingService.resolveBucket(limitKey, 20, 1);
+        if(!bucket.tryConsume(1)) 
+            throw new RateLimitException("Thao tác lưu khóa học quá nhanh, vui lòng chờ ít giây!");
 
         String baseSlug = SlugUtils.makeSlug(dto.getName());
         String finalSlug = baseSlug;
@@ -241,9 +241,11 @@ public class CourseService {
     }
 
     public void deleteDraftCourse(Long courseId, Long teacherId){
-        String clientIP = NetworkUtils.getClientIPFromContext();
-        Bucket bucket = rateLimitingService.resolveBucket("DELETE_COURSE_" + teacherId + "_" + clientIP, 5, 1);
-        if(!bucket.tryConsume(1)) throw new RateLimitException("Thao tác quá nhanh!");
+        String limitKey = "DELETE_COURSE_" + teacherId;
+        
+        Bucket bucket = rateLimitingService.resolveBucket(limitKey, 5, 1);
+        if(!bucket.tryConsume(1)) 
+            throw new RateLimitException("Thao tác quá nhanh!");
 
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy khóa học"));

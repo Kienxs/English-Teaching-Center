@@ -19,7 +19,6 @@ import com.example.English.teaching.center.repository.CourseCommentRepository;
 import com.example.English.teaching.center.repository.CourseRepository;
 import com.example.English.teaching.center.repository.UserRepository;
 import com.example.English.teaching.center.service.infra.RateLimitingService;
-import com.example.English.teaching.center.utils.NetworkUtils;
 
 import org.springframework.transaction.annotation.Transactional;
 import io.github.bucket4j.Bucket;
@@ -53,8 +52,7 @@ public class CourseCommentService {
 
     @Transactional
     public CourseComment saveComment(CourseCommentRequest dto, String email) {
-        String clientIP = NetworkUtils.getClientIPFromContext();
-        String limitKey = "COMMENT_" + email + "_" + clientIP;
+        String limitKey = "COMMENT_" + email;
 
         Bucket bucket = rateLimitingService.resolveBucket(limitKey, 5, 1);
         if(!bucket.tryConsume(1))

@@ -2,6 +2,7 @@ package com.example.English.teaching.center.controller.common;
 
 import org.springframework.ui.Model;
 
+import java.security.Principal;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -14,10 +15,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.example.English.teaching.center.dto.content.PostListResponse;
 import com.example.English.teaching.center.entity.Post;
 import com.example.English.teaching.center.service.content.PostService;
-
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
 @Controller
 @RequestMapping("/user")
@@ -47,31 +44,11 @@ public class PostController {
     @GetMapping("/post/{slug}")
     public String postDetail(@PathVariable String slug, 
                              Model model,
-                             HttpServletRequest request, 
-                             HttpServletResponse response) { 
-        boolean hasViewed = false;
-        Cookie[] cookies = request.getCookies();
-        String cookieName = "viewed_post_" + slug;
+                             Principal principal) { 
 
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (cookieName.equals(cookie.getName())) {
-                    hasViewed = true;
-                    break;
-                }
-            }
-        }
+        String email = principal.getName();
 
-        if (!hasViewed) {
-            postService.incrementViewCount(slug); 
-
-            Cookie viewCookie = new Cookie(cookieName, "true");
-            viewCookie.setMaxAge(24 * 60 * 60); //  24 giờ 
-            viewCookie.setPath("/"); 
-            viewCookie.setHttpOnly(true); 
-            
-            response.addCookie(viewCookie); 
-        }
+        postService.incrementViewCount(slug, email); 
 
         Post post = postService.getPostBySlug(slug);
         model.addAttribute("post", post);

@@ -3,7 +3,6 @@ package com.example.English.teaching.center.service.course;
 import org.springframework.stereotype.Service;
 
 import com.example.English.teaching.center.dto.course.LessonSaveRequest;
-import com.example.English.teaching.center.dto.course.MaterialResponse;
 import com.example.English.teaching.center.dto.course.MaterialSaveRequest;
 import com.example.English.teaching.center.entity.Course;
 import com.example.English.teaching.center.entity.Lesson;
@@ -13,7 +12,6 @@ import com.example.English.teaching.center.repository.CourseRepository;
 import com.example.English.teaching.center.repository.LessonRepository;
 import com.example.English.teaching.center.repository.MaterialRepository;
 import com.example.English.teaching.center.service.infra.RateLimitingService;
-import com.example.English.teaching.center.utils.NetworkUtils;
 
 import io.github.bucket4j.Bucket;
 import jakarta.transaction.Transactional;
@@ -42,8 +40,9 @@ public class LessonService {
 
     @Transactional
     public void saveOrUpdateLesson(LessonSaveRequest dto, Long teacherId){
-        String clientIP = NetworkUtils.getClientIPFromContext();
-        Bucket bucket = rateLimitingService.resolveBucket("SAVE_LESSON_" + teacherId + "_" + clientIP, 20, 1);
+        String limitKey = "SAVE_LESSON_" + teacherId;
+
+        Bucket bucket = rateLimitingService.resolveBucket(limitKey, 20, 1);
         if (!bucket.tryConsume(1)) 
             throw new RateLimitException("Thầy/cô thao tác quá nhanh, vui lòng chờ ít giây!");
 
@@ -70,8 +69,8 @@ public class LessonService {
     }
 
     public void deleteLesson(Long lessonId, Long teacherId){
-        String clientIP = NetworkUtils.getClientIPFromContext();
-        Bucket bucket = rateLimitingService.resolveBucket("DELETE_LESSON_" + teacherId + "_" + clientIP, 10, 1);
+        String limitKey = "DELETE_LESSON_" + teacherId;
+        Bucket bucket = rateLimitingService.resolveBucket(limitKey, 10, 1);
         if (!bucket.tryConsume(1)) 
             throw new RateLimitException("Thao tác quá nhanh!");
 
@@ -85,8 +84,8 @@ public class LessonService {
 
     @Transactional
     public Long saveOrUpdateMaterial(MaterialSaveRequest dto, Long teacherId) { 
-        String clientIP = NetworkUtils.getClientIPFromContext();
-        Bucket bucket = rateLimitingService.resolveBucket("SAVE_MATERIAL_" + teacherId + "_" + clientIP, 30, 1);
+        String limitKey = "SAVE_MATERIAL_" + teacherId;
+        Bucket bucket = rateLimitingService.resolveBucket(limitKey, 30, 1);
         if (!bucket.tryConsume(1)) 
             throw new RateLimitException("Hệ thống đang lưu tài liệu, vui lòng chờ ít giây!");
 
@@ -118,8 +117,8 @@ public class LessonService {
 
     @Transactional
     public Long deleteMaterial(Long materialId, Long teacherId) { 
-        String clientIP = NetworkUtils.getClientIPFromContext();
-        Bucket bucket = rateLimitingService.resolveBucket("DELETE_MATERIAL_" + teacherId + "_" + clientIP, 10, 1);
+        String limitKey = "DELETE_MATERIAL_" + teacherId;
+        Bucket bucket = rateLimitingService.resolveBucket(limitKey, 10, 1);
         if (!bucket.tryConsume(1)) 
             throw new RateLimitException("Thao tác quá nhanh!");
 

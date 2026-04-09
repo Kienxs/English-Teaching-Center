@@ -64,6 +64,9 @@ public class User {
     @Column(name = "reset_password_expiry")
     private LocalDateTime resetPasswordExpiry;
 
+    @Column(name = "token_version", nullable = false)
+    private Integer tokenVersion = 1;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private Role role = Role.STUDENT;

@@ -23,7 +23,7 @@ import com.example.English.teaching.center.repository.CommentRepository;
 import com.example.English.teaching.center.repository.PostRepository;
 import com.example.English.teaching.center.repository.UserRepository;
 import com.example.English.teaching.center.service.infra.RateLimitingService;
-import com.example.English.teaching.center.utils.NetworkUtils;
+import com.example.English.teaching.center.utils.SlugUtils;
 
 import io.github.bucket4j.Bucket;
 import jakarta.transaction.Transactional;
@@ -67,8 +67,7 @@ public class PostService {
 
     @Transactional
     public void saveComment(CommentRequest requestDTO, String email){
-        String clientIP = NetworkUtils.getClientIPFromContext();
-        String limitKey = "BLOG_COMMENT_" + email + "_" + clientIP;
+        String limitKey = "BLOG_COMMENT_" + email;
 
         Bucket bucket = rateLimitingService.resolveBucket(limitKey, 5, 1);
         if(!bucket.tryConsume(1))
@@ -107,9 +106,8 @@ public class PostService {
     }
 
     @Transactional
-    public void incrementViewCount(String slug) {
-        String clientIP = NetworkUtils.getClientIPFromContext();
-        String limitKey = "VIEW_POST_" + slug + "_" + clientIP;
+    public void incrementViewCount(String slug, String email) {
+        String limitKey = "VIEW_POST_" + slug + "_USER_" + email;
 
         Bucket bucket = rateLimitingService.resolveBucket(limitKey, 1, 30);
         
@@ -137,13 +135,11 @@ public class PostService {
 
     @Transactional
     public Post saveOrUpdateFromDTO(EditPostRequest dto, Long currentUserId) {
-        String clientIP = NetworkUtils.getClientIPFromContext();
-        String limitKey = "SAVE_POST_" + currentUserId + "_" + clientIP;
+        String limitKey = "SAVE_POST_" + currentUserId ;
 
         Bucket bucket = rateLimitingService.resolveBucket(limitKey, 10, 1);
-        if(!bucket.tryConsume(1)) {
+        if(!bucket.tryConsume(1))
             throw new RateLimitException("Hệ thống đang bận, vui lòng lưu chậm lại!");
-        }
 
         Post post;
         Long currentId = (dto.getId() != null) ? dto.getId() : -1L;
@@ -190,7 +186,9 @@ public class PostService {
         // 3. XỬ LÝ SLUG 
         String baseSlug = dto.getSlug();
         if (baseSlug == null || baseSlug.trim().isEmpty()) {
-            baseSlug = generateSlugFromTitle(dto.getTitle());
+            baseSlug =SlugUtils.makeSlug((dto.getTitle()));
+            if(baseSlug.isEmpty()) 
+                baseSlug = "bai-viet-moi";
         }
 
         String finalSlug = baseSlug;
@@ -204,37 +202,19 @@ public class PostService {
         return postRepository.save(post);
     }
 
-    private String generateSlugFromTitle(String title) {
-        if (title == null) return "bai-viet-moi";
-        return title.toLowerCase()
-                .replaceAll("[áàảãạăắằẳẵặâấầẩẫậ]", "a")
-                .replaceAll("[éèẻẽẹêếềểễệ]", "e")
-                .replaceAll("[íìỉĩị]", "i")
-                .replaceAll("[óòỏõọôốồổỗộơớờởỡợ]", "o")
-                .replaceAll("[úùủũụưứừửữự]", "u")
-                .replaceAll("[ýỳỷỹỵ]", "y")
-                .replaceAll("đ", "d")
-                .replaceAll("[^a-z0-9\\s]", "") 
-                .replaceAll("\\s+", "-")       
-                .replaceAll("^-+|-+$", "");    
-    }
-
     @Transactional
     public void deleteDraftPost(Long postId, Long authorId){
-        String clientIP = NetworkUtils.getClientIPFromContext();
-        String limitKey = "DELETE_POST_" + authorId + "_" + clientIP;
+        String limitKey = "DELETE_POST_" + authorId ;
 
         Bucket bucket = rateLimitingService.resolveBucket(limitKey, 5, 5);
-        if(!bucket.tryConsume(1)) {
+        if(!bucket.tryConsume(1))
             throw new RateLimitException("Thao tác quá nhanh!");
-        }
 
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy bài viết!"));
 
-        if(!post.getAuthor().getId().equals(authorId)){
+        if(!post.getAuthor().getId().equals(authorId))
             throw new RuntimeException("Bạn không có quyền xóa bài viết này!");
-        }
         
         post.setIsDeleted(true);
         postRepository.save(post);

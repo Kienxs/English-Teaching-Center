@@ -105,7 +105,7 @@ public class AuthService {
     public User authenticateOnly(String email, String rawPassword) throws IllegalAccessException {
         // 1. Rate Limit 
         String clientIP = NetworkUtils.getClientIPFromContext();
-        String limitKey = "LOGIN_" + email + "_" + clientIP;
+        String limitKey = "LOGIN_IP_" + clientIP;
         
         Bucket bucket = rateLimitingService.resolveBucket(limitKey, 5, 15); 
         if (!bucket.tryConsume(1)) 

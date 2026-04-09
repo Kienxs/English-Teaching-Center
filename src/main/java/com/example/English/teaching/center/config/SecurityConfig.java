@@ -8,10 +8,10 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import com.example.English.teaching.center.securty.CustomAuthenticationProvider;
-import com.example.English.teaching.center.securty.CustomAuthenticationSuccessHandler;
-import com.example.English.teaching.center.securty.JwtAuthenticationFilter;
-import com.example.English.teaching.center.securty.ReCaptchaFilter;
+import com.example.English.teaching.center.security.CustomAuthenticationProvider;
+import com.example.English.teaching.center.security.CustomAuthenticationSuccessHandler;
+import com.example.English.teaching.center.security.JwtAuthenticationFilter;
+import com.example.English.teaching.center.security.ReCaptchaFilter;
 
 import jakarta.servlet.http.HttpServletResponse;
 

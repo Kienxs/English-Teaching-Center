@@ -31,6 +31,12 @@ public class RefreshToken {
     @Column(nullable = false, unique = true, length = 255)
     private String token;
 
+    @Column(nullable = false)
+    private String deviceId;
+
+    @Column(nullable = false)
+    private boolean isRevoked = false;
+
     @Column(name = "expiry_date", nullable = false)
     private LocalDateTime expiryDate;
 

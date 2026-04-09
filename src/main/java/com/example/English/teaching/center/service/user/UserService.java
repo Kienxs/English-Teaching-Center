@@ -19,9 +19,9 @@ import com.example.English.teaching.center.exception.InvalidFileException;
 import com.example.English.teaching.center.exception.RateLimitException;
 import com.example.English.teaching.center.mapper.UserMapper;
 import com.example.English.teaching.center.repository.UserRepository;
+import com.example.English.teaching.center.service.auth.RefreshTokenService;
 import com.example.English.teaching.center.service.infra.CloudinaryService;
 import com.example.English.teaching.center.service.infra.RateLimitingService;
-import com.example.English.teaching.center.utils.NetworkUtils;
 
 import io.github.bucket4j.Bucket;
 import jakarta.transaction.Transactional;
@@ -33,17 +33,20 @@ public class UserService {
     private final UserMapper userMapper;
     private final CloudinaryService cloudinaryService;
     private final RateLimitingService rateLimitingService;
+    private final RefreshTokenService refreshTokenService;
 
     public UserService(UserRepository userRepository, 
-            PasswordEncoder passwordEncoder, 
-            UserMapper userMapper,
-            CloudinaryService cloudinaryService,
-            RateLimitingService rateLimitingService) {
+                PasswordEncoder passwordEncoder, 
+                UserMapper userMapper,
+                CloudinaryService cloudinaryService,
+                RateLimitingService rateLimitingService,
+                RefreshTokenService refreshTokenService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.userMapper = userMapper;
         this.cloudinaryService = cloudinaryService;
         this.rateLimitingService = rateLimitingService;
+        this.refreshTokenService = refreshTokenService;
     }
 
     public User findByEmail(String email) {
@@ -68,8 +71,7 @@ public class UserService {
     @Transactional
     public void updateUserProfile(String email, UserProfileRequest dto, MultipartFile avatarFile) {
         // 1. Kiểm tra Rate Limit
-        String clientIP = NetworkUtils.getClientIPFromContext();
-        String limitKey = "UPDATE_PROFILE_" + email + "_" + clientIP;
+        String limitKey = "UPDATE_PROFILE_USER_" + email;
 
         Bucket bucket = rateLimitingService.resolveBucket(limitKey, 5, 10);
         if(!bucket.tryConsume(1)) 
@@ -97,24 +99,24 @@ public class UserService {
         }
 
         User userToUpdate = findByEmail(email);
-  
         String oldAvatarUrl = userToUpdate.getAvatarUrl();
-
         userMapper.updateEntityFromDTO(dto, userToUpdate);
 
         if (avatarFile != null && !avatarFile.isEmpty()) {
-            // Nếu CÓ chọn ảnh mới -> Up lên Cloudinary
             String newImageUrl = cloudinaryService.uploadFile(avatarFile);
-            userToUpdate.setAvatarUrl(newImageUrl); // Gán ảnh mới
+            userToUpdate.setAvatarUrl(newImageUrl); 
 
-            // Xóa ảnh cũ trên Cloudinary
             if (oldAvatarUrl != null) {
                 String oldPublicId = cloudinaryService.extractPublicId(oldAvatarUrl);
                 if (oldPublicId != null) {
-                    cloudinaryService.deleteFile(oldPublicId);
+                    try {
+                        cloudinaryService.deleteFile(oldPublicId);
+                    } catch (Exception e) {
+                        System.err.println("Lỗi xóa ảnh cũ trên Cloudinary (có thể đã bị xóa trước đó): " + e.getMessage());
+                    }
                 }
             }
-        } 
+        }
 
         userRepository.save(userToUpdate);
     }
@@ -127,8 +129,7 @@ public class UserService {
 
     @Transactional
     public void changePassword(String email, PasswordChangeRequest dto) {
-        String clientIP = NetworkUtils.getClientIPFromContext();
-        String limitKey = "CHANGE_PASSWORD_" + email + "_" + clientIP;
+        String limitKey = "CHANGE_PASSWORD_USER_" + email;
 
         Bucket bucket = rateLimitingService.resolveBucket(limitKey, 3, 15);
         if(!bucket.tryConsume(1)) 
@@ -144,14 +145,14 @@ public class UserService {
 
         user.setPassword(passwordEncoder.encode(dto.getNewPassword()));
 
-        if(user.getRefreshTokens() != null)
-            user.getRefreshTokens().clear();
+        refreshTokenService.deleteAllByUser(user);
+        user.setTokenVersion(user.getTokenVersion() + 1);
+        userRepository.save(user);
     }
 
     @Transactional
     public void changeUsername(String email, UsernameChangeRequest dto){
-        String clientIP = NetworkUtils.getClientIPFromContext();
-        String limitKey = "CHANGE_USERNAME_" + email + "_" + clientIP;
+        String limitKey = "CHANGE_USERNAME_USER_" + email;
 
         Bucket bucket = rateLimitingService.resolveBucket(limitKey, 3, 10);
         if(!bucket.tryConsume(1)) 
