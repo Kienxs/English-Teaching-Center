@@ -27,7 +27,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtUtils jwtUtils;
     private final UserDetailsService userDetailsService;
     private final RefreshTokenService refreshTokenService;
-    private final UserRepository userRepository; // 🛡️ Tiêm thêm UserRepository để check Version
+    private final UserRepository userRepository; 
 
     public JwtAuthenticationFilter(JwtUtils jwtUtils, 
                                    UserDetailsService userDetailsService, 
@@ -44,12 +44,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response, 
                                     FilterChain filterChain) throws ServletException, IOException {
         try {
-            // 🛡️ DEVICE FINGERPRINTING: Cấp phát hoặc lấy ID thiết bị từ Cookie
-            String deviceId = getJwtFromCookie(request, "deviceId");
-            if (deviceId == null) {
-                deviceId = UUID.randomUUID().toString();
-                setCookie(response, "deviceId", deviceId, 365 * 24 * 60 * 60); // Lưu thiết bị 1 năm
+            String userAgent = request.getHeader("User-Agent");
+            if (userAgent == null) userAgent = "UNKNOWN";
+
+            String rawDeviceId = getJwtFromCookie(request, "deviceId");
+            if (rawDeviceId == null) {
+                rawDeviceId = UUID.randomUUID().toString();
+                setCookie(response, "deviceId", rawDeviceId, 365 * 24 * 60 * 60); 
             }
+
+            String secureDeviceId = org.springframework.util.DigestUtils.md5DigestAsHex((rawDeviceId + userAgent).getBytes());
 
             String accessToken = getJwtFromCookie(request, "accessToken");
             boolean isAccessTokenValid = false;
@@ -62,13 +66,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         
                         User user = userRepository.findByEmail(email).orElse(null);
 
-                        // 🛡️ CHỐNG BÓNG MA 15 PHÚT: So khớp Version
                         if (user != null && user.getTokenVersion().equals(jwtVersion)) {
                             authenticateUser(email, request);
                             isAccessTokenValid = true; 
                         } else {
                             logger.warn("Token Version không khớp! Buộc đăng xuất.");
-                            clearCookies(response); // Xóa sạch cookie để đá văng User
+                            clearCookies(response); 
                         }
                     }
                 } catch (Exception e) {
@@ -76,12 +79,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
 
-            // Nếu Access Token chết hoặc bị đá, thử dùng Refresh Token
             if (!isAccessTokenValid) {
                 String refreshToken = getJwtFromCookie(request, "refreshToken");
-                if (refreshToken != null) {
-                    handleRefreshToken(refreshToken, deviceId, request, response);
-                }
+                if (refreshToken != null) 
+                    handleRefreshToken(refreshToken, secureDeviceId, request, response);
             }
             
         } catch (Exception e) {
@@ -118,7 +119,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
         return path.startsWith("/css/") || path.startsWith("/js/") ||
                path.startsWith("/images/") || path.startsWith("/fonts/") ||
-               path.equals("/favicon.ico") || path.startsWith("/auth/"); // Bỏ qua filter cho luồng đăng nhập
+               path.equals("/favicon.ico") || path.startsWith("/auth/"); 
     }
 
     private void authenticateUser(String username, HttpServletRequest request) {
@@ -149,6 +150,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         cookie.setHttpOnly(true);
         cookie.setPath("/");
         cookie.setMaxAge(maxAge);
+        
+        cookie.setSecure(true); 
+        cookie.setAttribute("SameSite", "Strict"); 
+        
         response.addCookie(cookie);
     }
 }

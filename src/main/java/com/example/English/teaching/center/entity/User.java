@@ -52,6 +52,9 @@ public class User {
     @Column(name="avatar_url", length = 255)
     private String avatarUrl = "/images/home/avatar_clone.png";
 
+    @Column(name = "avatar_public_id")
+    private String avatarPublicId;
+
     @Column(name="balance", precision = 15, scale = 2)
     private BigDecimal balance = BigDecimal.ZERO;
 
