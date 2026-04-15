@@ -95,6 +95,12 @@
 			<version>2.0.0</version>
 		</dependency>
 
+		<dependency>
+			<groupId>vn.payos</groupId>
+			<artifactId>payos-java</artifactId> 
+			<version>1.0.3</version> 
+		</dependency>
+
 		<!-- Bucket4j for rate limiting -->
 		<dependency>
 			<groupId>com.github.vladimir-bukhtoyarov</groupId>
@@ -144,8 +150,8 @@
 			<artifactId>tika-core</artifactId>
 			<version>2.9.2</version> 
 		</dependency>
-	</dependencies>
 
+	</dependencies>
 	<build>
 		<plugins>
 			<plugin>

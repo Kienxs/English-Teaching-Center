@@ -134,13 +134,34 @@
                         <h3>Nạp tiền vào tài khoản</h3>
                         <p style="color: #666; font-size: 0.9em; margin-bottom: 15px;">Nhập số tiền bạn muốn nạp (Tối thiểu 10.000đ). Đây là hệ thống nạp tiền giả lập.</p>
                         
-                        <form th:action="@{/user/deposit}" method="POST" class="deposit-form">
+                        <form id="depositForm" th:action="@{/user/deposit}" method="POST" class="deposit-form">
                             <div class="input-group-deposit">
-                                <input type="number" name="amount" placeholder="Ví dụ: 500000" 
+                                <input type="number" id="depositAmount" name="amount" placeholder="Ví dụ: 500000" 
                                     min="10000" step="10000" required class="form-control-lg">
                                 <span class="currency-suffix">VNĐ</span>
                             </div>
-                            <button type="submit" class="btn btn-primary btn-deposit-submit">
+                            <p id="amountPreview" style="color: #28a745; font-weight: bold; margin-top: 5px; min-height: 20px;"></p>
+                            
+                            <div th:if="${qrImageUrl != null}" class="qr-payment-container" style="text-align: center; margin-top: 30px; padding: 25px; border: 2px dashed #007bff; border-radius: 12px; background-color: #f8fbff;">
+                                <h3 style="color: #007bff; margin-bottom: 15px;">
+                                    <i class="fas fa-qrcode"></i> Quét mã QR để nạp tiền
+                                </h3>
+                                
+                                <p style="font-size: 1.1em; color: #333; margin-bottom: 5px;">
+                                    Số tiền thanh toán: <strong style="color: #dc3545; font-size: 1.3em;" th:text="${#numbers.formatDecimal(depositAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'"></strong>
+                                </p>
+
+                                <img th:src="${qrImageUrl}" alt="VietQR Code" style="width: 320px; height: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-radius: 10px; margin: 15px 0; border: 1px solid #ddd;">
+                                
+                                <div style="background-color: #e9ecef; padding: 15px; border-radius: 8px; display: inline-block; text-align: left; margin-top: 10px;">
+                                    <p style="margin: 0; color: #555; font-size: 0.9em;">
+                                        <i class="fas fa-info-circle text-info"></i> Hệ thống tự động xử lý giao dịch qua Webhook.<br>
+                                        <i class="fas fa-spinner fa-spin text-primary"></i> Đang chờ thanh toán... Vui lòng không đóng trình duyệt.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-deposit-submit" style="margin-top: 10px;">
                                 <i class="fas fa-wallet"></i> Xác nhận nạp tiền
                             </button>
                         </form>
@@ -185,163 +206,15 @@
 
     <div th:replace="~{fragments :: footer}"></div>
     
+    <script th:inline="javascript">
+        window.USER_CONTEXT = {
+            initialBalance: /*[[${user.balance != null ? user.balance : 0}]]*/ 0,
+            isQrVisible: /*[[${qrImageUrl != null}]]*/ false
+        };
+    </script>
+
+    <script src="/js/user/user-profile.js"></script>
+    <script src="/js/user/wallet-polling.js"></script>
+
 </body>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const links = document.querySelectorAll('.sidebar-link');
-    const tabs = document.querySelectorAll('.content-tab');
-    const breadcrumbCurrent = document.getElementById('breadcrumb-current'); 
-    const urlParams = new URLSearchParams(window.location.search);
-    
-    // Điều hướng Tab
-    let activeTabId = 'tab-profile';
-    if (window.location.hash) {
-        activeTabId = window.location.hash.substring(1); 
-    } else if (urlParams.get('tab')) {
-        activeTabId = 'tab-' + urlParams.get('tab');
-    }
-    
-    tabs.forEach(tab => tab.classList.remove('active'));
-    links.forEach(l => l.classList.remove('active'));
-    
-    const tabToActivate = document.getElementById(activeTabId) || document.getElementById('tab-profile');
-    const linkToActivate = document.querySelector(`a[data-target="${tabToActivate.id}"]`) || document.querySelector('a[data-target="tab-profile"]');
-    
-    if(tabToActivate && linkToActivate) {
-        tabToActivate.classList.add('active');
-        linkToActivate.classList.add('active');
-        if (window.location.hash) window.scrollTo(0, 0);
-    }
-    
-    if (breadcrumbCurrent && linkToActivate) {
-        updateBreadcrumb(linkToActivate.textContent.trim());
-    }
-
-    links.forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            const targetId = this.getAttribute('data-target');
-            window.history.pushState(null, null, '#' + targetId); 
-            
-            const targetTab = document.getElementById(targetId);
-            
-            links.forEach(l => l.classList.remove('active'));
-            this.classList.add('active');
-            
-            tabs.forEach(tab => tab.classList.remove('active'));
-            if (targetTab) targetTab.classList.add('active');
-            
-            if (breadcrumbCurrent) updateBreadcrumb(this.textContent.trim());
-        });
-    });
-
-    function updateBreadcrumb(linkText) {
-        if (!breadcrumbCurrent) return; 
-        if (linkText === "Thông tin & liên hệ") {
-            breadcrumbCurrent.textContent = "Thông tin tài khoản";
-        } else {
-            breadcrumbCurrent.textContent = linkText;
-        }
-    }
-
-    // Xem trước Avatar
-    const avatarInput = document.getElementById('avatar-input');
-    const avatarPreview = document.getElementById('avatar-preview');
-    if (avatarInput && avatarPreview) {
-        avatarInput.addEventListener('change', function() {
-            const file = this.files[0]; 
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    avatarPreview.src = e.target.result;
-                }
-                reader.readAsDataURL(file);
-            }
-        });
-    }
-
-    // Ẩn/Hiện Mật Khẩu
-    document.querySelectorAll('.input-icon-wrapper i').forEach(icon => {
-        icon.addEventListener('click', function() {
-            const input = this.previousElementSibling;
-            if (input.type === 'password') {
-                input.type = 'text';
-                this.classList.remove('fa-eye-slash');
-                this.classList.add('fa-eye');
-            } else {
-                input.type = 'password';
-                this.classList.remove('fa-eye');
-                this.classList.add('fa-eye-slash');
-            }
-        });
-    });
-
-    // Xác thực độ mạnh Mật khẩu mới
-    const newPasswordInput = document.getElementById('new-password');
-    const hint = document.getElementById('passwordHint');
-    const strongRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&._-])[A-Za-z\d@$!%*?&._-]{8,}$/;
-
-    if (newPasswordInput && hint) {
-        newPasswordInput.addEventListener('input', () => {
-            if (strongRegex.test(newPasswordInput.value)) {
-                hint.style.color = '#28a745'; 
-                hint.innerHTML = '<i class="fas fa-check"></i> Mật khẩu hợp lệ';
-                newPasswordInput.setCustomValidity(""); 
-            } else {
-                hint.style.color = '#dc3545'; 
-                hint.innerHTML = '(Tối thiểu 8 ký tự, có chữ hoa, thường, số và ký tự đặc biệt)';
-                newPasswordInput.setCustomValidity("Mật khẩu chưa đủ mạnh"); 
-            }
-        });
-    }
-
-    // Khóa ngày sinh ở quá khứ
-    const dobInput = document.getElementById('dob');
-    if (dobInput) {
-        const today = new Date().toISOString().split("T")[0];
-        dobInput.setAttribute('max', today);
-        dobInput.addEventListener('change', function() {
-            if (this.value > today) {
-                this.setCustomValidity("Ngày sinh không thể lớn hơn ngày hiện tại!");
-            } else {
-                this.setCustomValidity("");
-            }
-        });
-    }
-
-    // Kiểm tra ReCaptcha và hiệu ứng Loading cho các Form
-    const forms = [
-        { formElement: document.getElementById('profileForm'), btnElement: document.getElementById('btnUpdate') },
-        { formElement: document.getElementById('passwordForm'), btnElement: document.querySelector('#passwordForm button[type="submit"]') },
-        { formElement: document.getElementById('usernameForm'), btnElement: document.querySelector('#usernameForm button[type="submit"]') }
-    ];
-
-    forms.forEach(item => {
-        if (item.formElement && item.btnElement) {
-            item.formElement.addEventListener('submit', function(e) {
-                const captchaResponse = item.formElement.querySelector('[name="g-recaptcha-response"]');
-
-                // Check Captcha client-side chuẩn SweetAlert
-                if (captchaResponse && !captchaResponse.value) {
-                    e.preventDefault(); 
-                    Swal.fire({
-                        title: 'Cảnh báo!',
-                        text: 'Vui lòng xác nhận bạn không phải người máy!',
-                        icon: 'warning',
-                        confirmButtonText: 'Đã rõ',
-                        confirmButtonColor: '#f39c12'
-                    });
-                    return; 
-                }
-
-                // Loading effect
-                item.btnElement.disabled = true;
-                item.btnElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
-                document.body.style.cursor = 'wait';
-            });
-        }
-    });
-});
-</script>
 </html>

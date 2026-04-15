@@ -36,6 +36,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+            .csrf(csrf -> csrf.ignoringRequestMatchers("/api/sepay/**"))
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
@@ -44,6 +45,7 @@ public class SecurityConfig {
                 .requestMatchers("/teacher/**").hasRole("TEACHER")
                 .requestMatchers("/user/**").hasAnyRole("STUDENT", "TEACHER", "ADMIN")
                 .requestMatchers("/api/courses/**").permitAll()
+                .requestMatchers("/api/sepay/**").permitAll()
                 .anyRequest().authenticated()
             )
             .authenticationProvider(customAuthProvider)
