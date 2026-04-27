@@ -6,11 +6,14 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "tests")
@@ -19,8 +22,10 @@ import java.util.List;
 public class Test {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID) 
+    @JdbcTypeCode(SqlTypes.CHAR)
+    @Column(name = "id", updatable = false, nullable = false, columnDefinition = "CHAR(36)")
+    private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "lesson_id") 
@@ -32,7 +37,7 @@ public class Test {
     @Column(name = "title", nullable = false, length = 255)
     private String title;
 
-    @Column(name = "slug", nullable = false, length = 255)
+    @Column(name = "slug", nullable = false, length = 255, unique = true)
     private String slug;
     
     @Column(name = "duration_minutes")

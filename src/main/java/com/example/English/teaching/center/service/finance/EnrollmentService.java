@@ -7,6 +7,7 @@ import com.example.English.teaching.center.repository.*;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,6 +52,11 @@ public class EnrollmentService {
         if (course.getAccessPeriodDays() != null && course.getAccessPeriodDays() > 0) 
             enrollment.setExpiresAt(LocalDateTime.now().plusDays(course.getAccessPeriodDays()));
         
-        studentCourseRepository.save(enrollment);
+        try {
+            studentCourseRepository.save(enrollment);
+        } catch (DataIntegrityViolationException e) {
+            // Bắt lỗi khi 2 request cùng cố gắng insert khóa học cho 1 user
+            throw new IllegalStateException("Giao dịch đang được xử lý, bạn đã đăng ký khóa học này rồi!");
+        }
     }
 }

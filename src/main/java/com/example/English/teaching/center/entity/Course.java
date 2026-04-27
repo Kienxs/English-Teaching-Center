@@ -6,8 +6,10 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.SQLRestriction; 
+import org.hibernate.annotations.SQLRestriction;
+import org.hibernate.type.SqlTypes;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -15,6 +17,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "courses")
@@ -25,13 +28,15 @@ import java.util.List;
 public class Course {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID) 
+    @JdbcTypeCode(SqlTypes.CHAR)
+    @Column(name = "id", updatable = false, nullable = false, columnDefinition = "CHAR(36)")
+    private UUID id;
 
     @Column(name = "name", nullable = false, length = 255)
     private String name;
     
-    @Column(name = "slug", nullable = false, length = 255)
+    @Column(name = "slug", nullable = false, length = 255, unique = true)
     private String slug;
 
     @Column(name = "description", columnDefinition = "LONGTEXT")
@@ -54,7 +59,7 @@ public class Course {
     @Column(name = "fee", precision = 10, scale = 2)
     private BigDecimal fee = BigDecimal.ZERO; 
 
-    @Column(name = "image_url", columnDefinition = "LONGTEXT")
+    @Column(name = "image_url", length = 2048)
     private String imageUrl;
 
     @Column(name = "view_count")

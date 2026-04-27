@@ -4,11 +4,14 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction; 
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.type.SqlTypes;
 import org.springframework.security.core.GrantedAuthority;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -28,8 +31,10 @@ import lombok.ToString;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID) 
+    @JdbcTypeCode(SqlTypes.CHAR)
+    @Column(name = "id", updatable = false, nullable = false, columnDefinition = "CHAR(36)")
+    private UUID id;
 
     @Version // Fix click 2 lần
     private Long version = 0L;

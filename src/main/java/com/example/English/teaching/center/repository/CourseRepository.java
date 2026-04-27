@@ -9,6 +9,7 @@ import com.example.English.teaching.center.entity.Course.Status;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,23 +24,23 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
 // Process diaplay for student ----------------------------------------------------------------------------------
     Page<Course> findByStatus(Status status, Pageable pageable);
 
-    List<Course> findByTeacherIdAndStatus(Long teacherId, Status status);
+    List<Course> findByTeacherIdAndStatus(UUID teacherId, Status status);
 
     List<Course> findByCategory(Category category);
 
     @Query("SELECT sc.course FROM StudentCourse sc WHERE sc.student.id = :studentId AND sc.status = :status")
     List<Course> findCoursesByStudentIdAndStatus(
-        @Param("studentId") Long studentId,
+        @Param("studentId") UUID studentId,
         @Param("status") StudentCourse.Status status
     );
 
     @Query("SELECT c FROM Course c LEFT JOIN FETCH c.lessons WHERE c.id = :courseId")
-    Optional<Course> findByIdWithLessons(@Param("courseId") Long courseId);
+    Optional<Course> findByIdWithLessons(@Param("courseId") UUID courseId);
 
     @Modifying
     @Transactional
     @Query("UPDATE Course c SET c.viewCount = c.viewCount + 1 WHERE c.id = :id")
-    void incrementViewCount(@Param("id") Long id);
+    void incrementViewCount(@Param("id") UUID id);
 
     @Query("SELECT c FROM Course c WHERE c.status = 'APPROVED' " +
            "AND (:category IS NULL OR c.category = :category) " +
@@ -51,26 +52,26 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
                                         Pageable pageable);
 
 // Process display for teacher -----------------------------------------------------------------------------------
-    Page<Course> findByTeacherIdOrderByCreatedAtDesc(Long teacherId, Pageable pageable);
+    Page<Course> findByTeacherIdOrderByCreatedAtDesc(UUID teacherId, Pageable pageable);
     
-    boolean existsBySlugAndIdNot(String slug, Long id);
+    boolean existsBySlugAndIdNot(String slug, UUID id);
 
     Optional<Course> findBySlug(String slug);
 
     //1. Total number of views for all of the teacher's courses
     @Query("SELECT SUM(c.viewCount) FROM Course c WHERE c.teacher.id = :teacherId")
-    Long sumViewByTeacherId(Long teacherId);
+    Long sumViewByTeacherId(@Param("teacherId") UUID teacherId);
 
     // 2. Count the number of courses
-    Long countByTeacherId(Long teacherId);
+    Long countByTeacherId(UUID teacherId);
 
     // 3. Get the Top 5 best-selling courses.
-    @Query("SELECT c.name as name, COUNT(sc) as sold, c.viewCount as views, c.fee as fee " + 
-       "FROM Course c JOIN StudentCourse sc ON c.id = sc.course.id " + 
-       "WHERE c.teacher.id = :teacherId " + 
-       "GROUP BY c.id " + 
-       "ORDER BY sold DESC LIMIT 5")
-    List<Map<String, Object>> findTopSellingCourses(Long teacherId);
+    @Query(value = "SELECT c.name as name, COUNT(sc.id) as sold, c.view_count as views, c.fee as fee " + 
+                   "FROM courses c JOIN student_courses sc ON c.id = sc.course_id " + 
+                   "WHERE c.teacher_id = :teacherId " + 
+                   "GROUP BY c.id " + 
+                   "ORDER BY sold DESC LIMIT 5", nativeQuery = true)
+    List<Map<String, Object>> findTopSellingCourses(@Param("teacherId") UUID teacherId);
 
 // Process display for admin -----------------------------------------------------------------------------------
     @Query("SELECT c FROM Course c WHERE c.status = 'PENDING'")

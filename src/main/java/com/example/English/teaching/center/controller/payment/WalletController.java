@@ -55,7 +55,7 @@ public class WalletController {
         User user = userRepository.findByEmail(principal.getName())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy user"));
         
-        BigDecimal balance = user.getBalance() != null ? user.getBalance() : BigDecimal.ZERO;
+        BigDecimal balance = user.getBalance();
 
         return ResponseEntity.ok(balance);
     }

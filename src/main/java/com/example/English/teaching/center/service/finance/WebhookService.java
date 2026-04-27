@@ -1,14 +1,13 @@
 package com.example.English.teaching.center.service.finance;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.English.teaching.center.entity.Transaction;
-import com.example.English.teaching.center.entity.User;
 import com.example.English.teaching.center.repository.TransactionRepository;
-import com.example.English.teaching.center.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class WebhookService {
     private final TransactionRepository transactionRepository;
-    private final UserRepository userRepository;
+    private final WalletService walletService;
 
     @Transactional(rollbackFor = Exception.class)
     public void processSePayWebhook(String txnRef, BigDecimal amountPaid){
@@ -26,47 +25,27 @@ public class WebhookService {
         Transaction txn = transactionRepository.findByTxnRefForUpdate(txnRef)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy mã giao dịch: " + txnRef));
 
-        // 2. IDEMPOTENCY: Kiểm tra trạng thái an toàn
-        if(txn.getStatus() == Transaction.TransactionStatus.SUCCESS ||
-                txn.getStatus() == Transaction.TransactionStatus.FAILED){
-            log.info("Giao dịch {} đã được xử lý xong từ trước. Trạng thái hiện tại: {}", txnRef, txn.getStatus());
+        // 2. IDEMPOTENCY: Chỉ xử lý nếu đơn hàng đang PENDING
+        // Nếu đã SUCCESS, FAILED, hoặc EXPIRED thì tuyệt đối không xử lý lại
+        if(txn.getStatus() != Transaction.TransactionStatus.PENDING){
+            log.info("Giao dịch {} đã ở trạng thái: {}. Bỏ qua webhook để tránh duplicate.", txnRef, txn.getStatus());
             return;
         }
 
-        BigDecimal expectedAmount = txn.getAmount();
-
-        // 3. ANTI-FRAUD: Kiểm tra khách nạp thiếu tiền
-        if(amountPaid.compareTo(expectedAmount) < 0){
-            log.warn("🚨 CẢNH BÁO GIAN LẬN/NẠP THIẾU: Đơn {} yêu cầu {}đ nhưng chỉ nhận {}đ", 
-                    txnRef, expectedAmount, amountPaid);
-
+        if(txn.getExpiredAt() != null && LocalDateTime.now().isAfter(txn.getExpiredAt())){
+            log.error("⚠️ Tiền vào muộn! Giao dịch {} đã hết hạn từ {}. Yêu cầu xử lý thủ công.", txnRef, txn.getExpiredAt());
+            // Cập nhật số tiền thực nhận nhưng KHÔNG cộng vào ví
+            txn.setActualAmount(amountPaid);
             txn.setStatus(Transaction.TransactionStatus.FAILED);
-            txn.setDescription(String.format("Thất bại: Chuyển thiếu tiền. Yêu cầu %s, thực nhận %s", expectedAmount, amountPaid));
+            txn.setDescription("Giao dịch hết hạn nhưng nhận được tiền. Cần đối soát thủ công.");
             transactionRepository.save(txn);
-
+            // Gợi ý: Bắn thông báo Alert cho Admin tại đây
             return;
         }
 
-        // 4. Khóa User để cập nhật số dư an toàn
-        User user = userRepository.findByEmailForUpdate(txn.getUser().getEmail())
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng!"));
-                
-        // 5. Cộng tiền
-        BigDecimal currentBalance = user.getBalance() == null ? BigDecimal.ZERO : user.getBalance();
-        BigDecimal newBalance = currentBalance.add(amountPaid);
-        user.setBalance(newBalance);
-        userRepository.save(user);
+        log.info("⏳ Đang xử lý đối soát giao dịch {}. Số tiền nhận: {}", txnRef, amountPaid);
 
-        // 6. Cập nhật trạng thái thành công
-        txn.setBalanceAfter(newBalance);
-        txn.setStatus(Transaction.TransactionStatus.SUCCESS);
-        if (amountPaid.compareTo(expectedAmount) > 0) 
-             txn.setDescription("Nạp tiền thành công (Khách chuyển dư). Thực nhận: " + amountPaid);
-        else 
-             txn.setDescription("Nạp tiền thành công.");
-
-        transactionRepository.save(txn);
-
-        log.info("✅ Xử lý thành công đơn {}. Thực nhận: {}. Số dư mới: {}", txnRef, amountPaid, newBalance);
+        // 3. Chuyển giao toàn bộ logic kiểm tra tiền và cộng ví cho WalletService
+        walletService.confirmDeposit(txn, amountPaid);
     }
 }

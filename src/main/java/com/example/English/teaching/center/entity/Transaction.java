@@ -1,26 +1,29 @@
 package com.example.English.teaching.center.entity;
 
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "transactions")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 public class Transaction {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID) 
+    @JdbcTypeCode(SqlTypes.CHAR)
+    @Column(name = "id", updatable = false, nullable = false, columnDefinition = "CHAR(36)")
+    private UUID id;
 
     @Column(name = "txn_ref", unique = true, length = 100)
     private String txnRef;
@@ -62,6 +65,9 @@ public class Transaction {
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "expired_at")
+    private LocalDateTime expiredAt;
     
     public enum TransactionType {
         DEPOSIT, 
@@ -73,6 +79,7 @@ public class Transaction {
         PENDING,
         SUCCESS,
         FAILED,
-        CANCELLED
+        CANCELLED,
+        EXPIRED
     }
 }

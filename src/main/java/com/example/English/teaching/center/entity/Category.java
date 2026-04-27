@@ -9,6 +9,10 @@ import lombok.ToString;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.List;
+import java.util.UUID;
+
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "categories")
@@ -17,9 +21,11 @@ import java.util.List;
 public class Category {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
+    @GeneratedValue(strategy = GenerationType.UUID) 
+    @JdbcTypeCode(SqlTypes.CHAR)
+    @Column(name = "id", updatable = false, nullable = false, columnDefinition = "CHAR(36)")
+    private UUID id;
+    
     @Column(nullable = false, length = 100)
     private String name;
 

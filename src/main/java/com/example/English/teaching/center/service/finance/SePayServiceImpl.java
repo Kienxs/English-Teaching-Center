@@ -14,7 +14,7 @@ import com.example.English.teaching.center.repository.UserRepository;
 
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
-import java.security.SecureRandom;
+import java.time.LocalDateTime;
 import java.net.URLEncoder;
 
 @Service("SEPAY")
@@ -24,7 +24,6 @@ public class SePayServiceImpl implements PaymentStrategy {
 
     private final TransactionRepository transactionRepository;
     private final UserRepository userRepository;
-    private final SecureRandom secureRandom = new SecureRandom();
 
     @Value("${sepay.transfer-prefix}")
     private String transferPrefix;
@@ -45,8 +44,8 @@ public class SePayServiceImpl implements PaymentStrategy {
                 .orElseThrow(() -> new UsernameNotFoundException("Không tìm thấy người dùng"));
 
         // 1. Tạo "Nội dung chuyển khoản unique"
-        String randomSuffix = String.format("%06d", secureRandom.nextInt(999999));
-        String orderCode = transferPrefix + (System.currentTimeMillis() % 10000L) + randomSuffix;
+        String randomSuffix = org.apache.commons.lang3.RandomStringUtils.secure().nextAlphanumeric(6).toUpperCase();
+        String orderCode = transferPrefix + System.currentTimeMillis() + randomSuffix;
 
         // 2. Lưu giao dịch trạng thái PENDING
         Transaction txn = new Transaction();
@@ -58,6 +57,7 @@ public class SePayServiceImpl implements PaymentStrategy {
         txn.setStatus(Transaction.TransactionStatus.PENDING);
         txn.setPaymentMethod("VIETQR");
         txn.setDescription("Nạp tiền hệ thống: " + orderCode);
+        txn.setExpiredAt(LocalDateTime.now().plusMinutes(15));
         transactionRepository.save(txn);
 
         // 3. Tạo QR Động

@@ -3,13 +3,11 @@ package com.example.English.teaching.center.controller.payment;
 import com.example.English.teaching.center.dto.payment.SePayWebhookRequest;
 import com.example.English.teaching.center.service.finance.WebhookService;
 
-import jakarta.servlet.http.HttpServletRequest;
+import jakarta.persistence.EntityNotFoundException;
 
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
@@ -30,30 +28,18 @@ public class SePayWebhookController {
     @Value("${sepay.webhook-token}")
     private String expectedToken;
 
-    private static final List<String> SEPAY_ALLOWED_IPS = Arrays.asList("1.2.3.4", "5.6.7.8", "127.0.0.1");
+    @Value("${sepay.transfer-prefix}")
+    private String transferPrefix;
 
     @PostMapping("/webhook")
     public ResponseEntity<?> handleSePayWebhook(@RequestBody SePayWebhookRequest request,
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            HttpServletRequest httpRequest) {
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
 
         try {
-            // 1. Security Check: Validate IP
-            String clientIp = getClientIp(httpRequest);
-
-            if (!SEPAY_ALLOWED_IPS.contains(clientIp)) {
-                log.error("🚨 Kẻ gian giả mạo IP gọi Webhook! IP: {}", clientIp);
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            if(authHeader == null || !isValidToken(authHeader)){
+                log.error("🚨 CẢNH BÁO: Sai Token Webhook! Khả năng có tấn công.");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
-
-            // 2. Security Check: Validate Token
-            if (authHeader == null || !isValidToken(authHeader)) {
-                log.error("🚨 BẢO MẬT: Sai Token Webhook từ IP: {}", clientIp);
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                                     .body(Map.of("success", false, "message", "Invalid Token"));
-            }
-
-            log.info("🔔 Webhook Ting Ting: Nhận {} VNĐ", request.getTransferAmount());
 
             String txnRef = extractTxnRefSafely(request.getContent());
             
@@ -63,6 +49,9 @@ public class SePayWebhookController {
                 log.warn("⚠️ Giao dịch rác hoặc không hợp lệ (Không tìm thấy mã ECE): {}", request.getContent());
 
             return ResponseEntity.ok(Map.of("success", true));
+        }catch(IllegalArgumentException | EntityNotFoundException e){
+            log.warn("Lỗi nghiệp vụ Webhook: {}", e.getMessage());
+            return ResponseEntity.ok(Map.of("success", true, "ignored", true));
         } catch (Exception e) {
             log.error("❌ Lỗi nghiêm trọng khi xử lý Webhook", e);
             return ResponseEntity.internalServerError().build();
@@ -70,27 +59,20 @@ public class SePayWebhookController {
     }
 
     private boolean isValidToken(String authHeader){
-        String token = authHeader.replace("Bearer", "").replace("Apikey", "").trim();
+        String token = authHeader.replaceFirst("(?i)^Bearer\\s+", "")
+                                 .replaceFirst("(?i)^Apikey\\s+", "")
+                                 .trim();
         return expectedToken.equals(token);
     }
 
     private String extractTxnRefSafely(String content) {
         if (content == null || content.isBlank()) return null;
         
-        Pattern pattern = Pattern.compile("ECE\\d+"); 
-        Matcher matcher = pattern.matcher(content.toUpperCase());
+        String regex = "\\b" + Pattern.quote(transferPrefix) + "\\d{13}[A-Z0-9]{6}\\b";
+        Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE); 
+        Matcher matcher = pattern.matcher(content);
         
-        if (matcher.find()) 
-            return matcher.group(); 
-
+        if (matcher.find()) return matcher.group().toUpperCase(); 
         return null;
-    }
-
-    private String getClientIp(HttpServletRequest request) {
-        String xfHeader = request.getHeader("X-Forwarded-For");
-        if (xfHeader == null || xfHeader.isEmpty() || !xfHeader.contains(request.getRemoteAddr())) {
-            return request.getRemoteAddr();
-        }
-        return xfHeader.split(",")[0].trim();
     }
 }

@@ -6,13 +6,16 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.type.SqlTypes;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "posts", indexes = {
@@ -23,8 +26,10 @@ import java.util.List;
 public class Post {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID) 
+    @JdbcTypeCode(SqlTypes.CHAR)
+    @Column(name = "id", updatable = false, nullable = false, columnDefinition = "CHAR(36)")
+    private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id")
@@ -42,7 +47,7 @@ public class Post {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String summary;
 
-    @Column(name = "thumbnail_url", columnDefinition = "LONGTEXT")
+    @Column(name = "thumbnail_url", length = 2048)
     private String thumbnailUrl;
 
     @Enumerated(EnumType.STRING)

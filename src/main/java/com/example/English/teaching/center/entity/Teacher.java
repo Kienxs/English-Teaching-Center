@@ -7,8 +7,11 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -19,7 +22,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class Teacher {
 
     @Id
-    private Long id;
+    @JdbcTypeCode(SqlTypes.CHAR)
+    @Column(name = "id", columnDefinition = "CHAR(36)")
+    private UUID id;
 
     @OneToOne(fetch = FetchType.LAZY)
     @MapsId
