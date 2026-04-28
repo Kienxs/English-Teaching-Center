@@ -13,20 +13,18 @@ import com.example.English.teaching.center.dto.course.CourseDetailResponse;
 import com.example.English.teaching.center.service.course.CourseCommentService;
 import com.example.English.teaching.center.service.course.CourseService;
 
+import lombok.RequiredArgsConstructor;
+
 import java.util.List;
+import java.util.UUID;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/courses")
 public class CourseController {
 
     private final CourseCommentService courseCommentService;
     private final CourseService courseService;
-
-    public CourseController(CourseCommentService courseCommentService, 
-                            CourseService courseService) {
-        this.courseCommentService = courseCommentService;
-        this.courseService = courseService;
-    }   
 
     @GetMapping
     public ResponseEntity<Page<CourseDetailResponse>> getAllCourses(
@@ -44,7 +42,7 @@ public class CourseController {
 
     @GetMapping("/comments/{courseId}")
     public ResponseEntity<List<CourseCommentResponse>> loadMoreComments(
-            @PathVariable Long courseId,
+            @PathVariable UUID courseId,
             @RequestParam(defaultValue = "0") int page) {
 
         Page<CourseCommentResponse> commentPage = courseCommentService.getCommentsByCourseId(courseId, page, 5);

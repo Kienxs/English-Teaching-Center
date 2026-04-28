@@ -1,6 +1,7 @@
 package com.example.English.teaching.center.dto.course;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 import com.example.English.teaching.center.utils.HtmlSanitizerUtils;
 
@@ -10,7 +11,7 @@ import lombok.Data;
 
 @Data
 public class CourseSaveRequest {
-    private Long id;
+    private UUID id;
 
     @NotBlank(message = "Tên khóa học không được để trống")
     private String name;

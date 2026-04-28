@@ -11,17 +11,14 @@ import org.springframework.web.multipart.MultipartFile;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class CloudinaryService {
     private final Cloudinary cloudinary;
-
-    public CloudinaryService(Cloudinary cloudinary) {
-        this.cloudinary = cloudinary;
-    }
 
     public Map<String, String> uploadFileSecure(MultipartFile file, String uuidFileName){
         try(InputStream inputStream = file.getInputStream()){ 

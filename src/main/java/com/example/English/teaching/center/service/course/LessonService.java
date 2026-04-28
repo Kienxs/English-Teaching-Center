@@ -1,5 +1,8 @@
 package com.example.English.teaching.center.service.course;
 
+import java.util.UUID;
+
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import com.example.English.teaching.center.dto.course.LessonSaveRequest;
@@ -15,31 +18,23 @@ import com.example.English.teaching.center.service.infra.RateLimitingService;
 
 import io.github.bucket4j.Bucket;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class LessonService {
     private final LessonRepository lessonRepository;
     private final CourseRepository courseRepository;
     private final MaterialRepository materialRepository;
     private final RateLimitingService rateLimitingService; 
 
-    public LessonService(LessonRepository lessonRepository, 
-                         CourseRepository courseRepository, 
-                         MaterialRepository materialRepository,
-                         RateLimitingService rateLimitingService) {
-        this.lessonRepository = lessonRepository;
-        this.courseRepository = courseRepository;
-        this.materialRepository = materialRepository;
-        this.rateLimitingService = rateLimitingService;
-    }
-
-    private void verifyLessonOwnership(Lesson lesson, Long teacherId) {
+    private void verifyLessonOwnership(Lesson lesson, UUID teacherId) {
         if (!lesson.getCourse().getTeacher().getId().equals(teacherId)) 
             throw new SecurityException("Cảnh báo bảo mật: Bạn không có quyền thao tác trên bài học/khóa học này!");
     }
 
     @Transactional
-    public void saveOrUpdateLesson(LessonSaveRequest dto, Long teacherId){
+    public void saveOrUpdateLesson(LessonSaveRequest dto, UUID teacherId){
         String limitKey = "SAVE_LESSON_" + teacherId;
 
         Bucket bucket = rateLimitingService.resolveBucket(limitKey, 20, 1);
@@ -65,10 +60,14 @@ public class LessonService {
         lesson.setTitle(dto.getTitle());
         lesson.setLessonOrder(dto.getLessonOrder());
         lesson.setDescription(dto.getDescription());
-        lessonRepository.save(lesson);
+        try {
+            lessonRepository.save(lesson);
+        } catch (DataIntegrityViolationException e) {
+            throw new IllegalStateException("Thứ tự bài học (Lesson Order: " + dto.getLessonOrder() + ") đã tồn tại trong khóa học này. Vui lòng chọn một số khác!");
+        }
     }
 
-    public void deleteLesson(Long lessonId, Long teacherId){
+    public void deleteLesson(UUID lessonId, UUID teacherId){
         String limitKey = "DELETE_LESSON_" + teacherId;
         Bucket bucket = rateLimitingService.resolveBucket(limitKey, 10, 1);
         if (!bucket.tryConsume(1)) 
@@ -83,7 +82,7 @@ public class LessonService {
     }
 
     @Transactional
-    public Long saveOrUpdateMaterial(MaterialSaveRequest dto, Long teacherId) { 
+    public UUID saveOrUpdateMaterial(MaterialSaveRequest dto, UUID teacherId) { 
         String limitKey = "SAVE_MATERIAL_" + teacherId;
         Bucket bucket = rateLimitingService.resolveBucket(limitKey, 30, 1);
         if (!bucket.tryConsume(1)) 
@@ -116,7 +115,7 @@ public class LessonService {
     }
 
     @Transactional
-    public Long deleteMaterial(Long materialId, Long teacherId) { 
+    public UUID deleteMaterial(UUID materialId, UUID teacherId) { 
         String limitKey = "DELETE_MATERIAL_" + teacherId;
         Bucket bucket = rateLimitingService.resolveBucket(limitKey, 10, 1);
         if (!bucket.tryConsume(1)) 
@@ -127,7 +126,7 @@ public class LessonService {
 
         verifyLessonOwnership(material.getLesson(), teacherId);
 
-        Long courseId = material.getLesson().getCourse().getId();
+        UUID courseId = material.getLesson().getCourse().getId();
         materialRepository.delete(material);
         return courseId;
     }

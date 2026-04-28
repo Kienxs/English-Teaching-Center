@@ -1,12 +1,14 @@
 package com.example.English.teaching.center.dto.content;
 
+import java.util.UUID;
+
 import com.example.English.teaching.center.utils.HtmlSanitizerUtils;
 
 import lombok.Data;
 
 @Data
 public class SectionRequest {
-    private Long id;
+    private UUID id;
     private String sectionTitle;
     private String sectionContent;
     private String imageUrl;

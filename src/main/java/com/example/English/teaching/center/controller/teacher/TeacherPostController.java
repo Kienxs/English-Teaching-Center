@@ -6,6 +6,9 @@ import com.example.English.teaching.center.entity.Post;
 import com.example.English.teaching.center.entity.User;
 import com.example.English.teaching.center.service.content.PostService;
 import com.example.English.teaching.center.service.user.UserService;
+
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -17,18 +20,15 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @Controller
+@RequiredArgsConstructor
 @RequestMapping("/teacher")
 public class TeacherPostController {
 
     private final UserService userService;
     private final PostService postService;
-
-    public TeacherPostController(UserService userService, PostService postService) {
-        this.userService = userService;
-        this.postService = postService;
-    }
 
     @GetMapping("/post-management")
     public String postManagement(Model model, Principal principal,
@@ -127,7 +127,7 @@ public class TeacherPostController {
     }
 
     @PostMapping("/post/delete/{id}")
-    public String deletePost(@PathVariable("id") Long id, 
+    public String deletePost(@PathVariable("id") UUID id, 
                             RedirectAttributes ra,
                             Principal principal) {
         try {

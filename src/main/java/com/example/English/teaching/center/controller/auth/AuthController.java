@@ -20,22 +20,18 @@ import com.example.English.teaching.center.service.infra.ReCaptchaService;
 
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 import org.springframework.beans.factory.annotation.Value;
 
 @Controller
+@RequiredArgsConstructor
 public class AuthController {
     private final AuthService authService;
     private final ReCaptchaService reCaptchaService;
 
     @Value("${recaptcha.site-key}")
     private String recaptchaSiteKey;
-
-    public AuthController(AuthService authService, 
-                        ReCaptchaService reCaptchaService) {
-        this.authService = authService;
-        this.reCaptchaService = reCaptchaService;
-    }
 
     @GetMapping({"/", "/landing"})
     public String showLandingPage(Authentication authentication) {

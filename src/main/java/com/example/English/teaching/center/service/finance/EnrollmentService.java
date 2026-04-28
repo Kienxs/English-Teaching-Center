@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -24,7 +25,7 @@ public class EnrollmentService {
     private final WalletService walletService;
 
     @Transactional(rollbackFor = Exception.class)
-    public void enrollCourse(String email, Long courseId) {
+    public void enrollCourse(String email, UUID courseId) {
         // 1. Tìm thông tin người dùng và khóa học
         User student = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Người dùng không tồn tại."));

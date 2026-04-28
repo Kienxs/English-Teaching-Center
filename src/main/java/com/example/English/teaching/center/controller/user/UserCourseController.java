@@ -3,6 +3,7 @@ package com.example.English.teaching.center.controller.user;
 import java.security.Principal;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.ui.Model;
 import org.springframework.http.HttpStatus;
@@ -30,24 +31,16 @@ import com.example.English.teaching.center.service.course.TestService;
 import com.example.English.teaching.center.service.user.UserService;
 
 import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 
 @Controller
+@RequiredArgsConstructor
 @RequestMapping("/user")
 public class UserCourseController {
     private final CourseService courseService;
     private final CourseCommentService courseCommentService;
     private final TestService testService;
     private final UserService userService;
-
-    public UserCourseController(CourseService courseService, 
-                                CourseCommentService courseCommentService,
-                                TestService testService,
-                                UserService userService) {
-        this.courseService = courseService;
-        this.courseCommentService = courseCommentService;
-        this.testService = testService;
-        this.userService = userService;
-    }
 
     @GetMapping("/course-detail/{slug}")
     public String courseDetail(@PathVariable String slug, 
@@ -97,7 +90,7 @@ public class UserCourseController {
         if (currentUser == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-        Long currentStudentId = currentUser.getId();
+        UUID currentStudentId = currentUser.getId();
 
         StudentCourse.Status status;
         try {
@@ -112,7 +105,7 @@ public class UserCourseController {
 
     @GetMapping("/my-course-detail/{courseSlug}")
     public String myCoursesDetail(@PathVariable String courseSlug, 
-                                @RequestParam(name = "lessonId", required = false) Long lessonId,
+                                @RequestParam(name = "lessonId", required = false) UUID lessonId,
                                 @RequestParam(name = "testSlug", required = false) String testSlug,
                                 Model model, 
                                 Principal principal) {
@@ -160,7 +153,7 @@ public class UserCourseController {
         TestResult result = testService.submitTest(testSlug, allParams, principal.getName());
         
         String courseSlug = result.getTest().getLesson().getCourse().getSlug();
-        Long lessonId = result.getTest().getLesson().getId();
+        UUID lessonId = result.getTest().getLesson().getId();
 
         return "redirect:/user/my-course-detail/" + courseSlug 
                 + "?lessonId=" + lessonId 

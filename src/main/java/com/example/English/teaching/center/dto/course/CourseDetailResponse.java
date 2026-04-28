@@ -3,12 +3,13 @@ package com.example.English.teaching.center.dto.course;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 import lombok.Data;
 
 @Data
 public class CourseDetailResponse {
-    private Long id;
+    private UUID id;
     private String name;
     private String slug;
     private String description;
@@ -21,7 +22,7 @@ public class CourseDetailResponse {
     private Integer viewCount;
     private LocalDateTime createdAt;
 
-    private Long teacherId;
+    private UUID teacherId;
     private String teacherName;
     
     private List<LessonResponse> lessons;

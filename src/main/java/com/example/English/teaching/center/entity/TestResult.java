@@ -85,7 +85,7 @@ public class TestResult {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class AnswerDetail {
-        private Long questionId;
+        private UUID questionId;
         private String selectedAnswer; 
         @JsonProperty("isCorrect")
         private boolean isCorrect;

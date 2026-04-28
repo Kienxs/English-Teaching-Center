@@ -7,6 +7,8 @@ import com.example.English.teaching.center.service.infra.ReCaptchaService;
 import com.example.English.teaching.center.service.user.TeacherProfileService;
 import com.example.English.teaching.center.service.user.UserService;
 
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,6 +20,7 @@ import org.springframework.beans.factory.annotation.Value;
 import java.security.Principal;
 
 @Controller
+@RequiredArgsConstructor
 @RequestMapping("/teacher/profile")
 @PreAuthorize("hasRole('TEACHER')")
 public class TeacherProfileController {
@@ -27,14 +30,6 @@ public class TeacherProfileController {
 
     @Value("${recaptcha.site-key}")
     private String recaptchaSiteKey;
-
-    public TeacherProfileController(TeacherProfileService teacherProfileService, 
-                                    UserService userService,
-                                    ReCaptchaService reCaptchaService) {
-        this.teacherProfileService = teacherProfileService;
-        this.userService = userService;
-        this.reCaptchaService = reCaptchaService;
-    }
 
     @GetMapping
     public String viewProfile(Model model, Principal principal,

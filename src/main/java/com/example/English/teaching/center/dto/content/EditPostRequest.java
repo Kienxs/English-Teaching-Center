@@ -2,6 +2,7 @@ package com.example.English.teaching.center.dto.content;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import com.example.English.teaching.center.entity.Post;
 import com.example.English.teaching.center.utils.HtmlSanitizerUtils;
@@ -12,7 +13,7 @@ import lombok.Data;
 
 @Data
 public class EditPostRequest {
-    private Long id;
+    private UUID id;
 
     @NotBlank(message = "Tiêu đề bài viết không được để trống")
     private String title;

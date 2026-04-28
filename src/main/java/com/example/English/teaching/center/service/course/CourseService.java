@@ -22,6 +22,7 @@ import com.example.English.teaching.center.utils.SlugUtils;
 
 import io.github.bucket4j.Bucket;
 import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -29,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -38,6 +40,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 @Service
+@RequiredArgsConstructor
 public class CourseService {
     private final CourseRepository courseRepository; 
     private final TeacherRepository teacherRepository;
@@ -46,25 +49,7 @@ public class CourseService {
     private final LessonRepository lessonRepository;
     private final StudentCourseRepository studentCourseRepository;
     private final CourseMapper courseMapper;
-    private final RateLimitingService rateLimitingService; 
-
-    public CourseService(CourseRepository courseRepository, 
-                        TeacherRepository teacherRepository,
-                        TestResultRepository testResultRepository,
-                        UserRepository userRepository,
-                        LessonRepository lessonRepository,
-                        StudentCourseRepository studentCourseRepository,
-                        CourseMapper courseMapper,
-                        RateLimitingService rateLimitingService) {
-        this.courseRepository = courseRepository;
-        this.teacherRepository = teacherRepository;
-        this.testResultRepository = testResultRepository;
-        this.userRepository = userRepository;
-        this.lessonRepository = lessonRepository;
-        this.studentCourseRepository = studentCourseRepository;
-        this.courseMapper = courseMapper;
-        this.rateLimitingService = rateLimitingService;
-    }
+    private final RateLimitingService rateLimitingService;
 
 // Process for student --------------------------------------------------------------------
     public List<CourseDetailResponse> getAllCourses() {
@@ -73,11 +58,11 @@ public class CourseService {
             .toList();
     }
 
-    public Optional<Course> findCourseById(Long id) {
+    public Optional<Course> findCourseById(UUID id) {
         return courseRepository.findById(id);
     }
 
-    public List<Course> getCoursesByStudentAndStatus(Long studentId, StudentCourse.Status status) {
+    public List<Course> getCoursesByStudentAndStatus(UUID studentId, StudentCourse.Status status) {
         return courseRepository.findCoursesByStudentIdAndStatus(studentId, status);
     }
 
@@ -85,7 +70,7 @@ public class CourseService {
         return courseRepository.findBySlug(identifier)
             .orElseGet(() -> {
                 try {
-                    return courseRepository.findById(Long.parseLong(identifier)).orElse(null);
+                    return courseRepository.findById(UUID.fromString(identifier)).orElse(null);
                 } catch (NumberFormatException e) {
                     return null;
                 }
@@ -93,7 +78,7 @@ public class CourseService {
     }
 
     @Transactional 
-    public void incrementViewCount(Long courseId, String email) {
+    public void incrementViewCount(UUID courseId, String email) {
         String limitKey = "VIEW_COURSE_" + courseId + "_USER_" + email;
 
         Bucket bucket = rateLimitingService.resolveBucket(limitKey, 1, 30);
@@ -135,7 +120,7 @@ public class CourseService {
         return data;
     }
 
-    public Map<String, Object> getMyCourseDetailData(String identifier, Long lessonId, String testSlug, Long userId) {
+    public Map<String, Object> getMyCourseDetailData(String identifier, UUID lessonId, String testSlug, UUID userId) {
         Course course = Optional.ofNullable(findCourseByIdOrSlug(identifier))
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy khóa học: " + identifier));
         
@@ -161,7 +146,7 @@ public class CourseService {
         return data;
     }
 
-    private void processTestData(String testSlug, Long userId, Lesson lesson, Map<String, Object> data) {
+    private void processTestData(String testSlug, UUID userId, Lesson lesson, Map<String, Object> data) {
         Test selectedTest = lesson.getTests().stream()
                 .filter(t -> t.getSlug().equals(testSlug))
                 .findFirst().orElse(null);
@@ -181,7 +166,7 @@ public class CourseService {
     }
 
 //Process for teacher ---------------------------------------------------------------------
-    public Page<CourseDetailResponse> getCoursesByTeacher(Long teacherId, int pageNo, int pageSize) {
+    public Page<CourseDetailResponse> getCoursesByTeacher(UUID teacherId, int pageNo, int pageSize) {
         Pageable pageable = PageRequest.of(pageNo, pageSize, Sort.by("createdAt").descending());
         Page<Course> coursePage = courseRepository.findByTeacherIdOrderByCreatedAtDesc(teacherId, pageable);
         return coursePage.map(courseMapper::toDTO);
@@ -199,7 +184,7 @@ public class CourseService {
     }
 
     @Transactional 
-    public Course saveOrUpdateCourse(CourseSaveRequest dto, Long teacherId) {
+    public Course saveOrUpdateCourse(CourseSaveRequest dto, UUID teacherId) {
         String limitKey = "SAVE_COURSE_" + teacherId;
 
         Bucket bucket = rateLimitingService.resolveBucket(limitKey, 20, 1);
@@ -209,7 +194,7 @@ public class CourseService {
         String baseSlug = SlugUtils.makeSlug(dto.getName());
         String finalSlug = baseSlug;
         int count = 1;
-        Long currentId = (dto.getId() != null) ? dto.getId() : -1L;
+        UUID currentId = (dto.getId() != null) ? dto.getId() : UUID.randomUUID();
         
         while (courseRepository.existsBySlugAndIdNot(finalSlug, currentId)) {
             finalSlug = baseSlug + "-" + count;
@@ -240,7 +225,7 @@ public class CourseService {
         return courseRepository.save(course);
     }
 
-    public void deleteDraftCourse(Long courseId, Long teacherId){
+    public void deleteDraftCourse(UUID courseId, UUID teacherId){
         String limitKey = "DELETE_COURSE_" + teacherId;
         
         Bucket bucket = rateLimitingService.resolveBucket(limitKey, 5, 1);

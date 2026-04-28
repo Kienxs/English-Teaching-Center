@@ -13,20 +13,14 @@ import com.example.English.teaching.center.service.infra.RateLimitingService;
 
 import io.github.bucket4j.Bucket;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class TeacherProfileService {
     private final UserRepository userRepository;
     private final TeacherRepository teacherRepository;
     private final RateLimitingService rateLimitingService;
-
-    public TeacherProfileService(UserRepository userRepository, 
-                                TeacherRepository teacherRepository,
-                                RateLimitingService rateLimitingService) {
-        this.userRepository = userRepository;
-        this.teacherRepository = teacherRepository;
-        this.rateLimitingService = rateLimitingService;
-    }
 
     public TeacherProfileResponse getExpertiseProfile(String email){
         User user = userRepository.findByEmail(email)

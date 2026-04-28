@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
@@ -18,24 +19,19 @@ import com.example.English.teaching.center.repository.CourseRepository;
 import com.example.English.teaching.center.repository.StudentCourseRepository;
 import com.example.English.teaching.center.repository.UserRepository;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class TeacherService {
     private final CourseRepository courseRepository;
     private final StudentCourseRepository studentCourseRepository;
     private final UserRepository userRepository;
 
-    public TeacherService(CourseRepository courseRepository,
-                          StudentCourseRepository studentCourseRepository,
-                          UserRepository userRepository) {
-        this.courseRepository = courseRepository;
-        this.studentCourseRepository = studentCourseRepository;
-        this.userRepository = userRepository;
-    }
-
     public TeacherDashboardResponse getDashboardData(String email){
         User teacher = userRepository.findByEmail(email)
             .orElseThrow(() -> new RuntimeException("Teacher not found"));
-        Long teacherId = teacher.getId();   
+        UUID teacherId = teacher.getId();   
 
         TeacherDashboardResponse dto = new TeacherDashboardResponse();
 
@@ -54,7 +50,7 @@ public class TeacherService {
 
         // 2. Get the list
         dto.setTopCourses(courseRepository.findTopSellingCourses(teacherId));
-        dto.setRecentEnrollments(studentCourseRepository.findRecentErollments(teacherId));
+        dto.setRecentEnrollments(studentCourseRepository.findTop5ByCourseTeacherIdOrderByEnrolledAtDesc(teacherId));
 
         // 3. Logic for processing chart data (Converting raw data into a List for FE)
         List<Object[]> categoryStats = studentCourseRepository.countSalesByCategory(teacherId);

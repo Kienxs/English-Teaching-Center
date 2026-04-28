@@ -9,6 +9,9 @@ import com.example.English.teaching.center.entity.User;
 import com.example.English.teaching.center.service.course.CourseService;
 import com.example.English.teaching.center.service.course.LessonService;
 import com.example.English.teaching.center.service.user.UserService;
+
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,20 +19,16 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;
+import java.util.UUID;
 
 @Controller
+@RequiredArgsConstructor
 @RequestMapping("/teacher")
 public class TeacherCourseController {
 
     private final CourseService courseService;
     private final LessonService lessonService;
     private final UserService userService;
-
-    public TeacherCourseController(CourseService courseService, LessonService lessonService, UserService userService) {
-        this.courseService = courseService;
-        this.lessonService = lessonService;
-        this.userService = userService;
-    }
 
     @GetMapping("/course-management")
     public String courseManagement(Model model, Principal principal,
@@ -66,7 +65,7 @@ public class TeacherCourseController {
     }
 
     @GetMapping("/course/delete/{id}")
-    public String deleteCourse(@PathVariable("id") Long id, 
+    public String deleteCourse(@PathVariable("id") UUID id, 
                                 RedirectAttributes ra, Principal principal) {
         try{
             User currenUser = userService.findByEmail(principal.getName());
@@ -98,7 +97,7 @@ public class TeacherCourseController {
     }
 
     @PostMapping("/lesson/delete/{lessonId}/{courseSlug}")
-    public String deleteLesson(@PathVariable ("lessonId") Long lessonId,
+    public String deleteLesson(@PathVariable ("lessonId") UUID lessonId,
                                @PathVariable ("courseSlug") String courseSlug,
                                 Principal principal){
         User currentUser = userService.findByEmail(principal.getName());
@@ -112,9 +111,9 @@ public class TeacherCourseController {
                                 Principal principal){ 
         String email = principal.getName();
         User currentUser = userService.findByEmail(email);
-        Long teacherId = currentUser.getId();
+        UUID teacherId = currentUser.getId();
 
-        Long courseId = lessonService.saveOrUpdateMaterial(dto, teacherId);
+        UUID courseId = lessonService.saveOrUpdateMaterial(dto, teacherId);
         
         String slug = courseService.findCourseById(courseId)
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy khóa học"))
@@ -123,13 +122,13 @@ public class TeacherCourseController {
     }
 
     @PostMapping("/material/delete/{id}/{courseSlug}")
-    public String deleteMaterial(@PathVariable Long id, 
+    public String deleteMaterial(@PathVariable UUID id, 
                                  @PathVariable String courseSlug, 
                                  Principal principal){ 
         
         String email = principal.getName();
         User currentUser = userService.findByEmail(email);
-        Long teacherId = currentUser.getId();
+        UUID teacherId = currentUser.getId();
 
         lessonService.deleteMaterial(id, teacherId);
         

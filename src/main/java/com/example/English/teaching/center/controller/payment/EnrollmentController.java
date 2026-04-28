@@ -6,32 +6,38 @@ import org.springframework.web.bind.annotation.*;
 
 import com.example.English.teaching.center.service.finance.EnrollmentService;
 
+import lombok.RequiredArgsConstructor;
+
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/courses")
 public class EnrollmentController {
 
     private final EnrollmentService enrollmentService;
 
-    public EnrollmentController(EnrollmentService enrollmentService) {
-        this.enrollmentService = enrollmentService;
-    }
-
     @PostMapping("/enroll")
-    public ResponseEntity<?> enrollStudent(@RequestBody Map<String, Long> payload, Authentication auth) {
+    public ResponseEntity<?> enrollStudent(@RequestBody Map<String, String> payload, 
+                                            Authentication auth) {
         // Kiểm tra đăng nhập
-        if (auth == null || !auth.isAuthenticated()) {
+        if (auth == null || !auth.isAuthenticated()) 
             return ResponseEntity.status(401).body("Vui lòng đăng nhập để mua khóa học.");
-        }
 
-        Long courseId = payload.get("courseId");
-        if (courseId == null) {
+        String courseIdStr = payload.get("courseId");
+        if (courseIdStr == null || courseIdStr.trim().isEmpty()) 
             return ResponseEntity.badRequest().body("ID khóa học không hợp lệ.");
-        }
 
+        UUID courseId;
         try {
-            // Gọi nghiệp vụ đăng ký từ Service
+            // 2. Tự parse UUID an toàn
+            courseId = UUID.fromString(courseIdStr); 
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("Định dạng ID khóa học không đúng.");
+        }
+        
+        try {
             enrollmentService.enrollCourse(auth.getName(), courseId);
             return ResponseEntity.ok(Map.of("message", "Thanh toán và đăng ký thành công!"));
             

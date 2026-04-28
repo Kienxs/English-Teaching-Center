@@ -20,8 +20,10 @@ import com.example.English.teaching.center.utils.NetworkUtils;
 
 import io.github.bucket4j.Bucket;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -33,19 +35,6 @@ public class AuthService {
     @Value("${app.domain}")
     private String appDomain;
 
-    public AuthService(UserRepository userRepository, 
-                       PasswordEncoder passwordEncoder, 
-                       UserMapper userMapper,
-                       RateLimitingService rateLimitingService,
-                       ReCaptchaService reCaptchaService,
-                       EmailService emailService) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.userMapper = userMapper;
-        this.rateLimitingService = rateLimitingService;
-        this.reCaptchaService = reCaptchaService;
-        this.emailService = emailService;
-    }
 // Register ---------------------------------------------------------------
     @Transactional
     public void registerNewUser(RegisterRequest dto, String recaptchaResponse) {

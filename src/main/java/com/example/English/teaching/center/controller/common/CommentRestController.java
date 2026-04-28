@@ -1,8 +1,11 @@
 package com.example.English.teaching.center.controller.common;
 
 import java.security.Principal;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -16,22 +19,22 @@ import com.example.English.teaching.center.dto.content.CommentRequest;
 import com.example.English.teaching.center.dto.content.CommentResponse;
 import com.example.English.teaching.center.service.content.PostService;
 
+import lombok.RequiredArgsConstructor;
+
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/comments")
 public class CommentRestController {
     private final PostService postService;
 
-    public CommentRestController(PostService postService) {
-        this.postService = postService;
-    }
-
     @GetMapping("/{postId}")
     public ResponseEntity<List<CommentResponse>> getComments(
-            @PathVariable Long postId,
-            @RequestParam(required = false) Long lastId,
+            @PathVariable UUID postId,
+            @RequestParam(required = false) 
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime lastCreatedAt,
             @RequestParam(defaultValue = "5") int limit) {
         
-        List<CommentResponse> comments = postService.getCommentsByCursor(postId, lastId, limit);
+        List<CommentResponse> comments = postService.getCommentsByCursor(postId, lastCreatedAt, limit);
         return ResponseEntity.ok(comments);
     }
 
@@ -54,6 +57,5 @@ public class CommentRestController {
         }catch(Exception e){
             return ResponseEntity.status(500).body("Có lỗi xảy ra: " + e.getMessage());
         }
-
     }
 }

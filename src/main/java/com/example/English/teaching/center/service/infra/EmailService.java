@@ -7,17 +7,15 @@ import org.springframework.stereotype.Service;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class EmailService {
     private final JavaMailSender mailSender;
 
     @Value("${app.base-url}")
     private String baseUrl;
-
-    public EmailService(JavaMailSender mailSender){
-        this.mailSender = mailSender;
-    }
 
     public void sendVerificationEmail(String email, String fullName, String verificationCode) throws MessagingException{
         MimeMessage message = mailSender.createMimeMessage();

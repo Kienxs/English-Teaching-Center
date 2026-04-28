@@ -1,6 +1,7 @@
 package com.example.English.teaching.center.service.course;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
@@ -22,8 +23,10 @@ import com.example.English.teaching.center.service.infra.RateLimitingService;
 
 import org.springframework.transaction.annotation.Transactional;
 import io.github.bucket4j.Bucket;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class CourseCommentService {
     private final CourseCommentRepository courseCommentRepository;
     private final UserRepository userRepository;
@@ -31,20 +34,8 @@ public class CourseCommentService {
     private final CourseCommentMapper commentMapper;
     private final RateLimitingService rateLimitingService;
 
-    public CourseCommentService(CourseCommentRepository courseCommentRepository,
-                                UserRepository userRepository, 
-                                CourseRepository courseRepository,
-                                CourseCommentMapper commentMapper,
-                                RateLimitingService rateLimitingService){
-        this.courseCommentRepository = courseCommentRepository;
-        this.userRepository = userRepository;
-        this.courseRepository = courseRepository;
-        this.commentMapper = commentMapper;
-        this.rateLimitingService = rateLimitingService;
-    }
-
     @Transactional(readOnly = true)
-    public Page<CourseCommentResponse> getCommentsByCourseId(Long courseId, int page, int size) {
+    public Page<CourseCommentResponse> getCommentsByCourseId(UUID courseId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         return courseCommentRepository.findByCourseId(courseId, pageable)
                 .map(commentMapper::toDTO);

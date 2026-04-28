@@ -19,9 +19,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
-public interface CourseRepository extends JpaRepository<Course, Long> {
+public interface CourseRepository extends JpaRepository<Course, UUID> {
 
-// Process diaplay for student ----------------------------------------------------------------------------------
+// ================= PROCESS DISPLAY FOR STUDENT =================
     Page<Course> findByStatus(Status status, Pageable pageable);
 
     List<Course> findByTeacherIdAndStatus(UUID teacherId, Status status);
@@ -51,21 +51,21 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
                                         @Param("keyword") String keyword,
                                         Pageable pageable);
 
-// Process display for teacher -----------------------------------------------------------------------------------
+// ================= PROCESS DISPLAY FOR TEACHER =================
     Page<Course> findByTeacherIdOrderByCreatedAtDesc(UUID teacherId, Pageable pageable);
     
     boolean existsBySlugAndIdNot(String slug, UUID id);
 
     Optional<Course> findBySlug(String slug);
 
-    //1. Total number of views for all of the teacher's courses
+    // 1. Total number of views for all of the teacher's courses
     @Query("SELECT SUM(c.viewCount) FROM Course c WHERE c.teacher.id = :teacherId")
     Long sumViewByTeacherId(@Param("teacherId") UUID teacherId);
 
     // 2. Count the number of courses
     Long countByTeacherId(UUID teacherId);
 
-    // 3. Get the Top 5 best-selling courses.
+    // 3. Get the Top 5 best-selling courses (Đã chuyển sang Native Query để dùng được LIMIT và Map)
     @Query(value = "SELECT c.name as name, COUNT(sc.id) as sold, c.view_count as views, c.fee as fee " + 
                    "FROM courses c JOIN student_courses sc ON c.id = sc.course_id " + 
                    "WHERE c.teacher_id = :teacherId " + 
@@ -73,7 +73,7 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
                    "ORDER BY sold DESC LIMIT 5", nativeQuery = true)
     List<Map<String, Object>> findTopSellingCourses(@Param("teacherId") UUID teacherId);
 
-// Process display for admin -----------------------------------------------------------------------------------
+// ================= PROCESS DISPLAY FOR ADMIN =================
     @Query("SELECT c FROM Course c WHERE c.status = 'PENDING'")
     Page<Course> findPendingCourses(Pageable pageable);
 

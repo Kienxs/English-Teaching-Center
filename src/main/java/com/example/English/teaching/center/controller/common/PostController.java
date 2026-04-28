@@ -16,14 +16,13 @@ import com.example.English.teaching.center.dto.content.PostListResponse;
 import com.example.English.teaching.center.entity.Post;
 import com.example.English.teaching.center.service.content.PostService;
 
+import lombok.RequiredArgsConstructor;
+
 @Controller
+@RequiredArgsConstructor
 @RequestMapping("/user")
 public class PostController {
     private final PostService postService;
-
-    public PostController(PostService postService) {
-        this.postService = postService;
-    }
 
     @GetMapping("/blog")
     public String blogPage(@RequestParam(value = "page", defaultValue = "1") int page,

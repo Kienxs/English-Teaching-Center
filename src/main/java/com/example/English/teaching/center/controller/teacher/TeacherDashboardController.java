@@ -10,14 +10,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import com.example.English.teaching.center.dto.report.TeacherDashboardResponse;
 import com.example.English.teaching.center.service.user.TeacherService;
 
+import lombok.RequiredArgsConstructor;
+
 @Controller
+@RequiredArgsConstructor
 @RequestMapping("/teacher")
 public class TeacherDashboardController {
     private final TeacherService teacherService;
-
-    public TeacherDashboardController(TeacherService teacherService) {
-        this.teacherService = teacherService;
-    }
 
     @GetMapping("/dashboard")
     public String dashboard(Model model, Principal principal) {

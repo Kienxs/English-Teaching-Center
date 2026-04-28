@@ -1,6 +1,8 @@
 package com.example.English.teaching.center.service.content;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,8 +29,10 @@ import com.example.English.teaching.center.utils.SlugUtils;
 
 import io.github.bucket4j.Bucket;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class PostService {
     private final PostMapper postMapper;
     private final CommentMapper commentMapper;
@@ -36,20 +40,6 @@ public class PostService {
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
     private final RateLimitingService rateLimitingService;
-
-    public PostService(PostMapper postMapper, 
-                        PostRepository postRepository,
-                        CommentRepository commentRepository,
-                        UserRepository userRepository,
-                        CommentMapper commentMapper,
-                        RateLimitingService rateLimitingService) {
-        this.postMapper = postMapper;
-        this.commentMapper = commentMapper;
-        this.postRepository = postRepository;
-        this.commentRepository = commentRepository;
-        this.userRepository = userRepository;
-        this.rateLimitingService = rateLimitingService;
-    }
 
 // FUNCTIONS FOR STUDENT --------------------------------------------------------
 
@@ -87,7 +77,7 @@ public class PostService {
         commentRepository.save(comment);
     }
 
-    public List<PostListResponse> getRelatedPosts(Post.PostType type, Long currentId) {
+    public List<PostListResponse> getRelatedPosts(Post.PostType type, UUID currentId) {
         Pageable topFive = PageRequest.of(0, 5); 
         List<Post> posts = postRepository.findRelatedPosts(type, currentId, topFive);
         
@@ -96,9 +86,9 @@ public class PostService {
                     .toList();
     }
 
-    public List<CommentResponse> getCommentsByCursor(Long postId, Long lastId, int limit){
+    public List<CommentResponse> getCommentsByCursor(UUID postId, LocalDateTime lastCreatedAt, int limit){
         Pageable pageable = PageRequest.of(0, limit);
-        List<Comment> comments = commentRepository.findCommentsByCursor(postId, lastId, pageable);
+        List<Comment> comments = commentRepository.findCommentsByCursor(postId, lastCreatedAt, pageable);
 
         return comments.stream()
                         .map(commentMapper::toDTO)
@@ -117,7 +107,7 @@ public class PostService {
 
 // FUNCTIONS FOR TEACHERS -----------------------------------------------
 
-    public Page<Post> getPostsByAuthorId(Long authorId, int pageNo, int pageSize){
+    public Page<Post> getPostsByAuthorId(UUID authorId, int pageNo, int pageSize){
         Pageable pageable = PageRequest.of(pageNo, pageSize, org.springframework.data.domain.Sort.by("createdAt").descending());
         return postRepository.findByAuthorIdAndIsDeletedFalse(authorId, pageable);
     }
@@ -134,7 +124,7 @@ public class PostService {
     }
 
     @Transactional
-    public Post saveOrUpdateFromDTO(EditPostRequest dto, Long currentUserId) {
+    public Post saveOrUpdateFromDTO(EditPostRequest dto, UUID currentUserId) {
         String limitKey = "SAVE_POST_" + currentUserId ;
 
         Bucket bucket = rateLimitingService.resolveBucket(limitKey, 10, 1);
@@ -142,7 +132,7 @@ public class PostService {
             throw new RateLimitException("Hệ thống đang bận, vui lòng lưu chậm lại!");
 
         Post post;
-        Long currentId = (dto.getId() != null) ? dto.getId() : -1L;
+        UUID currentId = (dto.getId() != null) ? dto.getId() : UUID.randomUUID();
 
         // 1. KIỂM TRA LÀ THÊM MỚI (INSERT) HAY CẬP NHẬT (UPDATE)
         if (dto.getId() != null) {
@@ -203,7 +193,7 @@ public class PostService {
     }
 
     @Transactional
-    public void deleteDraftPost(Long postId, Long authorId){
+    public void deleteDraftPost(UUID postId, UUID authorId){
         String limitKey = "DELETE_POST_" + authorId ;
 
         Bucket bucket = rateLimitingService.resolveBucket(limitKey, 5, 5);

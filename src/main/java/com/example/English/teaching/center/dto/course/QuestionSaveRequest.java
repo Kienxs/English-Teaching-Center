@@ -2,6 +2,7 @@ package com.example.English.teaching.center.dto.course;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 import com.example.English.teaching.center.entity.Question;
 import com.example.English.teaching.center.utils.HtmlSanitizerUtils;
@@ -10,8 +11,8 @@ import lombok.Data;
 
 @Data
 public class QuestionSaveRequest {
-    private Long id;
-    private Long testId;
+    private UUID id;
+    private UUID testId;
     private String questionText; 
     private List<Question.Option> options;
     private BigDecimal points;

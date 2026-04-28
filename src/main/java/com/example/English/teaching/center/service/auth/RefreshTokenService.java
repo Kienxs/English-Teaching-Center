@@ -17,18 +17,16 @@ import com.example.English.teaching.center.repository.RefreshTokenRepository;
 import com.example.English.teaching.center.utils.JwtUtils;
 
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class RefreshTokenService {
     @Value("${app.jwt.refreshExpirationMs}") 
     private Long refreshExpirationMs;
 
     private final int MAX_ACTIVE_DEVICES = 3;
     private final RefreshTokenRepository refreshTokenRepository;
-    
-    public RefreshTokenService(RefreshTokenRepository refreshTokenRepository) {
-        this.refreshTokenRepository = refreshTokenRepository;
-    }
 
     @Transactional
     public RefreshToken createRefreshToken(User user, String deviceId) {

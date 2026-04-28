@@ -7,7 +7,10 @@ import com.example.English.teaching.center.entity.User;
 import com.example.English.teaching.center.service.course.TestService;
 import com.example.English.teaching.center.service.user.UserService;
 
+import lombok.RequiredArgsConstructor;
+
 import java.security.Principal;
+import java.util.UUID;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,17 +18,12 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
+@RequiredArgsConstructor
 @RequestMapping("/teacher")
 public class TeacherTestController {
 
     private final TestService testService;
     private final UserService userService;
-
-    public TeacherTestController(TestService testService,
-                                UserService userService) {
-        this.testService = testService;
-        this.userService = userService;
-    }
 
     @PostMapping("/test/save")
     public String saveTest(@ModelAttribute TestSaveRequest dto,
@@ -51,7 +49,7 @@ public class TeacherTestController {
     }
 
     @PostMapping("/test/delete/{id}/{courseSlug}")
-    public String deleteTest(@PathVariable("id") Long id, 
+    public String deleteTest(@PathVariable("id") UUID id, 
                              @PathVariable("courseSlug") String courseSlug, 
                              Principal principal,
                              RedirectAttributes ra){
@@ -70,9 +68,9 @@ public class TeacherTestController {
     }
 
     @PostMapping("/question/delete/{id}")
-    public String deleteQuestion(@PathVariable Long id, Principal principal){
+    public String deleteQuestion(@PathVariable UUID id, Principal principal){
         User teacher = userService.findByEmail(principal.getName());
-        Long testId = testService.deleteQuestionAndGetTestId(id, teacher.getId()); 
+        UUID testId = testService.deleteQuestionAndGetTestId(id, teacher.getId()); 
         Test test = testService.findTestById(testId);
         return "redirect:/teacher/test/edit/" + test.getSlug();
     }

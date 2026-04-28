@@ -11,7 +11,7 @@ public class CommentMapper {
         if(comment == null) return null;
 
         CommentResponse dto = new CommentResponse();
-        dto.setId(comment.getId());
+        dto.setId(comment.getId());;
         dto.setContent(comment.getContent());
 
         if (comment.getUser() != null) 

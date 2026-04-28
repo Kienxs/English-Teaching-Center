@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
@@ -30,8 +31,10 @@ import com.example.English.teaching.center.utils.SlugUtils;
 
 import io.github.bucket4j.Bucket;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class TestService {
     private final TestRepository testRepository;
     private final TestResultRepository testResultRepository;
@@ -41,28 +44,13 @@ public class TestService {
     private final TestMapper testMapper;
     private final RateLimitingService rateLimitingService;
 
-    public TestService(TestRepository testRepository,
-                       TestResultRepository testResultRepository,
-                       UserRepository userRepository,
-                       LessonRepository lessonRepository,
-                       QuestionRepository questionRepository,
-                       TestMapper testMapper,
-                       RateLimitingService rateLimitingService) {
-        this.testRepository = testRepository;
-        this.testResultRepository = testResultRepository;
-        this.userRepository = userRepository;
-        this.lessonRepository = lessonRepository;
-        this.questionRepository = questionRepository;
-        this.testMapper = testMapper;
-        this.rateLimitingService = rateLimitingService;
-    }
 // For Students ---------------------------------------------------------
     private Test findTestByIdOrSlug(String identifier) {
         return testRepository.findBySlug(identifier)
             .orElseGet(() -> {
                 try {
-                    return testRepository.findById(Long.parseLong(identifier)).orElse(null);
-                } catch (NumberFormatException e) {
+                    return testRepository.findById(UUID.fromString(identifier)).orElse(null);
+                } catch (IllegalArgumentException e) {
                     return null;
                 }
             });
@@ -101,7 +89,7 @@ public class TestService {
         return testResultRepository.save(newResult);
     }
 
-   @Transactional
+    @Transactional
     public TestResult submitTest(String identifier, Map<String, String> answers, String email){
         String limitKey = "SUBMIT_TEST_" + email;
 
@@ -170,14 +158,14 @@ public class TestService {
     }
 
 // For Teachers ---------------------------------------------------------
-    private void verifyTestOwnership(Test test, Long teacherId){
+    private void verifyTestOwnership(Test test, UUID teacherId){
         if(!test.getLesson().getCourse().getTeacher().getId().equals(teacherId)){
             throw new RuntimeException("Cảnh báo bảo mật: Bạn không có quyền thao tác trên bài thi này!");
         }
     }
 
     @Transactional
-    public String saveTest(TestSaveRequest dto, Long teacherId) {
+    public String saveTest(TestSaveRequest dto, UUID teacherId) {
         String limitKey = "SAVE_TEST_" + teacherId;
 
         Bucket bucket = rateLimitingService.resolveBucket(limitKey, 20, 1);
@@ -202,7 +190,7 @@ public class TestService {
         String baseSlug = SlugUtils.makeSlug(test.getTitle());
         String finalSlug = baseSlug;
         int count = 1;
-        Long currentId = (test.getId() != null ) ? test.getId() : -1L;
+        UUID currentId = (test.getId() != null) ? test.getId() : UUID.randomUUID();
 
         while(testRepository.existsBySlugAndIdNot(finalSlug, currentId)) {
             finalSlug = baseSlug + "-" + count;
@@ -217,7 +205,7 @@ public class TestService {
     }
 
     @Transactional
-    public void deleteTest(Long id, Long teacherId) { 
+    public void deleteTest(UUID id, UUID teacherId) { 
         String limitKey = "DELETE_TEST_" + teacherId;
 
         Bucket bucket = rateLimitingService.resolveBucket(limitKey, 10, 1);
@@ -231,7 +219,7 @@ public class TestService {
     }
 
     @Transactional
-    public void saveQuestion(QuestionSaveRequest dto, Long teacherId) { 
+    public void saveQuestion(QuestionSaveRequest dto, UUID teacherId) { 
         String limitKey = "SAVE_QUESTION_" + teacherId;
         
         Bucket bucket = rateLimitingService.resolveBucket(limitKey, 20, 1);
@@ -263,7 +251,7 @@ public class TestService {
     }
 
     @Transactional
-    public Long deleteQuestionAndGetTestId(Long questionId, Long teacherId) { 
+    public UUID deleteQuestionAndGetTestId(UUID questionId, UUID teacherId) { 
         String limitKey = "DELETE_QUESTION_" + teacherId;
 
         Bucket bucket = rateLimitingService.resolveBucket(limitKey, 20, 1);
@@ -275,12 +263,12 @@ public class TestService {
             
         verifyTestOwnership(q.getTest(), teacherId); 
         
-        Long testId = q.getTest().getId();
+        UUID testId = q.getTest().getId();
         questionRepository.delete(q);
         return testId;
     }
 
-    public Test findTestById(Long id) {
+    public Test findTestById(UUID id) {
         return testRepository.findById(id).orElseThrow(() -> new RuntimeException("Không tìm thấy bài thi với ID: " + id));
     }
 

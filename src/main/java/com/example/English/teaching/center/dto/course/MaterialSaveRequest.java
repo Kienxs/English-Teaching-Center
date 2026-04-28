@@ -1,5 +1,7 @@
 package com.example.English.teaching.center.dto.course;
 
+import java.util.UUID;
+
 import com.example.English.teaching.center.utils.HtmlSanitizerUtils;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -7,10 +9,10 @@ import lombok.Data;
 
 @Data
 public class MaterialSaveRequest {
-    private Long id;
+    private UUID id;
 
     @NotNull(message = "ID Bài học không được để trống")
-    private Long lessonId;
+    private UUID lessonId;
 
     @NotBlank(message = "Tiêu đề tài liệu không được để trống")
     private String title;

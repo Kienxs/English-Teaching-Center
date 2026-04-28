@@ -33,10 +33,12 @@ import com.example.English.teaching.center.service.infra.RateLimitingService;
 
 import io.github.bucket4j.Bucket;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -44,20 +46,6 @@ public class UserService {
     private final CloudinaryService cloudinaryService;
     private final RateLimitingService rateLimitingService;
     private final RefreshTokenService refreshTokenService;
-
-    public UserService(UserRepository userRepository, 
-                PasswordEncoder passwordEncoder, 
-                UserMapper userMapper,
-                CloudinaryService cloudinaryService,
-                RateLimitingService rateLimitingService,
-                RefreshTokenService refreshTokenService) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.userMapper = userMapper;
-        this.cloudinaryService = cloudinaryService;
-        this.rateLimitingService = rateLimitingService;
-        this.refreshTokenService = refreshTokenService;
-    }
 
     public User findByEmail(String email) {
         return userRepository.findByEmail(email)

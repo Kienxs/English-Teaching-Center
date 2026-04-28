@@ -1,13 +1,15 @@
 package com.example.English.teaching.center.dto.course;
 
+import java.util.UUID;
+
 import com.example.English.teaching.center.utils.HtmlSanitizerUtils;
 
 import lombok.Data;
 
 @Data
 public class LessonSaveRequest {
-    private Long id;
-    private Long courseId;
+    private UUID id;
+    private UUID courseId;
     private String title;
     private Integer lessonOrder;
     private String description;
